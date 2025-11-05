@@ -162,6 +162,18 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Additional cleanup
+.vite/
+temp/
+test-data/
+systemd/
+worker/
+
+# Large archive files
+*.tar.gz
+*.tar.bz2
+*.zip
+
 # Large Solana release files
 solana-release.tar
 solana-release.tar.bz2
