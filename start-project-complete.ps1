@@ -287,7 +287,7 @@ try {
     # Wait for services to initialize
     Write-Host ""
     Write-Host "Waiting for services to initialize..." -ForegroundColor Yellow
-    Start-Sleep -Seconds 15
+    Start-Sleep -Seconds 20
 
     # Health checks
     if (!$SkipHealthCheck) {

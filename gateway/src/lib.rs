@@ -1732,6 +1732,9 @@ pub async fn build_router(_worker_endpoint: String) -> Router {
         // This endpoint provides real-time token balance updates to connected clients
         // DEPENDENCY CONFLICT: Requires Solana dependencies for balance queries
 
+    // Clone blockchain client before moving state
+    let blockchain_client_clone = state.blockchain_client.clone();
+
     // Combine public and protected routes with comprehensive middleware stack
     let router = public_router
         .merge(protected_router)
@@ -1746,7 +1749,6 @@ pub async fn build_router(_worker_endpoint: String) -> Router {
     tracing::info!("Memory monitoring started");
 
     // Start auto-mint scheduler in background
-    let blockchain_client_clone = state.blockchain_client.clone();
     tokio::spawn(async move {
         auto_mint_scheduler(blockchain_client_clone, 3600).await; // Mint every hour
     });
