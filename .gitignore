@@ -161,3 +161,16 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Large Solana release files
+solana-release.tar
+solana-release.tar.bz2
+**/solana-release/**/*.tar.bz2
+**/solana-release/**/*.tar
+**/solana-release/bin/*
+**/solana-cli/**/*.tar.bz2
+**/solana-cli/**/*.tar
+**/blockchain-service/**/*.tar.bz2
+**/blockchain-service/**/*.tar
+**/game_token/**/*.tar.bz2
+**/game_token/**/*.tar
