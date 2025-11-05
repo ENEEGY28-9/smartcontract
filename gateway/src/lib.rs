@@ -109,22 +109,12 @@ fn insert_header_safe(headers: &mut axum::http::HeaderMap, name: &'static str, v
 async fn token_ws_handler(
     ws: axum::extract::ws::WebSocketUpgrade,
     State(state): State<AppState>,
-    headers: HeaderMap,
+    Query(params): Query<HashMap<String, String>>,
 ) -> impl IntoResponse {
     HTTP_REQUESTS_TOTAL.with_label_values(&["/token-updates"]).inc();
 
-    // Extract and validate JWT token for WebSocket connection
-    let token = match headers.get("authorization") {
-        Some(header_value) => {
-            let auth_str = header_value.to_str().unwrap_or("");
-            if auth_str.starts_with("Bearer ") {
-                Some(&auth_str[7..])
-            } else {
-                None
-            }
-        }
-        None => None,
-    };
+    // Extract and validate JWT token from query parameters
+    let token = params.get("token");
 
     let user_id = match token {
         Some(token_str) => {
