@@ -1719,6 +1719,7 @@ pub async fn build_router(_worker_endpoint: String) -> Router {
         .route("/api/token/eat-particle", post(eat_particle_handler_api))
         .route("/api/token/earn-from-pool", post(earn_from_pool_handler_api))
         .route("/api/token/balance", get(balance_handler_api))
+        .route("/api/token/history", get(history_handler_api))
         .route("/api/token/transfer", post(transfer_handler_api))
         .route("/api/wallet/create", post(create_wallet_handler_api))
         .route("/api/wallet/create-hd", post(create_hd_wallet_handler_api))
@@ -5556,15 +5557,56 @@ async fn balance_handler_api(
         }
     };
 
-    // Create dummy request
-    let dummy_req = axum::http::Request::builder()
-        .method("GET")
-        .uri("/api/token/balance")
-        .body(axum::body::Body::empty())
-        .unwrap();
+    // Get balance directly
+    let balance = get_user_balance(&state.database_pool, &claims.sub).await;
+    let wallet_address = get_user_wallet_address_async(&claims.sub).await;
 
-    // Call actual handler
-    balance_handler(state, dummy_req, claims).await.into_response()
+    (StatusCode::OK, Json(BalanceResponse {
+        game_tokens: balance,
+        wallet_address: wallet_address,
+        total_earned: balance, // TODO: Track separately
+        session_tokens: 0,     // TODO: Track session tokens
+    })).into_response()
+}
+
+async fn history_handler_api(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> impl IntoResponse {
+    HTTP_REQUESTS_TOTAL.with_label_values(&["/api/token/history"]).inc();
+
+    // Extract and validate JWT token
+    let token = match headers.get("authorization") {
+        Some(header_value) => {
+            let auth_str = header_value.to_str().unwrap_or("");
+            if auth_str.starts_with("Bearer ") {
+                Some(&auth_str[7..])
+            } else {
+                None
+            }
+        }
+        None => None,
+    };
+
+    let claims = match token {
+        Some(token_str) => {
+            match state.auth_service.validate_token_with_db(token_str, &state.database_pool).await {
+                Ok(claims) => claims,
+                Err(_) => {
+                    return (StatusCode::UNAUTHORIZED, Json(vec![] as Vec<TokenHistoryEntry>)).into_response();
+                }
+            }
+        }
+        None => {
+            return (StatusCode::UNAUTHORIZED, Json(vec![] as Vec<TokenHistoryEntry>)).into_response();
+        }
+    };
+
+    // For now, return empty history since we don't have transaction tracking yet
+    // TODO: Implement actual transaction history tracking
+    let history: Vec<TokenHistoryEntry> = vec![];
+
+    (StatusCode::OK, Json(history)).into_response()
 }
 
 async fn transfer_handler_api(
@@ -5657,6 +5699,17 @@ pub struct BalanceResponse {
     pub wallet_address: Option<String>,
     pub total_earned: i64,
     pub session_tokens: i64,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+pub struct TokenHistoryEntry {
+    pub id: String,
+    pub r#type: String, // Using 'r#type' because 'type' is a reserved keyword
+    pub amount: i64,
+    pub timestamp: String,
+    pub tx_signature: Option<String>,
+    pub description: Option<String>,
+    pub particle_location: Option<(i32, i32)>,
 }
 
 #[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
