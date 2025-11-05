@@ -6,7 +6,7 @@ async function fixSmartContractDeployment() {
   console.log('🔧 FIXING SMART CONTRACT DEPLOYMENT ISSUE\n');
 
   console.log('📋 Current Status:');
-  console.log('❌ Only SPL Token Mint deployed (FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX)');
+  console.log('❌ Only SPL Token Mint deployed (2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK)');
   console.log('❌ Smart Contract Program not deployed');
   console.log('🎯 Need to deploy: game_token.so (contains auto_mint logic)\n');
 

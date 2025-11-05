@@ -21,8 +21,8 @@ async function testNewLogicManually() {
     const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
 
     // Known addresses from previous deployment
-    const gameTokenMint = new PublicKey('FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX');
-    const ownerAccount = new PublicKey('B8MM5t3qTxBSx7mpaRvu4AJmMAZeHUty1LUVtfXs7QUv');
+    const gameTokenMint = new PublicKey('2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
+    const ownerAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS');
 
     console.log('📋 NEW LOGIC SPECIFICATIONS:');
     console.log('   🎲 Tokens per mint: 100');
@@ -40,7 +40,7 @@ async function testNewLogicManually() {
         console.log(`   👤 Owner: ${ownerBalanceBefore} tokens`);
 
         // Try to check game pool balance
-        const gamePoolAccount = new PublicKey('C17zaaE7LmjGiWXUppJKsvS6msempQSjdQqi6yBmTc5N');
+        const gamePoolAccount = new PublicKey('BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19');
         try {
             const gamePoolBalance = Number((await getAccount(connection, gamePoolAccount)).amount) / 1_000_000;
             console.log(`   🏦 Game Pool: ${gamePoolBalance} tokens`);

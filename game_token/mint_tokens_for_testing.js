@@ -23,8 +23,8 @@ async function mintTokensForTesting() {
     const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
 
     // Existing mint (from previous deployment)
-    const gameTokenMint = new PublicKey('FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX');
-    const ownerAccount = new PublicKey('B8MM5t3qTxBSx7mpaRvu4AJmMAZeHUty1LUVtfXs7QUv');
+    const gameTokenMint = new PublicKey('2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
+    const ownerAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS');
 
     console.log('📋 MINT SETUP:');
     console.log(`   🪙 Game Token Mint: ${gameTokenMint.toString()}`);

@@ -7,9 +7,9 @@ async function checkWalletBalance() {
   const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
 
   // Updated addresses with 80/20 logic
-  const gameTokenMint = new PublicKey('FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX');
-  const gamePoolAccount = new PublicKey('C17zaaE7LmjGiWXUppJKsvS6msempQSjdQqi6yBmTc5N');
-  const ownerAccount = new PublicKey('B8MM5t3qTxBSx7mpaRvu4AJmMAZeHUty1LUVtfXs7QUv');
+  const gameTokenMint = new PublicKey('2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
+  const gamePoolAccount = new PublicKey('BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19');
+  const ownerAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS');
 
   try {
     console.log('📍 Token Addresses:');

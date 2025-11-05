@@ -12,10 +12,10 @@ async function testSmartContractDeployment() {
     const solanaPath = 'C:\\Users\\Fit\\Downloads\\eneegy-main\\solana-cli\\solana-release\\bin\\solana.exe';
 
     // Check if program exists
-    const output = execSync(`"${solanaPath}" program show FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX`, { encoding: 'utf8' });
+    const output = execSync(`"${solanaPath}" program show 2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK`, { encoding: 'utf8' });
 
-    if (output.includes('Program Id: FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX')) {
-      console.log('✅ Smart contract deployed: FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX');
+    if (output.includes('Program Id: 2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK')) {
+      console.log('✅ Smart contract deployed: 2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
       return true;
     } else {
       console.log('❌ Smart contract not found');
@@ -53,7 +53,7 @@ async function testOwnerWalletMonitoring() {
   console.log('\n3️⃣ KIỂM TRA OWNER WALLET MONITORING');
 
   try {
-    const ownerAddress = 'B8MM5t3qTxBSx7mpaRvu4AJmMAZeHUty1LUVtfXs7QUv';
+    const ownerAddress = '8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS';
 
     // Check if owner address is configured in TokenService
     const tokenService = readFileSync('client/src/lib/services/tokenService.ts', 'utf8');

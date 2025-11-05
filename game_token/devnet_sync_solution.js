@@ -88,9 +88,9 @@ async function devnetSyncSolution() {
     // STEP 3: Verify Token Accounts
     console.log('💰 STEP 3: VERIFYING TOKEN ACCOUNTS');
 
-    const gameTokenMint = new PublicKey('FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX');
-    const ownerAccount = new PublicKey('B8MM5t3qTxBSx7mpaRvu4AJmMAZeHUty1LUVtfXs7QUv');
-    const gamePoolAccount = new PublicKey('C17zaaE7LmjGiWXUppJKsvS6msempQSjdQqi6yBmTc5N');
+    const gameTokenMint = new PublicKey('2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
+    const ownerAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS');
+    const gamePoolAccount = new PublicKey('BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19');
 
     try {
         const { getAccount } = require('@solana/spl-token');

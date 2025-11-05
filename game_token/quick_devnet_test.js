@@ -53,9 +53,9 @@ async function quickDevnetTest() {
 
     // From devnet_deployment_updated.json
     const knownAddresses = {
-        gameTokenMint: 'FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX',
-        gamePoolAccount: 'C17zaaE7LmjGiWXUppJKsvS6msempQSjdQqi6yBmTc5N',
-        ownerAccount: 'B8MM5t3qTxBSx7mpaRvu4AJmMAZeHUty1LUVtfXs7QUv'
+        gameTokenMint: '2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK',
+        gamePoolAccount: 'BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19',
+        ownerAccount: '8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS'
     };
 
     for (const [name, address] of Object.entries(knownAddresses)) {

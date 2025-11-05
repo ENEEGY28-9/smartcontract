@@ -37,7 +37,7 @@ const statusChecks = [
         items: [
             { name: 'Wallet balance', status: '✅ SUFFICIENT', details: '3.97 SOL available' },
             { name: 'Token accounts', status: '✅ EXIST', details: 'Owner: 1 token, Game Pool: 4 tokens' },
-            { name: 'Game token mint', status: '✅ EXISTS', details: 'FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX' },
+            { name: 'Game token mint', status: '✅ EXISTS', details: '2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK' },
             { name: 'Smart contract', status: '❌ NOT DEPLOYED', details: 'Program ID not found on devnet' }
         ]
     },
