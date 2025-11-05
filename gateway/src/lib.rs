@@ -105,46 +105,46 @@ fn insert_header_safe(headers: &mut axum::http::HeaderMap, name: &'static str, v
 //     response
 // }
 
-// Token WebSocket handler (disabled due to dependency conflicts)
-// async fn token_ws_handler(
-//     ws: axum::extract::WebSocketUpgrade,
-//     State(state): State<AppState>,
-//     headers: HeaderMap,
-// ) -> impl IntoResponse {
-//     HTTP_REQUESTS_TOTAL.with_label_values(&["/ws/token"]).inc();
+// Token WebSocket handler for real-time balance updates
+async fn token_ws_handler(
+    ws: axum::extract::ws::WebSocketUpgrade,
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> impl IntoResponse {
+    HTTP_REQUESTS_TOTAL.with_label_values(&["/token-updates"]).inc();
 
-//     // Extract and validate JWT token for WebSocket connection
-//     let token = match headers.get("authorization") {
-//         Some(header_value) => {
-//             let auth_str = header_value.to_str().unwrap_or("");
-//             if auth_str.starts_with("Bearer ") {
-//                 Some(&auth_str[7..])
-//             } else {
-//                 None
-//             }
-//         }
-//         None => None,
-//     };
+    // Extract and validate JWT token for WebSocket connection
+    let token = match headers.get("authorization") {
+        Some(header_value) => {
+            let auth_str = header_value.to_str().unwrap_or("");
+            if auth_str.starts_with("Bearer ") {
+                Some(&auth_str[7..])
+            } else {
+                None
+            }
+        }
+        None => None,
+    };
 
-//     let user_id = match token {
-//         Some(token_str) => {
-//             match state.auth_service.validate_token_with_db(token_str, &state.database_pool).await {
-//                 Ok(claims) => claims.sub,
-//                 Err(_) => {
-//                     return axum::http::StatusCode::UNAUTHORIZED.into_response();
-//                 }
-//             }
-//         }
-//         None => {
-//             return axum::http::StatusCode::UNAUTHORIZED.into_response();
-//         }
-//     };
+    let user_id = match token {
+        Some(token_str) => {
+            match state.auth_service.validate_token_with_db(token_str, &state.database_pool).await {
+                Ok(claims) => claims.sub,
+                Err(_) => {
+                    return axum::http::StatusCode::UNAUTHORIZED.into_response();
+                }
+            }
+        }
+        None => {
+            return axum::http::StatusCode::UNAUTHORIZED.into_response();
+        }
+    };
 
-//     // Upgrade to WebSocket connection
-//     ws.on_upgrade(move |socket| {
-//         websocket_token::handle_token_websocket(socket, user_id, state.token_ws_manager)
-//     })
-// }
+    // Upgrade to WebSocket connection
+    ws.on_upgrade(move |socket| {
+        websocket_token::handle_token_websocket(socket, user_id, state.token_ws_manager)
+    })
+}
 
 // Helper function to create JSON response with CORS headers safely
 fn create_json_response_with_cors<T: serde::Serialize>(data: T) -> axum::response::Response {
@@ -249,6 +249,7 @@ use auth::Claims;
 pub mod logging;
 pub mod memory;
 pub mod types;
+pub mod websocket_token;
 pub mod worker_client;
 
 use proto::worker::v1::worker_client::WorkerClient;
@@ -277,6 +278,8 @@ pub struct AppState {
     // Services API client for persistence
     pub services_client: reqwest::Client,
     pub services_url: String,
+    // Token WebSocket manager for real-time balance updates
+    pub token_ws_manager: std::sync::Arc<websocket_token::TokenWebSocketManager>,
     //
     // CURRENT STATUS: Real blockchain integration via separate microservice
     // SOLVED: Dependency conflicts resolved by microservice architecture
@@ -1530,6 +1533,9 @@ pub async fn build_router(_worker_endpoint: String) -> Router {
         DatabasePool::new(database_config).await
     }).expect("Failed to create database pool");
 
+    // Initialize token WebSocket manager for real-time balance updates
+    let token_ws_manager = std::sync::Arc::new(websocket_token::TokenWebSocketManager::new());
+
     // Room Manager temporarily disabled due to compilation issues
     // let room_manager = ...;
 
@@ -1631,6 +1637,8 @@ pub async fn build_router(_worker_endpoint: String) -> Router {
         // Services API client for persistence
         services_client,
         services_url,
+        // Token WebSocket manager for real-time balance updates
+        token_ws_manager,
         // room_manager: std::sync::Arc::new(tokio::sync::RwLock::new(
         //     room_manager::RoomManagerState::new()
         // )),
@@ -1653,6 +1661,7 @@ pub async fn build_router(_worker_endpoint: String) -> Router {
         .route(GAME_PERFORMANCE_PATH, get(game_performance))
         .route(WS_PATH, get(ws_handler))
         .route(WS_GAME_PATH, get(ws_game_handler))
+        .route("/token-updates", get(token_ws_handler))
         .route("/auth/login", post(auth_login))
         .route("/auth/register", post(auth_register))
         .route("/test", get(test_handler))

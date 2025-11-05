@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use axum::extract::ws::{Message, WebSocket};
-use futures_util::{SinkExt, StreamExt};
+use futures::{SinkExt, StreamExt};
 use serde_json::json;
 
 pub type TokenWebSocketRegistry = Arc<RwLock<HashMap<String, TokenWebSocketConnection>>>;
@@ -15,7 +15,7 @@ pub struct TokenWebSocketConnection {
 
 impl TokenWebSocketConnection {
     pub fn new(user_id: String, sender: tokio::sync::mpsc::UnboundedSender<Message>) -> Self {
-        Self { user_id, sender }
+        Self { user_id: user_id.clone(), sender }
     }
 }
 
@@ -37,7 +37,7 @@ impl TokenWebSocketManager {
     pub async fn add_connection(&self, user_id: String, sender: tokio::sync::mpsc::UnboundedSender<Message>) {
         let connection = TokenWebSocketConnection::new(user_id.clone(), sender);
         let mut registry = self.registry.write().await;
-        registry.insert(user_id, connection);
+        registry.insert(user_id.clone(), connection);
         tracing::info!("Added token WebSocket connection for user: {}", user_id);
     }
 
@@ -114,7 +114,7 @@ pub async fn handle_token_websocket(
     user_id: String,
     ws_manager: Arc<TokenWebSocketManager>,
 ) {
-    let (sender, mut receiver) = websocket.split();
+    let (mut sender, mut receiver) = websocket.split();
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
 
     // Add connection to registry
@@ -146,6 +146,10 @@ pub async fn handle_token_websocket(
             }
             Ok(Message::Text(text)) => {
                 tracing::debug!("Received text message from {}: {}", user_id, text);
+            }
+            Ok(Message::Binary(_)) => {
+                // Binary messages not supported for token updates
+                tracing::debug!("Received binary message from {}, ignoring", user_id);
             }
             Err(e) => {
                 tracing::warn!("Token WebSocket error for user {}: {:?}", user_id, e);
