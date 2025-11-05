@@ -1,0 +1,36 @@
+[Unit]
+Description=GameV1 Gateway Service
+After=network.target redis.service
+Wants=redis.service
+
+[Service]
+Type=simple
+User=gamev1
+Group=gamev1
+WorkingDirectory=/opt/gamev1
+ExecStart=/opt/gamev1/bin/gateway
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=3
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/gamev1/logs /tmp
+
+# Resource limits tối ưu cho game server
+LimitNOFILE=65536
+MemoryLimit=512M
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Environment variables
+Environment=RUST_LOG=info,gateway=debug
+Environment=WORKER_ENDPOINT=http://127.0.0.1:50051
+Environment=POCKETBASE_URL=http://127.0.0.1:8090
+Environment=REDIS_URL=redis://127.0.0.1:6379
+
+[Install]
+WantedBy=multi-user.target

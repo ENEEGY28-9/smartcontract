@@ -1,0 +1,234 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: 'Warmup Phase'
+    - duration: 120
+      arrivalRate: 25
+      name: 'Normal Load'
+    - duration: 180
+      arrivalRate: 75
+      name: 'Peak Load'
+    - duration: 120
+      arrivalRate: 25
+      name: 'Cooldown Phase'
+
+  ws:
+    - target: 'ws://localhost:8080/ws'
+      subprotocols: ['game-protocol']
+
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+      Authorization: 'Bearer test-token-{{ $randomInt() }}'
+
+scenarios:
+  # Mixed HTTP + WebSocket scenario - most realistic
+  - name: 'Mixed HTTP + WebSocket Session'
+    weight: 35
+    flow:
+      # HTTP: Health check
+      - get:
+          url: '/health'
+
+      # HTTP: Create room
+      - post:
+          url: '/api/rooms'
+          json:
+            room_name: 'MixedRoom_{{ $randomInt(1000, 9999) }}'
+            game_mode: 'mixed_workload_test'
+            max_players: 4
+
+      # WebSocket connection starts here
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "mixed_player_{{ $randomInt(1000, 9999) }}",
+              "token": "ws_auth_{{ $randomInt(1000, 9999) }}",
+              "player_name": "MixedPlayer{{ $randomInt(1000, 9999) }}"
+            }
+
+      - think: 2
+
+      # HTTP: Join room via HTTP API
+      - post:
+          url: '/api/rooms/room_{{ $randomInt(1, 1000) }}/join'
+          json:
+            player_id: 'mixed_player_{{ $randomInt(1000, 9999) }}'
+            player_name: 'MixedPlayer{{ $randomInt(1000, 9999) }}'
+
+      # WebSocket: Confirm join
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "room_{{ $randomInt(1, 1000) }}",
+              "game_mode": "mixed_workload_test"
+            }
+
+      - think: 2
+
+      # Mixed gameplay: HTTP game inputs + WebSocket state sync
+      - loop:
+          count: '{{ $randomInt(10, 25) }}'
+          over:
+            # HTTP: Send game input
+            - post:
+                url: '/api/game/input'
+                json:
+                  room_id: 'room_{{ $randomInt(1, 1000) }}'
+                  player_id: 'mixed_player_{{ $randomInt(1000, 9999) }}'
+                  input:
+                    movement: [{{ $randomInt(-80, 80) }}, 0, {{ $randomInt(-80, 80) }}]
+                    actions: ['{{ $randomString(["move", "jump", "attack", "defend"]) }}']
+                    sequence: '{{ $loopCount }}'
+
+            # WebSocket: State synchronization
+            - send:
+                payload: |
+                  {
+                    "type": "game_state_sync",
+                    "sequence": {{ $loopCount }},
+                    "timestamp": {{ timestamp }}
+                  }
+
+            - think: '{{ $randomInt(200, 800) }}'  # Variable think time
+
+            # HTTP: Occasional chat
+            - post:
+                url: '/api/chat'
+                json:
+                  room_id: 'room_{{ $randomInt(1, 1000) }}'
+                  player_id: 'mixed_player_{{ $randomInt(1000, 9999) }}'
+                  message: 'Mixed workload test message {{ $loopCount }}'
+                  message_type: 'text'
+
+            # WebSocket: Chat confirmation
+            - send:
+                payload: |
+                  {
+                    "type": "chat_message",
+                    "message": "WS chat confirmation {{ $loopCount }}",
+                    "message_type": "system"
+                  }
+
+      # HTTP: Check player stats
+      - get:
+          url: '/api/players/mixed_player_{{ $randomInt(1000, 9999) }}/stats'
+
+      # HTTP: Check room status
+      - get:
+          url: '/api/rooms/room_{{ $randomInt(1, 1000) }}/status'
+
+      # HTTP: Leave room
+      - delete:
+          url: '/api/rooms/room_{{ $randomInt(1, 1000) }}/leave'
+          json:
+            player_id: 'mixed_player_{{ $randomInt(1000, 9999) }}'
+
+      # WebSocket: Confirm leave
+      - send:
+          payload: |
+            {
+              "type": "leave_room",
+              "reason": "mixed_test_complete"
+            }
+
+      - think: 1
+
+      # Close WebSocket connection
+      - disconnect
+
+  # 30% - Chat Features (HTTP)
+  - name: 'Chat Workload'
+    weight: 30
+    flow:
+      - post:
+          url: '/api/chat'
+          json:
+            room_id: 'room_{{ $randomInt(1, 1000) }}'
+            player_id: 'player_{{ $randomInt() }}'
+            message: 'Social test {{ $randomInt() }}'
+            message_type: 'text'
+
+      - think: 1
+
+      - get:
+          url: '/api/chat/history/{{ $randomInt(1, 1000) }}?count=20'
+
+      - think: 1
+
+      - get:
+          url: '/api/rooms/{{ $randomInt(1, 1000) }}/players'
+
+  # 20% - System Monitoring (HTTP)
+  - name: 'System Monitoring Workload'
+    weight: 20
+    flow:
+      - get:
+          url: '/health'
+
+      - think: 2
+
+      - get:
+          url: '/api/metrics'
+
+  # 15% - High frequency mixed requests
+  - name: 'High Frequency Mixed Load'
+    weight: 15
+    flow:
+      # HTTP rapid requests
+      - loop:
+          count: 5
+          over:
+            - get:
+                url: '/health'
+
+            - post:
+                url: '/api/game/input'
+                json:
+                  room_id: 'room_{{ $randomInt(1, 1000) }}'
+                  player_id: 'hf_player_{{ $randomInt() }}'
+                  input:
+                    movement: [{{ $randomInt(-50, 50) }}, 0, {{ $randomInt(-50, 50) }}]
+                    actions: ['high_freq']
+
+            - think: 0.1
+
+      # WebSocket connection for high frequency
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "hf_ws_player_{{ $randomInt() }}",
+              "token": "hf_ws_token_{{ $randomInt() }}"
+            }
+
+      - loop:
+          count: 10
+          over:
+            - send:
+                payload: |
+                  {
+                    "type": "game_state_sync",
+                    "sequence": {{ $loopCount }},
+                    "timestamp": {{ timestamp }}
+                  }
+
+            - think: 0.05
+
+      - send:
+          payload: |
+            {
+              "type": "leave_room"
+            }
+
+      - disconnect

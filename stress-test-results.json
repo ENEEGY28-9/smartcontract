@@ -1,0 +1,3172 @@
+{
+  "startTime": "2025-10-22T02:26:10.841Z",
+  "endTime": "2025-10-22T02:31:56.606Z",
+  "scenarios": [
+    {
+      "name": "connection_flood",
+      "duration": 345.31908419999996,
+      "success": true,
+      "metrics": {
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "averageLatency": 0,
+        "errorCount": 100
+      }
+    },
+    {
+      "name": "message_flood",
+      "duration": 0.07291180000000168,
+      "success": true,
+      "metrics": {
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "averageLatency": 0,
+        "errorCount": 150
+      }
+    },
+    {
+      "name": "memory_exhaustion",
+      "duration": 0.13756550000002607,
+      "success": true,
+      "metrics": {
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "averageLatency": 0,
+        "errorCount": 250
+      }
+    },
+    {
+      "name": "cpu_intensive_operations",
+      "duration": 0.036488899999996646,
+      "success": true,
+      "metrics": {
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "averageLatency": 0,
+        "errorCount": 275
+      }
+    },
+    {
+      "name": "network_partition_simulation",
+      "duration": 0.14780579999997281,
+      "success": true,
+      "metrics": {
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "averageLatency": 0,
+        "errorCount": 375
+      }
+    },
+    {
+      "name": "database_overload",
+      "duration": 0.04811620000004768,
+      "success": true,
+      "metrics": {
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "averageLatency": 0,
+        "errorCount": 409
+      }
+    }
+  ],
+  "metrics": {
+    "connections": [],
+    "messages": [],
+    "latency": [],
+    "errors": [],
+    "resourceUsage": [
+      {
+        "timestamp": "2025-10-22T02:26:10.841Z",
+        "activeConnections": 0,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 39936000,
+          "heapTotal": 8232960,
+          "heapUsed": 6015616,
+          "external": 2249538,
+          "arrayBuffers": 18675
+        },
+        "cpuUsage": {
+          "user": 15000,
+          "system": 46000
+        },
+        "uptime": 0.0551744
+      },
+      {
+        "timestamp": "2025-10-22T02:26:20.852Z",
+        "activeConnections": 5,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 41750528,
+          "heapTotal": 8126464,
+          "heapUsed": 6075728,
+          "external": 2262146,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 46000,
+          "system": 62000
+        },
+        "uptime": 10.0664183
+      },
+      {
+        "timestamp": "2025-10-22T02:26:30.852Z",
+        "activeConnections": 10,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 42496000,
+          "heapTotal": 8126464,
+          "heapUsed": 6800264,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 46000,
+          "system": 62000
+        },
+        "uptime": 20.0664079
+      },
+      {
+        "timestamp": "2025-10-22T02:26:40.852Z",
+        "activeConnections": 10,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 42463232,
+          "heapTotal": 8126464,
+          "heapUsed": 6804136,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 46000,
+          "system": 62000
+        },
+        "uptime": 30.0665778
+      },
+      {
+        "timestamp": "2025-10-22T02:26:50.853Z",
+        "activeConnections": 15,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 42876928,
+          "heapTotal": 8126464,
+          "heapUsed": 6417216,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 62000,
+          "system": 93000
+        },
+        "uptime": 40.06671
+      },
+      {
+        "timestamp": "2025-10-22T02:27:00.853Z",
+        "activeConnections": 20,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 43347968,
+          "heapTotal": 8388608,
+          "heapUsed": 6825512,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 78000,
+          "system": 93000
+        },
+        "uptime": 50.0669035
+      },
+      {
+        "timestamp": "2025-10-22T02:27:10.853Z",
+        "activeConnections": 20,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 43331584,
+          "heapTotal": 8388608,
+          "heapUsed": 6829304,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 78000,
+          "system": 93000
+        },
+        "uptime": 60.0669934
+      },
+      {
+        "timestamp": "2025-10-22T02:27:20.853Z",
+        "activeConnections": 25,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 43671552,
+          "heapTotal": 8388608,
+          "heapUsed": 6447200,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 78000,
+          "system": 109000
+        },
+        "uptime": 70.0671553
+      },
+      {
+        "timestamp": "2025-10-22T02:27:30.866Z",
+        "activeConnections": 30,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 43847680,
+          "heapTotal": 8388608,
+          "heapUsed": 6846816,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 78000,
+          "system": 109000
+        },
+        "uptime": 80.0807759
+      },
+      {
+        "timestamp": "2025-10-22T02:27:40.867Z",
+        "activeConnections": 30,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 43851776,
+          "heapTotal": 8388608,
+          "heapUsed": 6857032,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 78000,
+          "system": 109000
+        },
+        "uptime": 90.0808748
+      },
+      {
+        "timestamp": "2025-10-22T02:27:50.883Z",
+        "activeConnections": 35,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 43855872,
+          "heapTotal": 8388608,
+          "heapUsed": 6460584,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 78000,
+          "system": 109000
+        },
+        "uptime": 100.0968152
+      },
+      {
+        "timestamp": "2025-10-22T02:28:00.893Z",
+        "activeConnections": 40,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44032000,
+          "heapTotal": 8388608,
+          "heapUsed": 6859848,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 78000,
+          "system": 109000
+        },
+        "uptime": 110.1077047
+      },
+      {
+        "timestamp": "2025-10-22T02:28:10.894Z",
+        "activeConnections": 40,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44032000,
+          "heapTotal": 8388608,
+          "heapUsed": 6863800,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 78000,
+          "system": 109000
+        },
+        "uptime": 120.1078542
+      },
+      {
+        "timestamp": "2025-10-22T02:28:20.907Z",
+        "activeConnections": 45,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44052480,
+          "heapTotal": 8388608,
+          "heapUsed": 7264192,
+          "external": 2262306,
+          "arrayBuffers": 18811
+        },
+        "cpuUsage": {
+          "user": 93000,
+          "system": 109000
+        },
+        "uptime": 130.1214238
+      },
+      {
+        "timestamp": "2025-10-22T02:28:30.908Z",
+        "activeConnections": 50,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44490752,
+          "heapTotal": 8388608,
+          "heapUsed": 6874936,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 93000,
+          "system": 109000
+        },
+        "uptime": 140.1223052
+      },
+      {
+        "timestamp": "2025-10-22T02:28:40.912Z",
+        "activeConnections": 50,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44490752,
+          "heapTotal": 8388608,
+          "heapUsed": 6878768,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 93000,
+          "system": 109000
+        },
+        "uptime": 150.1258847
+      },
+      {
+        "timestamp": "2025-10-22T02:28:50.912Z",
+        "activeConnections": 55,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44359680,
+          "heapTotal": 8388608,
+          "heapUsed": 7278800,
+          "external": 2262306,
+          "arrayBuffers": 18811
+        },
+        "cpuUsage": {
+          "user": 93000,
+          "system": 109000
+        },
+        "uptime": 160.1262199
+      },
+      {
+        "timestamp": "2025-10-22T02:29:00.928Z",
+        "activeConnections": 60,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44380160,
+          "heapTotal": 8388608,
+          "heapUsed": 6801896,
+          "external": 2262386,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 93000,
+          "system": 140000
+        },
+        "uptime": 170.142284
+      },
+      {
+        "timestamp": "2025-10-22T02:29:10.940Z",
+        "activeConnections": 60,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44380160,
+          "heapTotal": 8388608,
+          "heapUsed": 6806088,
+          "external": 2262386,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 93000,
+          "system": 140000
+        },
+        "uptime": 180.1543882
+      },
+      {
+        "timestamp": "2025-10-22T02:29:20.942Z",
+        "activeConnections": 65,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44380160,
+          "heapTotal": 8388608,
+          "heapUsed": 7204312,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 93000,
+          "system": 156000
+        },
+        "uptime": 190.1559613
+      },
+      {
+        "timestamp": "2025-10-22T02:29:30.947Z",
+        "activeConnections": 70,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44380160,
+          "heapTotal": 8388608,
+          "heapUsed": 6804080,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 93000,
+          "system": 156000
+        },
+        "uptime": 200.1614508
+      },
+      {
+        "timestamp": "2025-10-22T02:29:40.949Z",
+        "activeConnections": 70,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44380160,
+          "heapTotal": 8388608,
+          "heapUsed": 6807912,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 93000,
+          "system": 156000
+        },
+        "uptime": 210.1627883
+      },
+      {
+        "timestamp": "2025-10-22T02:29:50.957Z",
+        "activeConnections": 75,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44470272,
+          "heapTotal": 8388608,
+          "heapUsed": 7206464,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 109000,
+          "system": 156000
+        },
+        "uptime": 220.1714793
+      },
+      {
+        "timestamp": "2025-10-22T02:30:00.957Z",
+        "activeConnections": 80,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44470272,
+          "heapTotal": 8388608,
+          "heapUsed": 6800024,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 125000,
+          "system": 156000
+        },
+        "uptime": 230.1713361
+      },
+      {
+        "timestamp": "2025-10-22T02:30:10.963Z",
+        "activeConnections": 80,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44470272,
+          "heapTotal": 8388608,
+          "heapUsed": 6803856,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 125000,
+          "system": 156000
+        },
+        "uptime": 240.177053
+      },
+      {
+        "timestamp": "2025-10-22T02:30:20.973Z",
+        "activeConnections": 85,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44564480,
+          "heapTotal": 8388608,
+          "heapUsed": 7204192,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 125000,
+          "system": 171000
+        },
+        "uptime": 250.1874779
+      },
+      {
+        "timestamp": "2025-10-22T02:30:30.973Z",
+        "activeConnections": 90,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44568576,
+          "heapTotal": 8388608,
+          "heapUsed": 6808704,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 140000,
+          "system": 203000
+        },
+        "uptime": 260.187168
+      },
+      {
+        "timestamp": "2025-10-22T02:30:40.977Z",
+        "activeConnections": 90,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44568576,
+          "heapTotal": 8388608,
+          "heapUsed": 6812512,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 140000,
+          "system": 203000
+        },
+        "uptime": 270.1909464
+      },
+      {
+        "timestamp": "2025-10-22T02:30:50.991Z",
+        "activeConnections": 95,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44609536,
+          "heapTotal": 8388608,
+          "heapUsed": 7207472,
+          "external": 2262226,
+          "arrayBuffers": 18731
+        },
+        "cpuUsage": {
+          "user": 156000,
+          "system": 234000
+        },
+        "uptime": 280.2048199
+      },
+      {
+        "timestamp": "2025-10-22T02:31:00.992Z",
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44449792,
+          "heapTotal": 8388608,
+          "heapUsed": 6813528,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 171000,
+          "system": 250000
+        },
+        "uptime": 290.206125
+      },
+      {
+        "timestamp": "2025-10-22T02:31:11.007Z",
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44568576,
+          "heapTotal": 8388608,
+          "heapUsed": 6817152,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 171000,
+          "system": 250000
+        },
+        "uptime": 300.2211954
+      },
+      {
+        "timestamp": "2025-10-22T02:31:21.020Z",
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44568576,
+          "heapTotal": 8388608,
+          "heapUsed": 6820776,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 171000,
+          "system": 250000
+        },
+        "uptime": 310.2342001
+      },
+      {
+        "timestamp": "2025-10-22T02:31:31.021Z",
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44568576,
+          "heapTotal": 8388608,
+          "heapUsed": 6824400,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 171000,
+          "system": 250000
+        },
+        "uptime": 320.2352161
+      },
+      {
+        "timestamp": "2025-10-22T02:31:41.023Z",
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44568576,
+          "heapTotal": 8388608,
+          "heapUsed": 6828024,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 171000,
+          "system": 250000
+        },
+        "uptime": 330.2376617
+      },
+      {
+        "timestamp": "2025-10-22T02:31:51.036Z",
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 44568576,
+          "heapTotal": 8388608,
+          "heapUsed": 6831648,
+          "external": 2262306,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 171000,
+          "system": 250000
+        },
+        "uptime": 340.2497559
+      }
+    ]
+  },
+  "summary": {
+    "totalScenarios": 6,
+    "successfulScenarios": 6,
+    "maxConcurrentClients": 100,
+    "totalMessagesSent": 0,
+    "averageMessagesPerSecond": 0,
+    "totalTestDuration": -1761099970.841,
+    "averageLatency": 0,
+    "totalFailures": 409,
+    "successRate": -6716.666666666667
+  },
+  "failures": [
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_1",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:10.866Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_0",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:10.867Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_2",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:10.868Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_3",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:10.869Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_4",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:10.870Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_5",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:25.885Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_6",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:25.886Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_7",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:25.887Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_8",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:25.888Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_9",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:25.889Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_10",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:40.897Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_11",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:40.898Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_12",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:40.898Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_13",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:40.899Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_14",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:40.900Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_15",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:55.910Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_16",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:55.911Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_17",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:55.912Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_18",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:55.912Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_19",
+      "message": "",
+      "timestamp": "2025-10-22T02:26:55.913Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_20",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:10.923Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_21",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:10.924Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_22",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:10.925Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_23",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:10.925Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_24",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:10.926Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_25",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:25.937Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_26",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:25.938Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_27",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:25.939Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_28",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:25.939Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_29",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:25.940Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_30",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:40.951Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_31",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:40.951Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_32",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:40.952Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_33",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:40.953Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_34",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:40.953Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_35",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:55.964Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_36",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:55.965Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_37",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:55.965Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_38",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:55.966Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_39",
+      "message": "",
+      "timestamp": "2025-10-22T02:27:55.967Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_40",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:10.978Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_41",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:10.978Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_42",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:10.979Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_43",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:10.980Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_44",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:10.981Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_45",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:25.991Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_46",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:25.992Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_47",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:25.993Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_48",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:25.994Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_49",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:25.995Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_51",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:41.008Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_50",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:41.008Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_52",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:41.009Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_53",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:41.010Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_54",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:41.011Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_55",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:56.022Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_56",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:56.023Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_57",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:56.024Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_59",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:56.025Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_58",
+      "message": "",
+      "timestamp": "2025-10-22T02:28:56.026Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_61",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:11.032Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_60",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:11.033Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_62",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:11.034Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_64",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:11.035Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_63",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:11.035Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_66",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:26.048Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_65",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:26.049Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_67",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:26.050Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_68",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:26.051Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_69",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:26.052Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_70",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:41.064Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_72",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:41.065Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_71",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:41.065Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_73",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:41.066Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_74",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:41.067Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_76",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:56.080Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_75",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:56.080Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_77",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:56.081Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_78",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:56.082Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_79",
+      "message": "",
+      "timestamp": "2025-10-22T02:29:56.083Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_81",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:11.096Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_80",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:11.097Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_82",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:11.097Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_83",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:11.099Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_84",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:11.100Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_85",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:26.115Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_86",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:26.116Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_87",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:26.117Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_88",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:26.118Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_89",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:26.119Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_91",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:41.131Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_90",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:41.132Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_92",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:41.133Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_93",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:41.134Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_94",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:41.134Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_95",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:56.147Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_96",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:56.148Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_97",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:56.149Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_98",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:56.150Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "stress_client_99",
+      "message": "",
+      "timestamp": "2025-10-22T02:30:56.151Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_1",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.187Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_0",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.188Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_3",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.189Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_2",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.189Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_4",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.191Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_5",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.192Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_6",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.192Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_7",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.193Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_8",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.194Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_10",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.195Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_9",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.196Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_11",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.197Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_12",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.198Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_13",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.199Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_14",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.200Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_15",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.202Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_17",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.203Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_16",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.204Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_18",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.204Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_19",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.205Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_20",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.206Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_21",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.207Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_22",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.208Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_23",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.209Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_24",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.210Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_26",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.210Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_25",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.211Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_27",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.212Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_29",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.213Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_28",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.214Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_30",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.215Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_31",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.215Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_32",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.216Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_34",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.217Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_33",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.218Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_35",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.220Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_36",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.221Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_37",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.222Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_38",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.223Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_39",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.224Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_40",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.225Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_42",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.225Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_41",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.226Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_43",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.227Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_45",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.228Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_44",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.229Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_46",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.230Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_48",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.231Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_47",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.232Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "message_client_49",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.234Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_0",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.282Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_1",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.282Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_2",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.283Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_3",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.284Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_4",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.285Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_5",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.286Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_6",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.287Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_8",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.288Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_7",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.289Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_9",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.290Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_10",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.290Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_11",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.291Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_12",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.292Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_13",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.293Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_14",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.294Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_15",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.295Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_16",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.296Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_17",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.297Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_18",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.298Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_19",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.299Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_20",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.299Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_21",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.300Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_22",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.301Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_24",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.302Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_23",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.303Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_25",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.304Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_26",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.305Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_27",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.306Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_28",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.306Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_29",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.307Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_30",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.308Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_31",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.309Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_32",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.310Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_33",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.311Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_34",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.312Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_35",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.313Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_36",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.313Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_37",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.314Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_38",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.315Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_39",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.316Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_40",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.317Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_41",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.318Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_42",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.319Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_43",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.319Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_44",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.320Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_45",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.321Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_46",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.322Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_47",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.323Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_48",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.324Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_49",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.325Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_50",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.326Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_51",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.327Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_52",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.328Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_53",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.329Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_54",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.330Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_55",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.331Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_56",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.332Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_57",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.333Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_58",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.333Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_59",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.334Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_60",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.335Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_61",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.336Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_62",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.337Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_63",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.338Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_64",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.339Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_66",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.340Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_65",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.340Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_67",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.341Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_68",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.342Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_69",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.343Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_70",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.344Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_71",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.345Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_72",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.346Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_73",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.347Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_75",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.348Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_74",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.349Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_76",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.350Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_77",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.351Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_78",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.351Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_80",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.352Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_79",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.353Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_81",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.354Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_82",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.355Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_83",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.356Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_84",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.357Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_85",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.358Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_86",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.359Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_87",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.359Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_89",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.362Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_88",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.363Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_90",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.364Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_91",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.365Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_92",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.366Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_93",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.367Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_94",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.368Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_95",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.369Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_96",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.369Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_97",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.370Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_99",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.371Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "memory_client_98",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.372Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_1",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.387Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_0",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.388Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_2",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.389Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_4",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.390Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_3",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.391Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_5",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.392Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_6",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.393Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_7",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.394Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_8",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.395Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_9",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.396Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_10",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.396Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_11",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.397Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_13",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.398Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_12",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.399Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_15",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.400Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_14",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.401Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_16",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.402Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_17",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.403Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_18",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.403Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_19",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.404Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_20",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.405Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_21",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.406Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_23",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.407Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_22",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.408Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "cpu_client_24",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.408Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_0",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.457Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_1",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.458Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_2",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.459Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_3",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.459Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_4",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.460Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_5",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.461Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_6",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.462Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_7",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.463Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_8",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.464Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_9",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.464Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_10",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.465Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_11",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.466Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_12",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.467Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_13",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.467Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_14",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.468Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_15",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.469Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_16",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.470Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_17",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.475Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_18",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.476Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_19",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.477Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_20",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.479Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_22",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.480Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_21",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.480Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_23",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.482Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_25",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.483Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_24",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.484Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_26",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.486Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_28",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.487Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_27",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.488Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_29",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.488Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_30",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.489Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_31",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.491Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_32",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.492Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_33",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.493Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_34",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.493Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_35",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.494Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_37",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.495Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_36",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.496Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_38",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.497Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_40",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.499Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_39",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.500Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_41",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.501Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_42",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.502Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_43",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.503Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_45",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.504Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_44",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.505Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_46",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.506Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_47",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.507Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_48",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.508Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_50",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.509Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_49",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.510Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_51",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.512Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_52",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.513Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_53",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.514Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_54",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.515Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_55",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.516Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_56",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.517Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_57",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.518Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_58",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.518Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_59",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.519Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_60",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.520Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_61",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.521Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_63",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.522Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_62",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.522Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_64",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.523Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_65",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.525Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_66",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.526Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_67",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.526Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_68",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.527Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_70",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.528Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_69",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.529Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_71",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.529Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_72",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.530Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_73",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.531Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_74",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.532Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_75",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.533Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_77",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.534Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_76",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.535Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_78",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.536Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_80",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.537Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_79",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.538Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_81",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.539Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_82",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.541Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_83",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.542Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_85",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.543Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_84",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.545Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_86",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.546Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_87",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.546Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_88",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.547Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_90",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.548Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_89",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.549Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_91",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.550Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_93",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.551Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_92",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.552Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_94",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.552Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_95",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.553Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_96",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.554Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_98",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.555Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_97",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.556Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "network_client_99",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.556Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_0",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.577Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_1",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.578Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_2",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.578Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_3",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.579Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_4",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.580Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_5",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.581Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_6",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.582Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_7",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.582Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_8",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.583Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_9",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.584Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_10",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.585Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_11",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.586Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_12",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.587Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_13",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.588Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_14",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.588Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_15",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.589Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_16",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.590Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_17",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.591Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_18",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.592Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_19",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.593Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_20",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.593Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_21",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.594Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_22",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.595Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_23",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.596Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_24",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.597Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_25",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.597Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_26",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.598Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_27",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.599Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_28",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.601Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_29",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.602Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_30",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.602Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_31",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.603Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_32",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.604Z"
+    },
+    {
+      "type": "connection_failure",
+      "clientId": "db_client_33",
+      "message": "",
+      "timestamp": "2025-10-22T02:31:56.605Z"
+    }
+  ],
+  "stressAnalysis": {
+    "connectionStability": {
+      "stable": false,
+      "maxConnections": 100,
+      "minConnections": 0,
+      "stabilityScore": 0
+    },
+    "messageThroughput": {
+      "consistent": false,
+      "averageRate": 0,
+      "consistencyScore": null
+    },
+    "latencyUnderLoad": {
+      "acceptable": true
+    },
+    "memoryBehavior": {
+      "stable": true,
+      "maxMemoryMB": 7,
+      "memoryGrowthRate": 0.2099841479243356,
+      "hasMemoryLeak": false
+    },
+    "errorPatterns": {
+      "totalErrors": 409,
+      "errorRate": null,
+      "errorsByType": {
+        "connection_failure": 409
+      },
+      "acceptableErrorRate": false
+    }
+  }
+}

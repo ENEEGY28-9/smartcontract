@@ -1,0 +1,69 @@
+// TEST CUSTOM PUBLIC KEY - COPY-PASTE INTO BROWSER CONSOLE
+// Perfect for testing any Solana wallet instantly!
+
+console.log('🧪 Testing custom public key...');
+
+// Test function for any Solana public key
+async function testCustomKey(publicKeyString) {
+    try {
+        console.log(`🔍 Testing: ${publicKeyString.slice(0, 8)}...${publicKeyString.slice(-8)}`);
+
+        // Validate format
+        if (publicKeyString.length < 32 || publicKeyString.length > 44) {
+            throw new Error('Invalid length. Solana addresses are 32-44 characters.');
+        }
+
+        const base58Regex = /^[1-9A-HJ-NP-Za-km-z]+$/;
+        if (!base58Regex.test(publicKeyString)) {
+            throw new Error('Invalid format. Use alphanumeric characters only.');
+        }
+
+        // Test with blockchain
+        const connection = new solanaWeb3.Connection('https://api.devnet.solana.com');
+        const publicKey = new solanaWeb3.PublicKey(publicKeyString);
+
+        const balanceLamports = await connection.getBalance(publicKey);
+        const balance = balanceLamports / 1_000_000_000;
+
+        const accountInfo = await connection.getAccountInfo(publicKey);
+        const exists = accountInfo !== null;
+
+        console.log('✅ VALID PUBLIC KEY');
+        console.log(`💰 Balance: ${balance.toFixed(6)} SOL`);
+        console.log(`📊 Account exists: ${exists}`);
+        console.log('🌐 Network: Solana Devnet');
+
+        return { valid: true, balance, exists };
+
+    } catch (error) {
+        console.error(`❌ INVALID: ${error.message}`);
+        return { valid: false, error: error.message };
+    }
+}
+
+// Test your current wallet (if connected)
+if (window.solana?.publicKey) {
+    console.log('\n🎯 Testing your current Phantom wallet...');
+    testCustomKey(window.solana.publicKey.toString());
+}
+
+// Test sample wallets
+console.log('\n🧪 Testing sample Solana wallets...');
+const sampleKeys = [
+    '57arMrLe8LHfzn7c0yUu6KGhxLQ6nfP87mHTHpM2SGB', // Your wallet
+    'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // System program
+    'So11111111111111111111111111111111111111112'  // Wrapped SOL
+];
+
+sampleKeys.forEach(key => testCustomKey(key));
+
+// Instructions
+console.log('\n💡 TO TEST YOUR OWN WALLET:');
+console.log('1. Go to: http://localhost:5176/wallet-test');
+console.log('2. Enter any Solana public key in the input field');
+console.log('3. Click "Connect Wallet" button');
+console.log('4. See real balance and validation');
+
+console.log('\n🎮 Perfect for testing multiple wallet scenarios!');
+console.log('==========================');
+

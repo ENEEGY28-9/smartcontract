@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Button Test</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 40px 0;
+            padding: 20px;
+            border: 2px solid #4a90e2;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        button {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        .success {
+            background: rgba(74, 222, 128, 0.2);
+            border: 1px solid #4ade80;
+            color: #4ade80;
+        }
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔘 Simple Button Test</h1>
+        <p>This page tests basic button functionality without complex components.</p>
+
+        <div class="test-section">
+            <h2>🧪 Basic Button Test</h2>
+            <button onclick="testBasicButton()">Click Me!</button>
+            <div id="basic-status" class="status">Not clicked yet</div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎮 Game Mode Buttons</h2>
+            <button onclick="testGameMode('endless')">Start Endless Runner</button>
+            <button onclick="testGameMode('boss')">Start Boss Battle</button>
+            <div id="game-mode-status" class="status">No game mode selected</div>
+        </div>
+
+        <div class="test-section">
+            <h2>🐛 Console Output</h2>
+            <p>Open Developer Tools (F12) → Console tab to see logs.</p>
+            <button onclick="console.log('Manual console test')">Test Console Logging</button>
+        </div>
+    </div>
+
+    <script>
+        let clickCount = 0;
+        let currentGameMode = 'menu';
+
+        function testBasicButton() {
+            clickCount++;
+            console.log('✅ Button clicked! Count:', clickCount);
+            const status = document.getElementById('basic-status');
+            status.textContent = `Button clicked ${clickCount} times`;
+            status.className = 'status success';
+        }
+
+        function testGameMode(mode) {
+            currentGameMode = mode;
+            console.log(`🎮 Game mode changed to: ${mode}`);
+            const status = document.getElementById('game-mode-status');
+            status.textContent = `Current game mode: ${mode}`;
+            status.className = 'status success';
+
+            // Simulate what should happen
+            if (mode === 'endless') {
+                console.log('🏃‍♂️ Would load EndlessRunner3D component');
+            } else if (mode === 'boss') {
+                console.log('👹 Would load BossBattleDemo component');
+            }
+        }
+
+        // Test on page load
+        console.log('🚀 Simple test page loaded');
+        console.log('💡 Try clicking the buttons above');
+    </script>
+</body>
+</html>

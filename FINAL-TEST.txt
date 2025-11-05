@@ -1,0 +1,37 @@
+🎯 FINAL SIMPLE TEST
+==================
+
+Your settings are now CORRECT! ✅
+But auto-connect is still failing. Let's try manual connection:
+
+📋 STEP 1: Stop auto-connect spam
+Open browser console (F12) and paste this:
+
+clearInterval(window.autoConnectInterval);
+clearTimeout(window.walletStoreAutoConnect);
+console.log('✅ Auto-connect disabled');
+
+📋 STEP 2: Manual connection test
+In the same console, paste this:
+
+console.log('🔍 Testing manual connection...');
+if (window.solana) {
+  window.solana.connect()
+    .then(r => console.log('🎉 SUCCESS:', r.publicKey.toString()))
+    .catch(e => console.error('❌ FAILED:', e.message));
+} else {
+  console.log('❌ No Phantom found');
+}
+
+📋 STEP 3: Also try the UI
+- Go to: http://localhost:5176/wallet-test
+- Click the green "Connect Wallet" button
+- Look for Phantom popup and click "Approve"
+
+🎉 EXPECTED RESULT:
+- Console shows: "SUCCESS: [your-wallet-address]"
+- UI shows: Connection Status: Connected
+- UI shows: Balance: 0.0000 SOL
+
+This should work now! The settings are correct, just need manual connection first. 🚀
+

@@ -1,0 +1,87 @@
+{
+  "name": "wallets",
+  "schema": [
+    {
+      "name": "user_id",
+      "type": "relation",
+      "required": false,
+      "options": {
+        "collectionId": "users",
+        "cascadeDelete": false,
+        "minSelect": null,
+        "maxSelect": 1
+      }
+    },
+    {
+      "name": "address",
+      "type": "text",
+      "required": true,
+      "options": {
+        "maxSize": 200
+      }
+    },
+    {
+      "name": "private_key",
+      "type": "text",
+      "required": false,
+      "options": {
+        "maxSize": 2000
+      }
+    },
+    {
+      "name": "mnemonic",
+      "type": "text",
+      "required": false,
+      "options": {
+        "maxSize": 1000
+      }
+    },
+    {
+      "name": "wallet_type",
+      "type": "select",
+      "required": true,
+      "options": {
+        "values": ["metamask", "phantom", "generated", "bitcoin", "other"]
+      }
+    },
+    {
+      "name": "network",
+      "type": "select",
+      "required": true,
+      "options": {
+        "values": ["ethereum", "solana", "bitcoin"]
+      }
+    },
+    {
+      "name": "balance",
+      "type": "number",
+      "required": false,
+      "options": {
+        "min": 0
+      }
+    },
+    {
+      "name": "balance_last_updated",
+      "type": "date",
+      "required": false
+    },
+    {
+      "name": "is_connected",
+      "type": "bool",
+      "required": false
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "required": false,
+      "options": {
+        "maxSize": 1000
+      }
+    }
+  ],
+  "listRule": "user_id = @request.auth.id",
+  "viewRule": "user_id = @request.auth.id",
+  "createRule": "@request.auth.id != \"\"",
+  "updateRule": "user_id = @request.auth.id",
+  "deleteRule": "user_id = @request.auth.id"
+}

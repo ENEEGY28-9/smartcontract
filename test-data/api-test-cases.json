@@ -1,0 +1,76 @@
+[
+  {
+    "name": "user_registration",
+    "method": "POST",
+    "endpoint": "/api/auth/register",
+    "payload": {
+      "username": "test_user_{{random}}",
+      "email": "test{{random}}@example.com",
+      "password": "testpass123"
+    },
+    "expectedStatus": 201
+  },
+  {
+    "name": "user_login",
+    "method": "POST",
+    "endpoint": "/api/auth/login",
+    "payload": {
+      "username": "test_user_1",
+      "password": "testpass123"
+    },
+    "expectedStatus": 200
+  },
+  {
+    "name": "create_room",
+    "method": "POST",
+    "endpoint": "/api/rooms",
+    "payload": {
+      "name": "Test Room {{random}}",
+      "gameMode": "battle_royale",
+      "maxPlayers": 50
+    },
+    "expectedStatus": 201
+  },
+  {
+    "name": "join_room",
+    "method": "POST",
+    "endpoint": "/api/rooms/{{roomId}}/join",
+    "payload": {
+      "playerId": "test_user_1"
+    },
+    "expectedStatus": 200
+  },
+  {
+    "name": "update_game_state",
+    "method": "PUT",
+    "endpoint": "/api/rooms/{{roomId}}/state",
+    "payload": {
+      "state": "active",
+      "players": [
+        {
+          "id": "player_1",
+          "position": {
+            "x": 10,
+            "y": 20
+          },
+          "score": 100
+        },
+        {
+          "id": "player_2",
+          "position": {
+            "x": 30,
+            "y": 40
+          },
+          "score": 150
+        }
+      ]
+    },
+    "expectedStatus": 200
+  },
+  {
+    "name": "get_leaderboard",
+    "method": "GET",
+    "endpoint": "/api/leaderboard",
+    "expectedStatus": 200
+  }
+]

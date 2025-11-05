@@ -1,0 +1,131 @@
+{
+    "CallerReference": "gamev1-global-cdn-1760082137",
+    "Comment": "GameV1 Global CDN Distribution",
+    "DefaultRootObject": "index.html",
+    "Origins": {
+        "Quantity": 3,
+        "Items": [
+            {
+                "Id": "gamev1-api-origin",
+                "DomainName": "api.gamev1.com",
+                "OriginPath": "",
+                "CustomHeaders": {
+                    "Quantity": 1,
+                    "Items": [
+                        {
+                            "HeaderName": "X-GameV1-Region",
+                            "HeaderValue": "global"
+                        }
+                    ]
+                },
+                "CustomOriginConfig": {
+                    "HTTPPort": 80,
+                    "HTTPSPort": 443,
+                    "OriginProtocolPolicy": "https-only"
+                }
+            },
+            {
+                "Id": "gamev1-static-origin-us",
+                "DomainName": "static-us.gamev1.com",
+                "OriginPath": "",
+                "CustomOriginConfig": {
+                    "HTTPPort": 80,
+                    "HTTPSPort": 443,
+                    "OriginProtocolPolicy": "https-only"
+                }
+            },
+            {
+                "Id": "gamev1-static-origin-eu",
+                "DomainName": "static-eu.gamev1.com",
+                "OriginPath": "",
+                "CustomOriginConfig": {
+                    "HTTPPort": 80,
+                    "HTTPSPort": 443,
+                    "OriginProtocolPolicy": "https-only"
+                }
+            }
+        ]
+    },
+    "DefaultCacheBehavior": {
+        "TargetOriginId": "gamev1-api-origin",
+        "ViewerProtocolPolicy": "redirect-to-https",
+        "TrustedSigners": {
+            "Enabled": false,
+            "Quantity": 0
+        },
+        "ForwardedValues": {
+            "QueryString": true,
+            "Cookies": {
+                "Forward": "none"
+            }
+        },
+        "MinTTL": 0,
+        "DefaultTTL": 86400,
+        "MaxTTL": 31536000
+    },
+    "CacheBehaviors": {
+        "Quantity": 2,
+        "Items": [
+            {
+                "PathPattern": "/api/*",
+                "TargetOriginId": "gamev1-api-origin",
+                "ViewerProtocolPolicy": "redirect-to-https",
+                "ForwardedValues": {
+                    "QueryString": true,
+                    "Cookies": {
+                        "Forward": "none"
+                    }
+                },
+                "MinTTL": 0,
+                "DefaultTTL": 0,
+                "MaxTTL": 0
+            },
+            {
+                "PathPattern": "/static/*",
+                "TargetOriginId": "gamev1-static-origin-us",
+                "ViewerProtocolPolicy": "redirect-to-https",
+                "ForwardedValues": {
+                    "QueryString": false,
+                    "Cookies": {
+                        "Forward": "none"
+                    }
+                },
+                "MinTTL": 0,
+                "DefaultTTL": 86400,
+                "MaxTTL": 31536000
+            }
+        ]
+    },
+    "CustomErrorResponses": {
+        "Quantity": 2,
+        "Items": [
+            {
+                "ErrorCode": 404,
+                "ResponseCode": 200,
+                "ResponsePagePath": "/index.html",
+                "ErrorCachingMinTTL": 300
+            },
+            {
+                "ErrorCode": 403,
+                "ResponseCode": 200,
+                "ResponsePagePath": "/index.html",
+                "ErrorCachingMinTTL": 300
+            }
+        ]
+    },
+    "Enabled": true,
+    "IPv6Enabled": true,
+    "HttpVersion": "http2",
+    "PriceClass": "PriceClass_All",
+    "Restrictions": {
+        "GeoRestriction": {
+            "RestrictionType": "none",
+            "Quantity": 0
+        }
+    },
+    "ViewerCertificate": {
+        "ACMCertificateArn": "arn:aws:acm:us-east-1:account:certificate/cert-id",
+        "SSLSupportMethod": "sni-only",
+        "MinimumProtocolVersion": "TLSv1.2_2021"
+    }
+}

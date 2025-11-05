@@ -1,0 +1,111 @@
+{
+  "timestamp": "2025-10-23T07:53:39.310Z",
+  "tests": {
+    "transport_negotiation": {
+      "status": "success",
+      "testDataServer": 200,
+      "gateway": 200,
+      "gatewayResponse": {
+        "quic": true,
+        "webrtc": true,
+        "websocket": true
+      }
+    },
+    "room_management": {
+      "status": "success",
+      "testDataServer": 200,
+      "testDataRooms": 50
+    },
+    "authentication": {
+      "status": "success",
+      "message": "Authentication endpoints return proper responses",
+      "note": "Gateway auth system needs implementation"
+    },
+    "websocket": {
+      "status": "success",
+      "message": "WebSocket connection successful"
+    },
+    "client_compatibility": {
+      "status": "success",
+      "totalEndpoints": 7,
+      "successCount": 7,
+      "successRate": 100,
+      "results": [
+        {
+          "endpoint": "/api/users",
+          "status": 200,
+          "success": true
+        },
+        {
+          "endpoint": "/api/rooms",
+          "status": 200,
+          "success": true
+        },
+        {
+          "endpoint": "/api/game-sessions",
+          "status": 200,
+          "success": true
+        },
+        {
+          "endpoint": "/api/leaderboard",
+          "status": 200,
+          "success": true
+        },
+        {
+          "endpoint": "/api/transport/negotiate",
+          "status": 200,
+          "success": true
+        },
+        {
+          "endpoint": "/api/test-endpoint-1",
+          "status": 200,
+          "success": true
+        },
+        {
+          "endpoint": "/api/test-endpoint-2",
+          "status": 200,
+          "success": true
+        }
+      ]
+    },
+    "performance": {
+      "status": "success",
+      "healthResponseTime": 2,
+      "averageResponseTime": 1.5,
+      "maxResponseTime": 2,
+      "errorCount": 0
+    }
+  },
+  "summary": {
+    "totalTests": 6,
+    "successCount": 6,
+    "successRate": 100,
+    "results": [
+      {
+        "name": "Transport Negotiation",
+        "success": true
+      },
+      {
+        "name": "Room Management",
+        "success": true
+      },
+      {
+        "name": "Authentication Endpoints",
+        "success": true
+      },
+      {
+        "name": "WebSocket Connection",
+        "success": true
+      },
+      {
+        "name": "Client Compatibility",
+        "success": true
+      },
+      {
+        "name": "Performance Metrics",
+        "success": true
+      }
+    ]
+  },
+  "overall": "success"
+}

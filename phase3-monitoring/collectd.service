@@ -1,0 +1,24 @@
+[Unit]
+Description=Collectd - System Statistics Collection Daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/collectd -C /etc/collectd/collectd.conf -f
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=5
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/collectd /var/log/collectd /tmp
+
+# Resource limits (lightweight)
+LimitNOFILE=1024
+MemoryLimit=64M
+
+[Install]
+WantedBy=multi-user.target

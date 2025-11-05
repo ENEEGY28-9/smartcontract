@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # Main Gateway Service (Rust/Axum)
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    ports:
+      - "8080:8080"
+      - "8090:8090"  # PocketBase
+    environment:
+      - BLOCKCHAIN_SERVICE_URL=http://blockchain-service:50051
+      - DATABASE_URL=postgresql://user:password@db:5432/eneegy
+    depends_on:
+      - blockchain-service
+    networks:
+      - eneegy-network
+
+  # Standalone Blockchain Service (Rust/Solana)
+  blockchain-service:
+    build:
+      context: ./eneegy-blockchain-service
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    environment:
+      - SOLANA_RPC_URL=https://api.devnet.solana.com
+      - SOLANA_PROGRAM_ID=YourProgramIDHere
+    networks:
+      - eneegy-network
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=eneegy
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - eneegy-network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - eneegy-network
+
+networks:
+  eneegy-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
+
+

@@ -1,0 +1,88 @@
+# Prometheus Configuration for GameV1 Development Monitoring
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "alerts.yml"
+
+scrape_configs:
+  # GameV1 Gateway metrics
+  - job_name: 'gamev1-gateway'
+    static_configs:
+      - targets: ['localhost:8080']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    params:
+      format: ['prometheus']
+
+  # GameV1 Worker metrics
+  - job_name: 'gamev1-worker'
+    static_configs:
+      - targets: ['localhost:3100']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+
+  # GameV1 Room Manager metrics
+  - job_name: 'gamev1-room-manager'
+    static_configs:
+      - targets: ['localhost:3201']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+
+  # Loki metrics (if available)
+  - job_name: 'gamev1-loki'
+    static_configs:
+      - targets: ['localhost:3100']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+
+  # PocketBase metrics (if available)
+  - job_name: 'gamev1-pocketbase'
+    static_configs:
+      - targets: ['localhost:8090']
+    scrape_interval: 30s
+    metrics_path: '/metrics'
+
+  # Redis metrics (if available)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['localhost:6379']
+    scrape_interval: 30s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node exporter for system metrics (if deployed)
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['localhost:9100']
+
+# Development alert rules
+rule_files:
+  - "alerts.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['localhost:9093']
+
+# Alert rules for GameV1
+# groups:
+#   - name: gamev1-alerts
+#     rules:
+#       - alert: HighResponseTime
+#         expr: http_request_duration_seconds > 0.2
+#         for: 5m
+#         labels:
+#           severity: warning
+#         annotations:
+#           summary: High response time detected
+#
+#       - alert: HighErrorRate
+#         expr: rate(http_requests_total{status!~"2.."}[5m]) > 0.001
+#         for: 2m
+#         labels:
+#           severity: critical

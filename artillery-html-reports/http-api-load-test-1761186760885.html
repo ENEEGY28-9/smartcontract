@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artillery Load Test Report - unknown</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header .subtitle {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        .metric-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid #4facfe;
+        }
+        .metric-card.error {
+            border-left-color: #dc3545;
+        }
+        .metric-card.warning {
+            border-left-color: #ffc107;
+        }
+        .metric-card.success {
+            border-left-color: #28a745;
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .metric-label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .details {
+            padding: 30px;
+            border-top: 1px solid #eee;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h3 {
+            color: #4facfe;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .chart-container {
+            height: 300px;
+            margin: 20px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+        .error-list {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .error-item {
+            background: white;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 3px solid #e53e3e;
+        }
+        .code {
+            background: #f7fafc;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-excellent { background: #28a745; }
+        .status-good { background: #ffc107; color: #333; }
+        .status-poor { background: #dc3545; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Artillery Load Test Report</h1>
+            <div class="subtitle">unknown</div>
+            <div class="subtitle">Generated on 10/23/2025, 1:44:37 PM</div>
+        </div>
+
+        <div class="metrics">
+            <div class="metric-card status-excellent">
+                <div class="metric-label">Error Rate</div>
+                <div class="metric-value">0.00%</div>
+            </div>
+
+            <div class="metric-card status-excellent">
+                <div class="metric-label">P95 Response Time</div>
+                <div class="metric-value">0ms</div>
+            </div>
+
+            <div class="metric-card success">
+                <div class="metric-label">Requests/Second</div>
+                <div class="metric-value">0.0</div>
+            </div>
+
+            <div class="metric-card success">
+                <div class="metric-label">Total Requests</div>
+                <div class="metric-value">0</div>
+            </div>
+        </div>
+
+        <div class="details">
+            <div class="section">
+                <h3>📊 Performance Metrics</h3>
+                <table>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                    </tr>
+                    <tr>
+                        <td>Min Response Time</td>
+                        <td>0ms</td>
+                        <td><span class="status-badge status-excellent">Excellent</span></td>
+                    </tr>
+                    <tr>
+                        <td>Max Response Time</td>
+                        <td>0ms</td>
+                        <td><span class="status-badge status-excellent">Excellent</span></td>
+                    </tr>
+                    <tr>
+                        <td>Median Response Time</td>
+                        <td>0ms</td>
+                        <td><span class="status-badge status-excellent">Excellent</span></td>
+                    </tr>
+                    <tr>
+                        <td>P99 Response Time</td>
+                        <td>0ms</td>
+                        <td><span class="status-badge status-excellent">Excellent</span></td>
+                    </tr>
+                    <tr>
+                        <td>Requests per Second</td>
+                        <td>0.00</td>
+                        <td><span class="status-badge status-excellent">Excellent</span></td>
+                    </tr>
+                    <tr>
+                        <td>Total Requests</td>
+                        <td>0</td>
+                        <td><span class="status-badge status-excellent">Excellent</span></td>
+                    </tr>
+                </table>
+            </div>
+
+            
+
+            <div class="section">
+                <h3>📈 Response Time Distribution</h3>
+                <div class="chart-container">
+                    📊 Chart visualization would go here<br>
+                    (Response time percentiles and distribution)
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>🔗 Test Configuration</h3>
+                <div class="code">{
+  "timestamp": "2025-10-23T06:44:37.510Z",
+  "duration": 0,
+  "scenarios": [],
+  "target": "unknown"
+}</div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <h3>🎯 Test Summary</h3>
+            <p>
+                ✅ Excellent performance! All metrics within acceptable ranges.<br>
+                Test completed in 0ms with
+                0 total requests.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

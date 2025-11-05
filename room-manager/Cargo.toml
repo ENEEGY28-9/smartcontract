@@ -1,0 +1,17 @@
+[package]
+name = "room-manager"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+common-net = { path = "../common-net" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+reqwest = { version = "0.11", features = ["json"] }

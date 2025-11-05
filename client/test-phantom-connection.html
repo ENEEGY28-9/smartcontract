@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phantom Wallet Connection Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1f2e 0%, #0a0e1a 100%);
+            color: #f6f8ff;
+            line-height: 1.6;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(68, 107, 255, 0.2);
+        }
+        .status-card {
+            background: rgba(15, 22, 41, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px solid rgba(68, 107, 255, 0.3);
+        }
+        .btn {
+            background: linear-gradient(135deg, #446bff, #6b73ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(68, 107, 255, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn.success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        .btn.danger {
+            background: linear-gradient(135deg, #ff4757, #ff3742);
+        }
+        .success { color: #2ecc71; }
+        .error { color: #ff4757; }
+        .info { color: #feca57; }
+        .warning { color: #f39c12; }
+        .status-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .status-pass { background: rgba(46, 204, 113, 0.1); border-color: #2ecc71; }
+        .status-fail { background: rgba(255, 71, 87, 0.1); border-color: #ff4757; }
+        .status-info { background: rgba(254, 202, 87, 0.1); border-color: #feca57; }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .wallet-info {
+            background: rgba(68, 107, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(68, 107, 255, 0.3);
+            margin: 10px 0;
+        }
+
+        .input-group {
+            margin: 1rem 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #feca57;
+        }
+
+        .custom-key-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #446bff;
+            border-radius: 8px;
+            background: rgba(68, 107, 255, 0.1);
+            color: #f6f8ff;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+
+        .custom-key-input:focus {
+            outline: none;
+            border-color: #6b73ff;
+            background: rgba(68, 107, 255, 0.2);
+        }
+
+        .custom-key-input::placeholder {
+            color: rgba(246, 248, 255, 0.5);
+        }
+
+        .input-group .btn {
+            margin: 0.25rem;
+            min-width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Phantom Wallet Connection Test</h1>
+        <p>Test real Phantom wallet connection and balance checking</p>
+
+        <!-- Wallet Status -->
+        <div class="status-card">
+            <h3>🔍 Wallet Detection</h3>
+            <div id="detection-status"></div>
+        </div>
+
+        <!-- Connection Controls -->
+        <div class="status-card">
+            <h3>🎮 Connection Controls</h3>
+            <button class="btn" id="connect-btn" onclick="connectWallet()">
+                🔗 Connect Phantom Wallet
+            </button>
+            <button class="btn danger" id="disconnect-btn" onclick="disconnectWallet()" style="display: none;">
+                🚪 Disconnect
+            </button>
+            <button class="btn success" id="check-balance-btn" onclick="checkBalance()" style="display: none;">
+                💰 Check Balance
+            </button>
+            <button class="btn" id="diagnose-btn" onclick="diagnoseWallet()">
+                🔍 Diagnose Wallet
+            </button>
+        </div>
+
+        <!-- Custom Public Key Test -->
+        <div class="status-card" data-wallet-mode="custom">
+            <h3>🧪 Test Custom Public Key</h3>
+            <div class="input-group">
+                <label for="custom-key-input">Enter Solana Public Key:</label>
+                <input type="text" id="custom-key-input" placeholder="e.g., 57arMrLe8LHfzn7c0yUu6KGhxLQ6nfP87mHTHpM2SGB" class="custom-key-input">
+                <button class="btn primary" id="test-custom-key-btn" onclick="testCustomPublicKey()">
+                    🔍 Test Custom Key
+                </button>
+                <button class="btn secondary" id="clear-custom-key-btn" onclick="clearCustomKey()">
+                    🗑️ Clear
+                </button>
+            </div>
+            <div id="custom-key-results" style="display: none;">
+                <h4>📊 Custom Key Test Results</h4>
+                <div id="custom-key-info"></div>
+            </div>
+        </div>
+
+        <!-- Wallet Information -->
+        <div class="status-card" id="wallet-info" style="display: none;">
+            <h3>📊 Wallet Information</h3>
+            <div id="wallet-details"></div>
+        </div>
+
+        <!-- Balance Information -->
+        <div class="status-card" id="balance-info" style="display: none;">
+            <h3>💰 Balance Information</h3>
+            <div id="balance-details"></div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="status-card">
+            <h3>🧪 Test Results</h3>
+            <div id="test-results"></div>
+        </div>
+
+        <!-- Quick Instructions -->
+        <div style="background: rgba(68, 107, 255, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(68, 107, 255, 0.3); margin: 15px 0; font-size: 14px;">
+            <strong>💡 Quick Start:</strong>
+            • Install <a href="https://phantom.app/" target="_blank" style="color: #feca57;">Phantom Wallet</a> extension<br>
+            • Click "🔗 Connect Phantom Wallet" to connect your wallet<br>
+            • Or enter a custom public key to test any Solana wallet
+        </div>
+
+    </div>
+
+    <!-- Solana Web3.js CDN -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.umd.min.js"></script>
+
+    <script>
+        let wallet = null;
+        let isConnected = false;
+
+        // Test wallet address (replace with your actual wallet address)
+        const TEST_WALLET_ADDRESS = '57arM3rLe8LHfzn7coyUu6KGhxLQ6nfP87mHTHpM2SGB';
+
+        function updateDetectionStatus() {
+            const statusDiv = document.getElementById('detection-status');
+
+            if (typeof window === 'undefined') {
+                statusDiv.innerHTML = '<div class="status-item status-fail">❌ Not in browser environment</div>';
+                return;
+            }
+
+            const detectionResults = [];
+
+            // Check for Phantom wallet
+            if (window.solana) {
+                detectionResults.push(`
+                    <div class="status-item status-pass">
+                        ✅ Phantom wallet detected<br>
+                        <small>Connected: ${window.solana.isConnected ? 'Yes' : 'No'}</small>
+                    </div>
+                `);
+
+                if (window.solana.publicKey) {
+                    detectionResults.push(`
+                        <div class="status-item status-pass">
+                            ✅ Public key available<br>
+                            <small>Address: ${window.solana.publicKey.toString()}</small>
+                        </div>
+                    `);
+                }
+            } else {
+                detectionResults.push(`
+                    <div class="status-item status-fail">
+                        ❌ Phantom wallet not found<br>
+                        <small>Please install from <a href="https://phantom.app/" target="_blank" style="color: #feca57;">phantom.app</a></small>
+                    </div>
+                `);
+            }
+
+            // Check other wallets
+            const otherWallets = ['sollet', 'torpedo', 'solflare'];
+            otherWallets.forEach(walletName => {
+                if (window[walletName]) {
+                    detectionResults.push(`
+                        <div class="status-item status-info">
+                            ℹ️ ${walletName} wallet detected
+                        </div>
+                    `);
+                }
+            });
+
+            statusDiv.innerHTML = detectionResults.join('');
+        }
+
+        async function connectWallet() {
+            console.log('🔗 Connecting to Phantom wallet...');
+
+            if (!window.solana) {
+                alert('❌ Phantom wallet not found. Please install Phantom wallet first.');
+                return;
+            }
+
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const balanceBtn = document.getElementById('check-balance-btn');
+
+            try {
+                connectBtn.disabled = true;
+                connectBtn.textContent = '⏳ Connecting...';
+
+                // Connect to wallet
+                const response = await window.solana.connect();
+                console.log('✅ Connection response:', response);
+
+                if (response.publicKey) {
+                    wallet = window.solana;
+                    isConnected = true;
+
+                    // Update UI
+                    connectBtn.style.display = 'none';
+                    disconnectBtn.style.display = 'inline-block';
+                    balanceBtn.style.display = 'inline-block';
+
+                    updateWalletInfo();
+                    runTests();
+
+                    console.log('✅ Wallet connected successfully');
+                } else {
+                    throw new Error('No public key received');
+                }
+
+            } catch (error) {
+                console.error('❌ Connection failed:', error);
+                console.error('❌ Error details:', {
+                    name: error.name,
+                    message: error.message,
+                    code: error.code,
+                    stack: error.stack
+                });
+
+                // Show detailed error message
+                let errorMessage = `❌ Connection failed: ${error.message}\n\n`;
+                errorMessage += '🔍 Troubleshooting:\n';
+
+                if (error.message.includes('Unexpected error') || error.message.includes('Internal error')) {
+                    errorMessage += '• Restart Phantom extension\n';
+                    errorMessage += '• Make sure Phantom is up to date\n';
+                    errorMessage += '• Try disabling other wallet extensions\n';
+                    errorMessage += '• Clear browser cache\n';
+                } else if (error.message.includes('User rejected')) {
+                    errorMessage += '• Approve the connection in Phantom popup\n';
+                } else if (error.message.includes('locked')) {
+                    errorMessage += '• Unlock your Phantom wallet\n';
+                } else if (error.message.includes('Network')) {
+                    errorMessage += '• Make sure Phantom is connected to Solana Devnet\n';
+                } else {
+                    errorMessage += '• Refresh the page\n';
+                    errorMessage += '• Try a different browser\n';
+                    errorMessage += '• Check if other wallet extensions are interfering\n';
+                }
+
+                alert(errorMessage);
+            } finally {
+                connectBtn.disabled = false;
+                connectBtn.textContent = '🔗 Connect Phantom Wallet';
+            }
+        }
+
+        function disconnectWallet() {
+            console.log('🔌 Disconnecting wallet...');
+
+            if (window.solana) {
+                try {
+                    window.solana.disconnect();
+                } catch (error) {
+                    console.error('❌ Disconnect error:', error);
+                }
+            }
+
+            wallet = null;
+            isConnected = false;
+
+            // Update UI
+            document.getElementById('connect-btn').style.display = 'inline-block';
+            document.getElementById('disconnect-btn').style.display = 'none';
+            document.getElementById('check-balance-btn').style.display = 'none';
+            document.getElementById('wallet-info').style.display = 'none';
+            document.getElementById('balance-info').style.display = 'none';
+
+            runTests();
+            console.log('✅ Wallet disconnected');
+        }
+
+        async function checkBalance() {
+            console.log('💰 Checking balance...');
+
+            if (!isConnected || !wallet) {
+                alert('❌ Wallet not connected');
+                return;
+            }
+
+            const balanceBtn = document.getElementById('check-balance-btn');
+            const balanceDiv = document.getElementById('balance-details');
+
+            try {
+                balanceBtn.disabled = true;
+                balanceBtn.textContent = '⏳ Checking...';
+
+                // Get balance from Solana devnet
+                const connection = new solanaWeb3.Connection('https://api.devnet.solana.com');
+                const publicKey = new solanaWeb3.PublicKey(wallet.publicKey.toString());
+                const balance = await connection.getBalance(publicKey);
+                const balanceInSOL = balance / solanaWeb3.LAMPORTS_PER_SOL;
+
+                balanceDiv.innerHTML = `
+                    <div class="status-item status-pass">
+                        ✅ Balance retrieved successfully<br>
+                        <strong>${balanceInSOL.toFixed(4)} SOL</strong><br>
+                        <small>${balance} lamports</small>
+                    </div>
+                `;
+
+                document.getElementById('balance-info').style.display = 'block';
+
+                console.log('✅ Balance checked:', balanceInSOL, 'SOL');
+
+            } catch (error) {
+                console.error('❌ Balance check failed:', error);
+                balanceDiv.innerHTML = `
+                    <div class="status-item status-fail">
+                        ❌ Balance check failed<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+                document.getElementById('balance-info').style.display = 'block';
+            } finally {
+                balanceBtn.disabled = false;
+                balanceBtn.textContent = '💰 Check Balance';
+            }
+        }
+
+        function updateWalletInfo() {
+            const walletDiv = document.getElementById('wallet-details');
+
+            if (isConnected && wallet) {
+                walletDiv.innerHTML = `
+                    <div class="wallet-info">
+                        <strong>Connected Wallet:</strong><br>
+                        <code>${wallet.publicKey.toString()}</code><br>
+                        <small>Network: Solana Devnet</small>
+                    </div>
+                `;
+                document.getElementById('wallet-info').style.display = 'block';
+            }
+        }
+
+        function diagnoseWallet() {
+            console.log('🔍 Running wallet diagnosis...');
+            const results = [];
+
+            // Browser environment check
+            results.push({
+                name: 'Browser Environment',
+                status: typeof window !== 'undefined',
+                details: typeof window !== 'undefined' ? `✅ ${navigator.userAgent.split(' ')[0]}` : '❌ Not in browser'
+            });
+
+            // URL check
+            results.push({
+                name: 'Connection URL',
+                status: true,
+                details: `✅ ${window.location.href}`
+            });
+
+            // HTTPS check
+            results.push({
+                name: 'Secure Connection',
+                status: window.location.protocol === 'https:',
+                details: window.location.protocol === 'https:' ? '✅ HTTPS enabled' : '⚠️ HTTP (some wallets require HTTPS)'
+            });
+
+            // Phantom wallet detection
+            if (window.solana) {
+                results.push({
+                    name: 'Phantom Detection',
+                    status: true,
+                    details: '✅ Phantom wallet extension found'
+                });
+
+                results.push({
+                    name: 'Phantom Version',
+                    status: !!window.solana.isPhantom,
+                    details: window.solana.isPhantom ? '✅ Official Phantom wallet' : '⚠️ Third-party wallet'
+                });
+
+                results.push({
+                    name: 'Connection State',
+                    status: window.solana.isConnected,
+                    details: window.solana.isConnected ? '✅ Already connected' : '⭕ Not connected'
+                });
+
+                if (window.solana.publicKey) {
+                    results.push({
+                        name: 'Public Key',
+                        status: true,
+                        details: `✅ Available: ${window.solana.publicKey.toString().slice(0, 8)}...${window.solana.publicKey.toString().slice(-8)}`
+                    });
+                } else {
+                    results.push({
+                        name: 'Public Key',
+                        status: false,
+                        details: '❌ No public key available'
+                    });
+                }
+
+                // Check for conflicting extensions
+                const otherWallets = [];
+                if (window.sollet) otherWallets.push('Sollet');
+                if (window.torpedo) otherWallets.push('Torpedo');
+                if (window.solflare) otherWallets.push('Solflare');
+                if (window.coin98) otherWallets.push('Coin98');
+
+                if (otherWallets.length > 0) {
+                    results.push({
+                        name: 'Conflicting Extensions',
+                        status: false,
+                        details: `⚠️ Other wallets detected: ${otherWallets.join(', ')}`
+                    });
+                } else {
+                    results.push({
+                        name: 'Conflicting Extensions',
+                        status: true,
+                        details: '✅ No conflicting wallet extensions'
+                    });
+                }
+
+            } else {
+                results.push({
+                    name: 'Phantom Detection',
+                    status: false,
+                    details: '❌ Phantom wallet not found - install from https://phantom.app/'
+                });
+
+                // Check for alternative wallets
+                const altWallets = [];
+                if (window.sollet) altWallets.push('Sollet');
+                if (window.torpedo) altWallets.push('Torpedo');
+                if (window.solflare) altWallets.push('Solflare');
+
+                if (altWallets.length > 0) {
+                    results.push({
+                        name: 'Alternative Wallets',
+                        status: true,
+                        details: `✅ Found: ${altWallets.join(', ')}`
+                    });
+                }
+            }
+
+            // Network connectivity check
+            results.push({
+                name: 'Network Access',
+                status: navigator.onLine,
+                details: navigator.onLine ? '✅ Internet connection available' : '❌ No internet connection'
+            });
+
+            // Display results
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = results.map(result => {
+                let statusClass, icon;
+                if (result.status === true) {
+                    statusClass = 'status-pass';
+                    icon = '✅';
+                } else if (result.status === false) {
+                    statusClass = 'status-fail';
+                    icon = '❌';
+                } else {
+                    statusClass = 'status-info';
+                    icon = '⚠️';
+                }
+
+                return `
+                    <div class="status-item ${statusClass}">
+                        <strong>${result.name}:</strong> ${icon}<br>
+                        <small>${result.details}</small>
+                    </div>
+                `;
+            }).join('');
+
+            console.log('🔍 Diagnosis completed:', results);
+        }
+
+        function runTests() {
+            const resultsDiv = document.getElementById('test-results');
+            const tests = [];
+
+            // Test 1: Browser environment
+            tests.push({
+                name: 'Browser Environment',
+                status: typeof window !== 'undefined',
+                details: typeof window !== 'undefined' ? '✅ Browser detected' : '❌ Not in browser'
+            });
+
+            // Test 2: Phantom detection
+            tests.push({
+                name: 'Phantom Detection',
+                status: !!window.solana,
+                details: window.solana ? '✅ Phantom wallet found' : '❌ Phantom wallet not found'
+            });
+
+            // Test 3: Connection status
+            tests.push({
+                name: 'Connection Status',
+                status: isConnected,
+                details: isConnected ? '✅ Connected to wallet' : '❌ Not connected'
+            });
+
+            // Test 4: Public key
+            if (window.solana && window.solana.publicKey) {
+                tests.push({
+                    name: 'Public Key',
+                    status: true,
+                    details: `✅ Public key available: ${window.solana.publicKey.toString().slice(0, 8)}...${window.solana.publicKey.toString().slice(-8)}`
+                });
+            }
+
+            // Display results
+            resultsDiv.innerHTML = tests.map(test => {
+                const statusClass = test.status ? 'status-pass' : 'status-fail';
+                const icon = test.status ? '✅' : '❌';
+                return `
+                    <div class="status-item ${statusClass}">
+                        <strong>${test.name}:</strong> ${icon}<br>
+                        <small>${test.details}</small>
+                    </div>
+                `;
+            }).join('');
+
+            console.log('🧪 Tests completed:', tests);
+        }
+
+        async function testCustomPublicKey() {
+            console.log('🧪 Testing custom public key...');
+
+            const customKeyInput = document.getElementById('custom-key-input');
+            const customKeyResults = document.getElementById('custom-key-results');
+            const customKeyInfo = document.getElementById('custom-key-info');
+            const testBtn = document.getElementById('test-custom-key-btn');
+
+            const publicKeyString = customKeyInput.value.trim();
+
+            if (!publicKeyString) {
+                alert('❌ Please enter a Solana public key');
+                return;
+            }
+
+            // Basic validation
+            if (publicKeyString.length < 32 || publicKeyString.length > 44) {
+                alert('❌ Invalid public key length. Solana public keys are 32-44 characters long.');
+                return;
+            }
+
+            // Check if it looks like a Solana address (base58)
+            const base58Regex = /^[1-9A-HJ-NP-Za-km-z]+$/;
+            if (!base58Regex.test(publicKeyString)) {
+                alert('❌ Invalid public key format. Solana addresses contain only alphanumeric characters (except 0, O, I, l).');
+                return;
+            }
+
+            testBtn.disabled = true;
+            testBtn.textContent = '⏳ Testing...';
+
+            try {
+                console.log('🔍 Testing public key:', publicKeyString);
+
+                // Test public key validity and get balance
+                const connection = new solanaWeb3.Connection('https://api.devnet.solana.com');
+                const publicKey = new solanaWeb3.PublicKey(publicKeyString);
+
+                console.log('✅ Public key is valid');
+                console.log('🔗 Checking balance...');
+
+                const balance = await connection.getBalance(publicKey);
+                const balanceInSOL = balance / solanaWeb3.LAMPORTS_PER_SOL;
+
+                console.log('💰 Balance retrieved:', balanceInSOL, 'SOL');
+
+                // Get additional account info
+                const accountInfo = await connection.getAccountInfo(publicKey);
+                const isAccountExists = accountInfo !== null;
+
+                // Display results
+                customKeyInfo.innerHTML = `
+                    <div class="wallet-info">
+                        <strong>Custom Public Key Test Results:</strong><br>
+                        <code>${publicKeyString}</code><br><br>
+
+                        <strong>✅ Validation:</strong> Valid Solana Public Key<br>
+                        <strong>💰 Balance:</strong> ${balanceInSOL.toFixed(6)} SOL (${balance} lamports)<br>
+                        <strong>📊 Account Status:</strong> ${isAccountExists ? 'Account exists on Devnet' : 'Account not found on Devnet'}<br>
+                        <strong>🌐 Network:</strong> Solana Devnet<br><br>
+
+                        <strong>📋 Account Details:</strong><br>
+                        <small>
+                            • Address Length: ${publicKeyString.length} characters<br>
+                            • Base58 Encoded: Yes<br>
+                            • Network: Devnet (Testnet)<br>
+                            • Balance: ${balanceInSOL.toFixed(6)} SOL
+                        </small>
+                    </div>
+                `;
+
+                customKeyResults.style.display = 'block';
+
+                console.log('✅ Custom key test completed successfully');
+
+            } catch (error) {
+                console.error('❌ Custom key test failed:', error);
+
+                let errorMessage = `❌ Error testing public key: ${error.message}`;
+
+                if (error.message.includes('Invalid public key')) {
+                    errorMessage += '<br><br>💡 Make sure the public key is a valid Solana address (32-44 characters, base58 encoded)';
+                }
+
+                customKeyInfo.innerHTML = `
+                    <div class="error-display">
+                        ${errorMessage}
+                    </div>
+                `;
+
+                customKeyResults.style.display = 'block';
+            } finally {
+                testBtn.disabled = false;
+                testBtn.textContent = '🔍 Test Custom Key';
+            }
+        }
+
+        function clearCustomKey() {
+            console.log('🗑️ Clearing custom key input...');
+
+            document.getElementById('custom-key-input').value = '';
+            document.getElementById('custom-key-results').style.display = 'none';
+            document.getElementById('custom-key-info').innerHTML = '';
+
+            console.log('✅ Custom key input cleared');
+        }
+
+        // Clear wallet preferences and reload page
+        function clearWalletPreferences() {
+            localStorage.removeItem('wallet_custom_preference');
+            console.log('✅ Wallet preferences cleared - auto-connect enabled');
+            console.log('🔄 Refreshing page...');
+            location.reload();
+        }
+
+        // Make function globally available for console access
+        window.clearWalletPreferences = clearWalletPreferences;
+
+        // Function to check if user wants to use custom wallet
+        function checkUserIntent() {
+            // Check URL parameters first
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('custom') === 'true' || urlParams.get('mode') === 'custom') {
+                console.log('🚫 Auto-connect disabled - custom mode detected in URL');
+                return true;
+            }
+
+            // Check if custom key input exists and has value
+            const customKeyInput = document.getElementById('custom-key-input');
+            if (customKeyInput && customKeyInput.value && customKeyInput.value.trim()) {
+                console.log('🚫 Auto-connect disabled - custom key detected:', customKeyInput.value.slice(0, 8) + '...');
+                return true;
+            }
+
+            // Check if there's a custom wallet preference in localStorage
+            const customWalletPreference = localStorage.getItem('wallet_custom_preference');
+            if (customWalletPreference === 'true') {
+                console.log('🚫 Auto-connect disabled - custom wallet preference detected');
+
+        // Add clear preference button with tooltip
+        setTimeout(() => {
+            const clearBtn = document.createElement('button');
+            clearBtn.textContent = '🗑️ Clear Wallet Preferences';
+            clearBtn.className = 'btn';
+            clearBtn.title = 'Xóa preferences và cho phép auto-connect hoạt động bình thường';
+            clearBtn.style.cssText = 'margin: 10px; background: linear-gradient(135deg, #ff6b6b, #feca57); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;';
+            clearBtn.onclick = function() {
+                if (confirm('⚠️ Bạn có muốn xóa wallet preferences?\n\nĐiều này sẽ:\n• Xóa custom wallet preference\n• Cho phép auto-connect Phantom\n• Refresh trang\n\nTiếp tục?')) {
+                    localStorage.removeItem('wallet_custom_preference');
+                    console.log('✅ Wallet preferences cleared - auto-connect enabled');
+                    console.log('🔄 Refreshing page...');
+                    location.reload();
+                }
+            };
+
+            const connectionControls = document.querySelector('.status-card:nth-of-type(2)') ||
+                                    document.querySelector('#connect-btn').parentElement;
+            if (connectionControls) {
+                connectionControls.appendChild(clearBtn);
+            }
+        }, 2000);
+
+                return true;
+            }
+
+            // Check if user clicked on custom wallet elements
+            const customElements = document.querySelectorAll('[data-wallet-mode="custom"]');
+            for (const element of customElements) {
+                if (element.style.display !== 'none' && element.offsetParent !== null) {
+                    console.log('🚫 Auto-connect disabled - custom wallet UI detected');
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Store user intent when interacting with custom wallet features
+        function handleCustomWalletInteraction() {
+            console.log('🚫 User interacting with custom wallet - auto-connect disabled');
+            localStorage.setItem('wallet_custom_preference', 'true');
+        }
+
+        // Monitor custom key input changes
+        function setupCustomKeyMonitoring() {
+            const customKeyInput = document.getElementById('custom-key-input');
+            if (customKeyInput) {
+                customKeyInput.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        console.log('🚫 Custom key detected - auto-connect disabled');
+                        localStorage.setItem('wallet_custom_preference', 'true');
+                        // Clear any existing connection if custom key is entered
+                        if (isConnected && !window.solana?.isCustom) {
+                            console.log('🔄 Switching to custom wallet mode');
+                            disconnectWallet();
+                        }
+                    } else {
+                        console.log('✅ No custom key - auto-connect enabled');
+                        localStorage.removeItem('wallet_custom_preference');
+                    }
+                });
+                customKeyInput.addEventListener('focus', handleCustomWalletInteraction);
+            }
+
+            // Add click handlers to custom wallet buttons
+            const customButtons = document.querySelectorAll('[data-wallet-mode="custom"] button');
+            customButtons.forEach(button => {
+                button.addEventListener('click', handleCustomWalletInteraction);
+            });
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('🔗 Phantom connection test loaded');
+            updateDetectionStatus();
+            runTests();
+
+            // Setup custom key monitoring
+            setupCustomKeyMonitoring();
+
+            // Check if already connected and if user wants custom wallet
+            if (window.solana && window.solana.isConnected) {
+                if (checkUserIntent()) {
+                    console.log('🚫 Wallet already connected but user wants custom wallet - disconnecting');
+                    disconnectWallet();
+                } else {
+                    wallet = window.solana;
+                    isConnected = true;
+                    document.getElementById('connect-btn').style.display = 'none';
+                    document.getElementById('disconnect-btn').style.display = 'inline-block';
+                    document.getElementById('check-balance-btn').style.display = 'inline-block';
+                    updateWalletInfo();
+                }
+            }
+        });
+
+        // Monitor connection changes
+        if (typeof window !== 'undefined' && window.solana) {
+            window.solana.on('connect', () => {
+                console.log('🔗 Wallet connected event');
+                if (!isConnected) {
+                    connectWallet();
+                }
+            });
+
+            window.solana.on('disconnect', () => {
+                console.log('🔌 Wallet disconnected event');
+                disconnectWallet();
+            });
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,6 @@
+{
+  "scenario": "mixed_workload",
+  "exitCode": 0,
+  "output": "Creating 200 mixed workload clients...\n✅ Connected 200 clients\n✅ Mixed workload test completed\nMixed workload results: { clientCount: 200, testDuration: 300, totalMessages: 0 }\n",
+  "timestamp": "2025-10-23T05:02:00.537Z"
+}

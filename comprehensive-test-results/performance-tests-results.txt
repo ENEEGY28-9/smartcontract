@@ -1,0 +1,11 @@
+# GameV1 Performance Test Results
+Generated: $(date)
+
+## Test Configuration
+- Test Duration: 5 minutes
+- Concurrent Users: 100, 500, 1000
+- Endpoints Tested: /healthz, /api/rooms, /auth/login
+
+## Results Summary
+
+Install siege for comprehensive load testing: sudo apt-get install siege

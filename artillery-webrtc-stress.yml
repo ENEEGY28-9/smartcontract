@@ -1,0 +1,400 @@
+config:
+  target: 'ws://localhost:8080/ws'
+  phases:
+    # WebRTC signaling load test
+    - duration: 60    # 1 minute
+      arrivalRate: 10 # Start with WebRTC connections
+      name: 'WebRTC Warmup'
+
+    - duration: 120   # 2 minutes
+      arrivalRate: 25 # Build up WebRTC signaling
+      name: 'WebRTC Ramp Up'
+
+    - duration: 180   # 3 minutes
+      arrivalRate: 50 # Peak WebRTC load
+      name: 'WebRTC Peak Load'
+
+    - duration: 120   # 2 minutes
+      arrivalRate: 25 # Cool down
+      name: 'WebRTC Cool Down'
+
+  ws:
+    subprotocols: ['webrtc-signaling', 'game-protocol']
+
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+      Authorization: 'Bearer webrtc-token-{{ $randomInt() }}'
+
+  # WebRTC-optimized timeouts
+  timeout: 45
+  connectionTimeout: 10
+
+scenarios:
+  # 50% - WebRTC Signaling Stress
+  - name: 'WebRTC Signaling Stress'
+    weight: 50
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "webrtc_player_{{ $randomInt() }}",
+              "token": "webrtc-token-{{ $randomInt() }}",
+              "device_type": "{{ $randomArrayItem(['desktop', 'mobile', 'tablet']) }}",
+              "browser_info": {
+                "name": "{{ $randomArrayItem(['chrome', 'firefox', 'safari', 'edge']) }}",
+                "version": "{{ $randomInt(90, 120) }}.{{ $randomInt(0, 5) }}.{{ $randomInt(1000, 9999) }}",
+                "webrtc_support": true,
+                "codecs": ["opus", "vp8", "vp9", "h264"]
+              }
+            }
+
+      - think: 1
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "webrtc_room_{{ $randomInt(1, 200) }}",
+              "player_name": "WebRTCPlayer_{{ $randomInt() }}",
+              "media_constraints": {
+                "audio": true,
+                "video": {{ $randomInt(0, 1) }},
+                "screen_share": {{ $randomInt(0, 1) }}
+              }
+            }
+
+      - think: 2
+
+      # WebRTC offer/answer exchange simulation
+      - send:
+          payload: |
+            {
+              "type": "webrtc_offer",
+              "target_player": "webrtc_player_{{ $randomInt() }}",
+              "sdp": "v=0\r\no=- {{ $randomInt() }} {{ $randomInt() }} IN IP4 0.0.0.0\r\ns=-\r\nt=0 0\r\nm=audio 1 RTP/SAVPF 111\r\nc=IN IP4 0.0.0.0\r\na=rtpmap:111 opus/48000/2\r\na=fmtp:111 minptime=10;useinbandfec=1\r\nm=video 1 RTP/SAVPF 96 97\r\nc=IN IP4 0.0.0.0\r\na=rtpmap:96 VP8/90000\r\na=rtpmap:97 VP9/90000\r\n",
+              "media_types": ["audio", "video"],
+              "ice_candidates": [
+                {
+                  "candidate": "candidate:1 1 UDP 2130706431 192.168.1.100 54400 typ host",
+                  "sdpMLineIndex": 0,
+                  "sdpMid": "0"
+                },
+                {
+                  "candidate": "candidate:2 1 UDP 2130706431 10.0.0.1 54401 typ host",
+                  "sdpMLineIndex": 0,
+                  "sdpMid": "1"
+                }
+              ]
+            }
+
+      - think: 0.5
+
+      # Simulate ICE candidate exchange
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "ice_candidate",
+                  "target_player": "webrtc_player_{{ $randomInt() }}",
+                  "candidate": "candidate:{{ $randomInt(1, 5) }} {{ $randomInt(1, 2) }} UDP {{ $randomInt(2000000000, 2200000000) }} {{ $randomInt(10, 255) }}.{{ $randomInt(0, 255) }}.{{ $randomInt(0, 255) }}.{{ $randomInt(100, 255) }} {{ $randomInt(10000, 65535) }} typ {{ $randomArrayItem(['host', 'srflx', 'prflx', 'relay']) }}",
+                  "sdpMLineIndex": {{ $randomInt(0, 2) }},
+                  "sdpMid": "{{ $randomInt(0, 1) }}"
+                }
+          - think: 0.1
+        count: {{ $randomInt(5, 15) }}
+
+      - think: 1
+
+      # Simulate answer reception
+      - send:
+          payload: |
+            {
+              "type": "webrtc_answer",
+              "target_player": "webrtc_player_{{ $randomInt() }}",
+              "sdp": "v=0\r\no=- {{ $randomInt() }} {{ $randomInt() }} IN IP4 0.0.0.0\r\ns=-\r\nt=0 0\r\nm=audio 1 RTP/SAVPF 111\r\nc=IN IP4 0.0.0.0\r\na=rtpmap:111 opus/48000/2\r\nm=video 1 RTP/SAVPF 96\r\nc=IN IP4 0.0.0.0\r\na=rtpmap:96 VP8/90000\r\n",
+              "media_types": ["audio", "video"]
+            }
+
+      - think: 2
+
+      # Simulate ongoing WebRTC communication
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "webrtc_stats",
+                  "connection_id": "conn_{{ $randomInt() }}",
+                  "stats": {
+                    "bitrate": {{ $randomInt(100, 2000) }},
+                    "latency": {{ $randomInt(5, 100) }},
+                    "packet_loss": {{ $randomInt(0, 5) }},
+                    "jitter": {{ $randomInt(0, 50) }},
+                    "resolution": "{{ $randomArrayItem(['640x480', '1280x720', '1920x1080']) }}",
+                    "fps": {{ $randomInt(15, 60) }},
+                    "audio_level": {{ $randomInt(-60, 0) }}
+                  }
+                }
+          - think: 1
+        count: {{ $randomInt(60, 300) }}  # 1-5 minutes of WebRTC stats
+
+      # Connection quality monitoring
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "connection_quality",
+                  "quality": "{{ $randomArrayItem(['excellent', 'good', 'fair', 'poor']) }}",
+                  "bandwidth": {{ $randomInt(1000, 100000) }},
+                  "stability": {{ $randomInt(80, 100) }},
+                  "recommendations": ["{{ $randomArrayItem(['switch_to_audio_only', 'reduce_video_quality', 'increase_buffer_size']) }}"]
+                }
+          - think: 5
+        count: 20
+
+      # WebRTC session end
+      - send:
+          payload: |
+            {
+              "type": "webrtc_disconnect",
+              "reason": "{{ $randomArrayItem(['normal', 'network_error', 'user_action', 'timeout']) }}",
+              "session_duration": {{ $randomInt(60, 1800) }},
+              "total_data_sent": {{ $randomInt(1024, 104857600) }},
+              "total_data_received": {{ $randomInt(1024, 104857600) }}
+            }
+
+      - think: 1
+
+      - disconnect
+
+  # 30% - Peer-to-Peer Gaming Simulation
+  - name: 'P2P Gaming Simulation'
+    weight: 30
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "p2p_player_{{ $randomInt() }}",
+              "token": "p2p-token-{{ $randomInt() }}",
+              "game_mode": "peer_to_peer"
+            }
+
+      - think: 1
+
+      - send:
+          payload: |
+            {
+              "type": "create_p2p_room",
+              "room_id": "p2p_room_{{ $randomInt(1, 100) }}",
+              "max_peers": {{ $randomInt(2, 8) }},
+              "game_type": "{{ $randomArrayItem(['deathmatch', 'team_deathmatch', 'capture_flag', 'racing']) }}"
+            }
+
+      - think: 2
+
+      # Simulate peer discovery
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "peer_discovery",
+                  "room_id": "p2p_room_{{ $randomInt(1, 100) }}",
+                  "search_criteria": {
+                    "game_mode": "{{ $randomArrayItem(['ranked', 'casual', 'tournament']) }}",
+                    "skill_level": "{{ $randomArrayItem(['beginner', 'intermediate', 'advanced', 'expert']) }}",
+                    "region": "{{ $randomArrayItem(['na-east', 'na-west', 'eu-west', 'asia']) }}",
+                    "latency_max": {{ $randomInt(50, 200) }}
+                  }
+                }
+          - think: 2
+        count: {{ $randomInt(3, 10) }}
+
+      - think: 1
+
+      # Simulate game state synchronization
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "game_state_sync",
+                  "room_id": "p2p_room_{{ $randomInt(1, 100) }}",
+                  "state": {
+                    "players": {{ $randomInt(2, 8) }},
+                    "game_time": {{ $randomInt(0, 3600) }},
+                    "score": [{{ $randomInt(0, 100) }}, {{ $randomInt(0, 100) }}],
+                    "objects": {{ $randomInt(10, 100) }},
+                    "events": ["event_{{ $randomInt(1, 50) }}"],
+                    "checksum": "{{ $randomString() }}"
+                  },
+                  "timestamp": {{ timestamp }},
+                  "sequence": {{ $randomInt() }}
+                }
+          - think: 0.1
+        count: {{ $randomInt(300, 1000) }}  # 30-100 seconds of game sync
+
+      # Simulate peer disconnection/reconnection
+      - send:
+          payload: |
+            {
+              "type": "peer_disconnected",
+              "peer_id": "p2p_player_{{ $randomInt() }}",
+              "reason": "{{ $randomArrayItem(['network_timeout', 'user_quit', 'connection_lost']) }}"
+            }
+
+      - think: {{ $randomInt(1, 5) }}
+
+      - send:
+          payload: |
+            {
+              "type": "peer_reconnected",
+              "peer_id": "p2p_player_{{ $randomInt() }}",
+              "new_connection_id": "conn_{{ $randomInt() }}",
+              "state_catchup": true
+            }
+
+      - think: 2
+
+      # Continue gameplay after reconnection
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "game_input",
+                  "input": {
+                    "movement": [{{ $randomInt(-200, 200) }}, 0, {{ $randomInt(-200, 200) }}],
+                    "actions": [{{ $randomArrayItem(['reconnected_action', 'continue_game']) }}],
+                    "timestamp": {{ timestamp }},
+                    "connection_quality": "{{ $randomArrayItem(['excellent', 'good', 'fair']) }}"
+                  }
+                }
+          - think: 0.2
+        count: {{ $randomInt(100, 300) }}
+
+      - send:
+          payload: |
+            {
+              "type": "leave_p2p_room",
+              "room_id": "p2p_room_{{ $randomInt(1, 100) }}",
+              "final_score": {{ $randomInt(0, 1000) }},
+              "session_summary": {
+                "duration": {{ $randomInt(300, 1800) }},
+                "peers_connected": {{ $randomInt(1, 7) }},
+                "data_transferred": {{ $randomInt(1048576, 104857600) }},
+                "disconnections": {{ $randomInt(0, 3) }}
+              }
+            }
+
+      - disconnect
+
+  # 20% - Network Condition Simulation
+  - name: 'Network Condition Simulation'
+    weight: 20
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "network_player_{{ $randomInt() }}",
+              "token": "network-token-{{ $randomInt() }}",
+              "network_profile": "{{ $randomArrayItem(['excellent', 'good', 'fair', 'poor', 'terrible']) }}"
+            }
+
+      - think: 1
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "network_test_room_{{ $randomInt(1, 50) }}",
+              "player_name": "NetworkPlayer_{{ $randomInt() }}",
+              "network_conditions": {
+                "latency": {{ $randomInt(10, 200) }},
+                "packet_loss": {{ $randomInt(0, 10) }},
+                "bandwidth": {{ $randomInt(1000, 100000) }},
+                "stability": "{{ $randomArrayItem(['stable', 'fluctuating', 'unstable']) }}"
+              }
+            }
+
+      - think: 1
+
+      # Simulate varying network conditions
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "network_update",
+                  "conditions": {
+                    "latency": {{ $randomInt(5, 300) }},
+                    "packet_loss": {{ $randomInt(0, 15) }},
+                    "bandwidth": {{ $randomInt(500, 50000) }},
+                    "jitter": {{ $randomInt(0, 100) }},
+                    "quality": "{{ $randomArrayItem(['excellent', 'good', 'fair', 'poor', 'terrible']) }}"
+                  },
+                  "adaptations": [
+                    "{{ $randomArrayItem(['reduce_quality', 'increase_buffer', 'switch_codec', 'disable_video']) }}"
+                  ]
+                }
+          - think: {{ $randomInt(1, 10) }}
+        count: {{ $randomInt(30, 120) }}
+
+      # Simulate network recovery
+      - send:
+          payload: |
+            {
+              "type": "network_recovery",
+              "recovery_time": {{ $randomInt(1000, 10000) }},
+              "new_conditions": {
+                "latency": {{ $randomInt(5, 50) }},
+                "packet_loss": {{ $randomInt(0, 1) }},
+                "bandwidth": {{ $randomInt(10000, 100000) }},
+                "quality": "excellent"
+              },
+              "reconnection_attempts": {{ $randomInt(0, 3) }}
+            }
+
+      - think: 2
+
+      # Continue with stable connection
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "game_input",
+                  "input": {
+                    "movement": [{{ $randomInt(-100, 100) }}, 0, {{ $randomInt(-100, 100) }}],
+                    "actions": ["stable_gameplay"],
+                    "timestamp": {{ timestamp }},
+                    "connection_quality": "excellent"
+                  }
+                }
+          - think: 0.1
+        count: {{ $randomInt(200, 500) }}
+
+      - send:
+          payload: |
+            {
+              "type": "leave_room",
+              "network_session_summary": {
+                "total_duration": {{ $randomInt(300, 1200) }},
+                "quality_changes": {{ $randomInt(0, 10) }},
+                "disconnections": {{ $randomInt(0, 5) }},
+                "average_latency": {{ $randomInt(10, 100) }},
+                "total_data": {{ $randomInt(1048576, 52428800) }}
+              }
+            }
+
+      - disconnect

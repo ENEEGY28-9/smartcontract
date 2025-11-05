@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Game 80/20 Logic - InfiniteRunner.svelte</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .game-frame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid white;
+            border-radius: 10px;
+            background: black;
+        }
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Test Game 80/20 Logic</h1>
+            <p>Test InfiniteRunner.svelte với logic 80/20 distribution</p>
+        </div>
+
+        <div class="status">
+            <h2>📊 Trạng Thái Hệ Thống</h2>
+            <div class="info">
+                <strong>✅ Logic 80/20:</strong> Đã sửa và deploy lên devnet<br>
+                <strong>✅ Smart Contract:</strong> eat_energy_particle function updated<br>
+                <strong>✅ Game Integration:</strong> TokenService.mintTokenOnCollect<br>
+                <strong>✅ Backend API:</strong> /api/token/earn-from-pool<br>
+                <strong>✅ Distribution:</strong> 80% game pool, 20% owner wallet
+            </div>
+        </div>
+
+        <div class="info">
+            <h3>🎯 Cách Test:</h3>
+            <ol>
+                <li>Click "Start Game" để bắt đầu</li>
+                <li>Dùng phím mũi tên (← → ↑ ↓) để di chuyển</li>
+                <li>Thu thập collectibles (hình cầu màu)</li>
+                <li>Xem token balance update real-time</li>
+                <li>Kiểm tra owner nhận 20% per collectible</li>
+            </ol>
+        </div>
+
+        <div class="info">
+            <h3>💰 Logic 80/20 Verification:</h3>
+            <ul>
+                <li>✅ Mỗi collectible = 1 đơn vị token</li>
+                <li>✅ Game Pool nhận: 0.8 tokens (80%)</li>
+                <li>✅ Owner nhận: 0.2 tokens (20%)</li>
+                <li>✅ Owner revenue không phụ thuộc player activity</li>
+            </ul>
+        </div>
+
+        <div class="game-frame">
+            <iframe src="http://localhost:5173/" width="100%" height="100%" frameborder="0">
+                Game loading... Make sure development server is running on port 5173
+            </iframe>
+        </div>
+
+        <div class="controls">
+            <button onclick="reloadGame()">🔄 Reload Game</button>
+            <button onclick="openDevTools()">🛠️ Dev Tools</button>
+            <button onclick="checkStatus()">📊 Check Status</button>
+        </div>
+
+        <div class="info">
+            <h3>🔧 Troubleshooting:</h3>
+            <ul>
+                <li>Nếu game không load: Chạy <code>npm run dev</code> ở thư mục client</li>
+                <li>Nếu token không mint: Kiểm tra authentication</li>
+                <li>Nếu balance không update: Check WebSocket connection</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function reloadGame() {
+            const iframe = document.querySelector('.game-frame iframe');
+            iframe.src = iframe.src;
+        }
+
+        function openDevTools() {
+            // Open browser dev tools
+            alert('Press F12 to open Developer Tools');
+        }
+
+        async function checkStatus() {
+            try {
+                // Check if backend is running
+                const response = await fetch('http://localhost:8090/api/health');
+                if (response.ok) {
+                    alert('✅ Backend API is running');
+                } else {
+                    alert('❌ Backend API not responding');
+                }
+            } catch (error) {
+                alert('❌ Cannot connect to backend: ' + error.message);
+            }
+        }
+
+        // Auto-check status on load
+        window.addEventListener('load', () => {
+            setTimeout(checkStatus, 2000);
+        });
+    </script>
+</body>
+</html>
+

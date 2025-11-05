@@ -1,0 +1,91 @@
+# Multi-stage Dockerfile for GameV1 Production
+# Optimized for performance and security
+
+# Build stage
+FROM rust:1.75-slim as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app user
+RUN groupadd -r gamev1 && useradd -r -g gamev1 gamev1
+
+# Set working directory
+WORKDIR /app
+
+# Copy manifest files
+COPY Cargo.toml Cargo.lock ./
+
+# Copy source code
+COPY common-net ./common-net
+COPY gateway ./gateway
+COPY worker ./worker
+COPY room-manager ./room-manager
+COPY services ./services
+COPY pocketbase ./pocketbase
+COPY proto ./proto
+
+# Build production binaries with optimizations
+ENV RUSTFLAGS="-C target-cpu=native -C opt-level=3 -C lto=fat -C codegen-units=1 -C panic=abort"
+
+# Build all services
+RUN cargo build --release --target x86_64-unknown-linux-gnu
+
+# Strip binaries for minimal size
+RUN find target/x86_64-unknown-linux-gnu/release -type f -executable -exec strip {} \;
+
+# Runtime stage
+FROM debian:bookworm-slim
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app user
+RUN groupadd -r gamev1 && useradd -r -g gamev1 gamev1
+
+# Create directories
+RUN mkdir -p /opt/gamev1/bin /opt/gamev1/config /opt/gamev1/logs /opt/gamev1/data
+
+# Copy binaries from build stage
+COPY --from=builder /app/target/x86_64-unknown-linux-gnu/release/gateway /opt/gamev1/bin/
+COPY --from=builder /app/target/x86_64-unknown-linux-gnu/release/worker /opt/gamev1/bin/
+COPY --from=builder /app/target/x86_64-unknown-linux-gnu/release/room-manager /opt/gamev1/bin/
+COPY --from=builder /app/target/x86_64-unknown-linux-gnu/release/services /opt/gamev1/bin/
+COPY --from=builder /app/target/x86_64-unknown-linux-gnu/release/pocketbase /opt/gamev1/bin/
+
+# Copy configuration files
+COPY config/ /opt/gamev1/config/
+COPY systemd/ /etc/systemd/system/
+
+# Set ownership and permissions
+RUN chown -R gamev1:gamev1 /opt/gamev1 && \
+    chmod -R 755 /opt/gamev1/bin && \
+    chmod -R 644 /opt/gamev1/config && \
+    chmod -R 755 /etc/systemd/system/gamev1-*.service
+
+# Expose ports
+EXPOSE 8080 50051 8090 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Set environment
+ENV RUST_LOG=info
+ENV NODE_ENV=production
+
+# Switch to non-root user
+USER gamev1
+
+# Set working directory
+WORKDIR /opt/gamev1
+
+# Default command (will be overridden by docker-compose)
+CMD ["./bin/gateway"]

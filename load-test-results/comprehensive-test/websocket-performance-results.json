@@ -1,0 +1,53 @@
+{
+  "startTime": "2025-10-23T03:56:17.878Z",
+  "endTime": "2025-10-23T04:02:42.826Z",
+  "scenarios": [
+    {
+      "name": "player_spawn_stress",
+      "description": "Multiple players spawning simultaneously",
+      "duration": 114.1795502,
+      "success": true
+    },
+    {
+      "name": "chat_flood",
+      "description": "High volume chat messages",
+      "duration": 54.1579166,
+      "success": true
+    },
+    {
+      "name": "combat_simulation",
+      "description": "Intense combat with many actions",
+      "duration": 54.14823609999998,
+      "success": true
+    },
+    {
+      "name": "memory_stress",
+      "description": "Long-running test to detect memory leaks",
+      "duration": 54.171625,
+      "success": true
+    },
+    {
+      "name": "network_fluctuation",
+      "description": "Simulate network conditions and recovery",
+      "duration": 54.15717219999997,
+      "success": true
+    }
+  ],
+  "metrics": {},
+  "summary": {
+    "totalScenarios": 5,
+    "successfulScenarios": 5,
+    "totalClients": 100,
+    "totalDuration": 300,
+    "averageLatency": 0,
+    "p95Latency": 0,
+    "p99Latency": 0,
+    "totalMessages": 0,
+    "throughput": 0,
+    "errorRate": 0
+  },
+  "regressionAnalysis": {
+    "hasRegression": false,
+    "message": "No baseline available"
+  }
+}

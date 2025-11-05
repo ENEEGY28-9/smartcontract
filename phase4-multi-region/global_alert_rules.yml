@@ -1,0 +1,78 @@
+groups:
+  - name: global_gamev1_alerts
+    rules:
+      # Cross-region availability
+      - alert: MultiRegionOutage
+        expr: |
+          (
+            up{job="gamev1-gateway", region="us-east-1"} == 0
+            and up{job="gamev1-gateway", region="eu-west-1"} == 0
+            and up{job="gamev1-gateway", region="ap-southeast-1"} == 0
+          )
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Multi-region outage detected"
+          description: "All regions are experiencing gateway outages"
+
+      - alert: RegionDegraded
+        expr: |
+          (
+            up{job="gamev1-gateway", region="us-east-1"} == 0
+            or up{job="gamev1-gateway", region="eu-west-1"} == 0
+            or up{job="gamev1-gateway", region="ap-southeast-1"} == 0
+          )
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Region degraded"
+          description: "One or more regions experiencing issues"
+
+      # Global performance alerts
+      - alert: GlobalHighLatency
+        expr: |
+          quantile_over_time(0.95, gateway_request_duration_seconds_bucket[5m]) > 2
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Global high latency"
+          description: "95th percentile latency across all regions > 2 seconds"
+
+      - alert: GlobalHighErrorRate
+        expr: |
+          (
+            rate(gateway_requests_total{status=~"5.."}[5m]) /
+            rate(gateway_requests_total[5m])
+          ) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Global high error rate"
+          description: "Error rate across all regions > 5%"
+
+      # CDN and global infrastructure
+      - alert: CDNOutage
+        expr: up{job="external-services", service="cdn"} == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CDN outage"
+          description: "Global CDN is not responding"
+
+      # Database cluster health
+      - alert: DatabaseClusterDegraded
+        expr: |
+          (
+            up{job="database-instances"} == 0
+          )
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database cluster degraded"
+          description: "Database instances not responding"

@@ -1,0 +1,29 @@
+// COPY-PASTE INTO BROWSER CONSOLE (F12)
+// Stop auto-connect spam and test connection
+
+// 1. Stop auto-connect spam
+clearInterval(window.autoConnectInterval);
+clearTimeout(window.walletStoreAutoConnect);
+console.log('✅ Auto-connect disabled - console clean!');
+
+// 2. Test manual connection
+console.log('🔍 Testing Phantom connection...');
+if (window.solana) {
+  console.log('✅ Phantom found, attempting connection...');
+  window.solana.connect()
+    .then(result => {
+      console.log('🎉 SUCCESS! Connected to:', result.publicKey.toString());
+      console.log('💡 Check wallet test page - should show Connected now');
+    })
+    .catch(error => {
+      console.error('❌ Connection failed:', error.message);
+      console.log('💡 Make sure Phantom wallet is unlocked');
+      console.log('💡 Look for Phantom popup and click Approve');
+    });
+} else {
+  console.log('❌ Phantom wallet not found');
+  console.log('💡 Check if extension is enabled');
+}
+
+console.log('🌐 Current URL:', window.location.href);
+

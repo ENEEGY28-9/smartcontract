@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse Movement Control Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .instructions {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .instructions h2 {
+            color: #4a90e2;
+            margin-top: 0;
+        }
+        .instructions ul {
+            line-height: 1.6;
+        }
+        #gameCanvas {
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: linear-gradient(to bottom, #87ceeb, #98fb98);
+            cursor: crosshair;
+            display: block;
+            margin: 0 auto;
+        }
+        .controls {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .controls h3 {
+            margin-top: 0;
+            color: #4a90e2;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f4fd;
+            border-radius: 4px;
+            border-left: 4px solid #4a90e2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖱️ Mouse Movement Control Test</h1>
+
+        <div class="instructions">
+            <h2>Instructions</h2>
+            <ul>
+                <li><strong>Mouse X (Left/Right):</strong> Controls player strafing (side to side movement)</li>
+                <li><strong>Mouse Y (Up/Down):</strong> Controls camera rotation (look up/down)</li>
+                <li><strong>Auto Forward:</strong> Player automatically moves forward when game starts</li>
+                <li><strong>Space:</strong> Jump (keyboard still works)</li>
+                <li><strong>Shift:</strong> Slide (keyboard still works)</li>
+                <li><strong>Hybrid Control:</strong> Mouse X for movement, Mouse Y for camera view</li>
+            </ul>
+        </div>
+
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+        <div class="controls">
+            <h3>Controls</h3>
+            <div class="status">
+                <strong>Status:</strong> Hybrid mouse control active<br>
+                <strong>Mouse X:</strong> Player strafing (left/right)<br>
+                <strong>Mouse Y:</strong> Camera rotation (up/down)<br>
+                <strong>Auto-forward:</strong> Player moves forward automatically
+            </div>
+            <p><em>Note: This is a simplified test. In the full game, WASD keys still work as fallback controls.</em></p>
+        </div>
+    </div>
+
+    <script>
+        // Simple test script to verify mouse movement is captured
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+        let playerX = canvas.width / 2;
+        let playerY = canvas.height / 2;
+        let cameraY = canvas.height / 2; // Simulate camera Y position for mouse Y control
+
+        // Draw simple scene
+        function draw() {
+            // Clear canvas
+            ctx.fillStyle = '#87ceeb';
+            ctx.fillRect(0, 0, canvas.width, canvas.height / 2);
+
+            ctx.fillStyle = '#98fb98';
+            ctx.fillRect(0, canvas.height / 2, canvas.width, canvas.height / 2);
+
+            // Draw player (simple circle)
+            ctx.fillStyle = '#ff6b6b';
+            ctx.beginPath();
+            ctx.arc(playerX, playerY, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw crosshair for mouse position
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(mouseX - 10, mouseY);
+            ctx.lineTo(mouseX + 10, mouseY);
+            ctx.moveTo(mouseX, mouseY - 10);
+            ctx.lineTo(mouseX, mouseY + 10);
+            ctx.stroke();
+
+            // Draw camera indicator (affected by mouse Y)
+            ctx.strokeStyle = '#e17055';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2 - 15, cameraY);
+            ctx.lineTo(canvas.width / 2 + 15, cameraY);
+            ctx.stroke();
+
+            // Draw camera label
+            ctx.fillStyle = '#e17055';
+            ctx.font = '12px Arial';
+            ctx.fillText('Camera', canvas.width / 2 + 20, cameraY + 4);
+
+            // Draw instructions
+            ctx.fillStyle = '#333';
+            ctx.font = '14px Arial';
+            ctx.fillText(`Mouse: (${Math.round(mouseX)}, ${Math.round(mouseY)})`, 10, 20);
+            ctx.fillText(`Player: (${Math.round(playerX)}, ${Math.round(playerY)})`, 10, 40);
+            ctx.fillText(`Camera Y: ${Math.round(cameraY)}`, 10, 60);
+            ctx.fillText('Mouse X = Player strafing | Mouse Y = Camera rotation', 10, 80);
+        }
+
+        // Handle mouse movement - Hybrid control: X for player, Y for camera
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const newMouseX = e.clientX - rect.left;
+            const newMouseY = e.clientY - rect.top;
+
+            // Calculate mouse movement deltas
+            const deltaX = (newMouseX - mouseX) * 0.1;
+            const deltaY = (newMouseY - mouseY) * 0.1;
+
+            // Hybrid control:
+            // Mouse X (deltaX) controls player strafing (left/right)
+            playerX += deltaX;
+
+            // Mouse Y (deltaY) controls camera Y position (up/down look simulation)
+            cameraY += deltaY;
+            // Keep camera Y in reasonable bounds for this demo
+            cameraY = Math.max(canvas.height * 0.2, Math.min(canvas.height * 0.8, cameraY));
+
+            // Update mouse position
+            mouseX = newMouseX;
+            mouseY = newMouseY;
+
+            // Keep player in bounds
+            playerX = Math.max(20, Math.min(canvas.width - 20, playerX));
+            playerY = Math.max(20, Math.min(canvas.height - 20, playerY));
+
+            draw();
+        });
+
+        // Auto forward movement
+        function autoForward() {
+            playerY += 2; // Move player down (forward in this 2D test)
+
+            // Reset to top when reaching bottom
+            if (playerY > canvas.height + 20) {
+                playerY = -20;
+            }
+
+            draw();
+
+            // Auto forward animation
+            if (playerY < canvas.height + 20) {
+                requestAnimationFrame(autoForward);
+            }
+        }
+
+        // Start auto forward movement
+        autoForward();
+
+        // Initial draw
+        draw();
+
+        // Add click to reset
+        canvas.addEventListener('click', () => {
+            playerX = canvas.width / 2;
+            playerY = canvas.height / 2;
+            cameraY = canvas.height / 2;
+            draw();
+        });
+
+        console.log('🖱️ Hybrid mouse control test initialized');
+        console.log('✅ Mouse X = player strafing (left/right movement)');
+        console.log('✅ Mouse Y = camera rotation (up/down look)');
+        console.log('✅ Auto-forward movement active');
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+[Unit]
+Description=GameV1 Worker Service - Game Logic Engine
+After=network.target redis.service
+Wants=redis.service
+
+[Service]
+Type=simple
+User=gamev1
+Group=gamev1
+WorkingDirectory=/opt/gamev1
+ExecStart=/opt/gamev1/bin/worker
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=3
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/gamev1/logs /tmp
+
+# Resource limits tối ưu cho game worker (CPU intensive)
+LimitNOFILE=65536
+MemoryLimit=1G
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Environment variables
+Environment=RUST_LOG=info,worker=debug
+Environment=POCKETBASE_URL=http://127.0.0.1:8090
+Environment=REDIS_URL=redis://127.0.0.1:6379
+
+[Install]
+WantedBy=multi-user.target

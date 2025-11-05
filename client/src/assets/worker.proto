@@ -1,0 +1,225 @@
+syntax = "proto3";
+
+package worker.v1;
+
+service Worker {
+  rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+  rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
+  rpc PushInput(PushInputRequest) returns (PushInputResponse);
+
+  // Room management
+  rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
+  rpc ListRooms(ListRoomsRequest) returns (ListRoomsResponse);
+  rpc GetRoomInfo(GetRoomInfoRequest) returns (GetRoomInfoResponse);
+  rpc JoinRoomAsPlayer(JoinRoomAsPlayerRequest) returns (JoinRoomAsPlayerResponse);
+  rpc JoinRoomAsSpectator(JoinRoomAsSpectatorRequest) returns (JoinRoomAsSpectatorResponse);
+  rpc LeaveRoomAsPlayer(LeaveRoomAsPlayerRequest) returns (LeaveRoomAsPlayerResponse);
+  // TODO: Fix LeaveRoomAsSpectator message definition
+  // rpc LeaveRoomAsSpectator(LeaveRoomAsSpectatorRequest) returns (LeaveRoomAsSpectatorResponse);
+  rpc StartGame(StartGameRequest) returns (StartGameResponse);
+  rpc EndGame(EndGameRequest) returns (EndGameResponse);
+  rpc SetPlayerReady(SetPlayerReadyRequest) returns (SetPlayerReadyResponse);
+  rpc UpdatePlayerPing(UpdatePlayerPingRequest) returns (UpdatePlayerPingResponse);
+}
+
+message JoinRoomRequest {
+  string room_id = 1;
+  string player_id = 2;
+}
+
+message JoinRoomResponse {
+  bool ok = 1;
+  string room_id = 2;
+  Snapshot snapshot = 3;
+  string error = 4;
+}
+
+message LeaveRoomRequest {
+  string room_id = 1;
+}
+
+message LeaveRoomResponse {
+  bool ok = 1;
+  string room_id = 2;
+  string error = 3;
+}
+
+message PushInputRequest {
+  string room_id = 1;
+  uint32 sequence = 2;
+  string payload_json = 3;
+}
+
+message PushInputResponse {
+  bool ok = 1;
+  string room_id = 2;
+  Snapshot snapshot = 3;
+  string error = 4;
+}
+
+message Snapshot {
+  uint64 tick = 1;
+  string payload_json = 2;
+}
+
+// Room management messages
+message CreateRoomRequest {
+  string room_name = 1;
+  string host_id = 2;
+  string host_name = 3;
+  RoomSettings settings = 4;
+}
+
+message CreateRoomResponse {
+  bool success = 1;
+  string room_id = 2;
+  string error = 3;
+}
+
+message ListRoomsRequest {
+  RoomListFilter filter = 1;
+}
+
+message ListRoomsResponse {
+  bool success = 1;
+  repeated RoomInfo rooms = 2;
+  string error = 3;
+}
+
+message GetRoomInfoRequest {
+  string room_id = 1;
+}
+
+message GetRoomInfoResponse {
+  bool success = 1;
+  RoomInfo room = 2;
+  string error = 3;
+}
+
+message JoinRoomAsPlayerRequest {
+  string room_id = 1;
+  string player_id = 2;
+  string player_name = 3;
+}
+
+message JoinRoomAsPlayerResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message JoinRoomAsSpectatorRequest {
+  string room_id = 1;
+  string spectator_id = 2;
+  string spectator_name = 3;
+}
+
+message JoinRoomAsSpectatorResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message LeaveRoomAsPlayerRequest {
+  string room_id = 1;
+  string player_id = 2;
+}
+
+message LeaveRoomAsPlayerResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+// TODO: Fix LeaveRoomAsSpectator message definition
+// message LeaveRoomAsSpectatorResponse {
+//   bool success = 1;
+//   string error = 2;
+// }
+
+message StartGameRequest {
+  string room_id = 1;
+  string player_id = 2;
+}
+
+message StartGameResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message EndGameRequest {
+  string room_id = 1;
+}
+
+message EndGameResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message SetPlayerReadyRequest {
+  string room_id = 1;
+  string player_id = 2;
+  bool ready = 3;
+}
+
+message SetPlayerReadyResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message UpdatePlayerPingRequest {
+  string room_id = 1;
+  string player_id = 2;
+  uint32 ping = 3;
+}
+
+message UpdatePlayerPingResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+// Room data structures
+message RoomSettings {
+  uint32 max_players = 1;
+  GameMode game_mode = 2;
+  string map_name = 3;
+  uint32 time_limit_seconds = 4;
+  bool has_password = 5;
+  bool is_private = 6;
+  bool allow_spectators = 7;
+  bool auto_start = 8;
+  uint32 min_players_to_start = 9;
+}
+
+message RoomInfo {
+  string id = 1;
+  string name = 2;
+  RoomSettings settings = 3;
+  RoomState state = 4;
+  uint32 player_count = 5;
+  uint32 spectator_count = 6;
+  uint32 max_players = 7;
+  bool has_password = 8;
+  GameMode game_mode = 9;
+  uint64 created_at_seconds_ago = 10;
+}
+
+message RoomListFilter {
+  GameMode game_mode = 1;
+  bool has_password = 2;
+  uint32 min_players = 3;
+  uint32 max_players = 4;
+  RoomState state = 5;
+}
+
+enum RoomState {
+  WAITING = 0;
+  STARTING = 1;
+  PLAYING = 2;
+  FINISHED = 3;
+  CLOSED = 4;
+}
+
+enum GameMode {
+  DEATHMATCH = 0;
+  TEAM_DEATHMATCH = 1;
+  CAPTURE_THE_FLAG = 2;
+  KING_OF_THE_HILL = 3;
+}

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Format Test - No Server Required</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1f2e 0%, #0a0e1a 100%);
+            color: #f6f8ff;
+            line-height: 1.6;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(68, 107, 255, 0.2);
+        }
+        .input-group {
+            margin: 1rem 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #feca57;
+        }
+        .address-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #446bff;
+            border-radius: 8px;
+            background: rgba(68, 107, 255, 0.1);
+            color: #f6f8ff;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+        .address-input:focus {
+            outline: none;
+            border-color: #6b73ff;
+            background: rgba(68, 107, 255, 0.2);
+        }
+        .btn {
+            background: linear-gradient(135deg, #446bff, #6b73ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(68, 107, 255, 0.4);
+        }
+        .success { color: #2ecc71; }
+        .error { color: #ff4757; }
+        .info { color: #feca57; }
+        .result {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        .result.valid {
+            background: rgba(46, 204, 113, 0.1);
+            border-color: #2ecc71;
+        }
+        .result.invalid {
+            background: rgba(255, 71, 87, 0.1);
+            border-color: #ff4757;
+        }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .network-info {
+            background: rgba(254, 202, 87, 0.1);
+            border: 1px solid rgba(254, 202, 87, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .test-info {
+            background: rgba(68, 107, 255, 0.1);
+            border: 1px solid rgba(68, 107, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Ethereum Format Test</h1>
+        <p>Validate Ethereum address format and checksum (no dev server required)</p>
+
+        <!-- Network Info -->
+        <div class="network-info">
+            <strong>🌐 Network:</strong> Ethereum Mainnet<br>
+            <strong>💰 Currency:</strong> ETH (Ether)<br>
+            <strong>📋 Address Format:</strong> 0x... (42 characters)<br>
+            <strong>✅ Validation:</strong> Format + EIP-55 Checksum
+        </div>
+
+        <div class="input-group">
+            <label for="address-input">Enter Ethereum Address:</label>
+            <input
+                type="text"
+                id="address-input"
+                class="address-input"
+                placeholder="0x47F0350df3E06c1bBD1Fd1dc86ab12ae772BF2A2"
+                value="0x47F0350df3E06c1bBD1Fd1dc86ab12ae772BF2A2"
+            >
+            <button class="btn" onclick="validateAddress()">🔍 Validate Address</button>
+            <button class="btn" onclick="clearResult()">🗑️ Clear</button>
+        </div>
+
+        <div id="result" style="display: none;"></div>
+
+        <div class="test-info">
+            <strong>💡 What this validates:</strong>
+            • ✅ Address format (42 characters, starts with 0x)<br>
+            • ✅ Hex character validation (0-9, a-f, A-F)<br>
+            • ✅ EIP-55 checksum validation<br>
+            • ✅ Network compatibility<br><br>
+            <strong>🎯 Test Result:</strong> Your address should show <span style="color: #2ecc71;">✅ VALID</span> with full validation details.
+        </div>
+    </div>
+
+    <script type="module">
+        async function validateAddress() {
+            const input = document.getElementById('address-input');
+            const resultDiv = document.getElementById('result');
+            const address = input.value.trim();
+
+            if (!address) {
+                showResult('invalid', '❌ Please enter an Ethereum address');
+                return;
+            }
+
+            try {
+                console.log('🔍 Testing address:', address);
+
+                // Import viem from CDN for validation
+                const { isAddress, getAddress } = await import('https://esm.sh/viem');
+
+                console.log('✅ Viem loaded successfully');
+
+                // Basic format validation
+                if (!isAddress(address)) {
+                    showResult('invalid', '❌ Invalid Ethereum address format');
+                    return;
+                }
+
+                console.log('✅ Address format is valid');
+
+                // Checksum validation
+                const checksumValid = getAddress(address) === address;
+
+                // Additional format checks
+                const isLowercase = address === address.toLowerCase();
+                const isUppercase = address === address.toUpperCase();
+                const hasInvalidChars = /[^0-9a-fA-Fx]/.test(address);
+
+                let result = `
+                    <strong>✅ VALID Ethereum Address</strong><br><br>
+                    <strong>📋 Address:</strong> <code>${address}</code><br>
+                    <strong>🔐 Checksum:</strong> ${checksumValid ? '✅ Valid (EIP-55)' : '⚠️ Invalid (but format is correct)'}<br>
+                    <strong>📊 Length:</strong> ${address.length} characters ${address.length === 42 ? '(✅ correct)' : '(❌ should be 42)'}<br>
+                    <strong>🔤 Format:</strong> ${address.startsWith('0x') ? '✅ Starts with 0x' : '❌ Missing 0x prefix'}<br>
+                    <strong>🔢 Characters:</strong> ${hasInvalidChars ? '❌ Contains invalid characters' : '✅ Valid hex characters only'}<br>
+                `;
+
+                if (isLowercase) {
+                    result += `<strong>💡 Case:</strong> All lowercase (valid but consider checksum format)<br>`;
+                } else if (isUppercase) {
+                    result += `<strong>💡 Case:</strong> All uppercase (valid but consider checksum format)<br>`;
+                }
+
+                result += `<br><strong>🌐 Network:</strong> Ethereum Mainnet (format compatible)<br>`;
+                result += `<strong>✅ Status:</strong> Address is ready for use!<br>`;
+
+                showResult('valid', result);
+                console.log('✅ Validation completed successfully');
+
+            } catch (error) {
+                console.error('❌ Validation failed:', error);
+                showResult('invalid', `❌ Validation error: ${error.message}<br><br>💡 This might be due to network issues loading validation library.`);
+            }
+        }
+
+        function showResult(type, content) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = content;
+        }
+
+        function clearResult() {
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('result').innerHTML = '';
+        }
+
+        // Auto-validate on input change (debounced)
+        let debounceTimer;
+        document.getElementById('address-input').addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                if (this.value.trim()) {
+                    validateAddress();
+                } else {
+                    clearResult();
+                }
+            }, 500);
+        });
+
+        // Initial validation on page load
+        setTimeout(() => {
+            console.log('🚀 Starting initial validation...');
+            validateAddress();
+        }, 100);
+
+        console.log('🔧 Ethereum Format Validator loaded');
+        console.log('📋 Test address:', document.getElementById('address-input').value);
+    </script>
+</body>
+</html>

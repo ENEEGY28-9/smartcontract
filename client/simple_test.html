@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Token Game Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.3);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+
+        .status {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .status-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .game-area {
+            background: rgba(0,0,0,0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .particle {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #ffd700, #ff8c00);
+            border-radius: 50%;
+            margin: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .particle:hover {
+            transform: scale(1.2);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .log-area {
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+        }
+
+        .log-error {
+            color: #ff6b6b;
+        }
+
+        .log-success {
+            color: #4CAF50;
+        }
+
+        .log-info {
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Token Game Integration Test</h1>
+
+        <div class="status">
+            <div class="status-item">
+                <div>Token Balance</div>
+                <div class="status-value" id="tokenBalance">0</div>
+            </div>
+            <div class="status-item">
+                <div>Particles Collected</div>
+                <div class="status-value" id="particlesCollected">0</div>
+            </div>
+            <div class="status-item">
+                <div>Wallet Status</div>
+                <div class="status-value" id="walletStatus">Not Connected</div>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <h3>Click the particles to collect tokens!</h3>
+            <div id="particleContainer">
+                <!-- Particles will be added here -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="spawnParticlesBtn">Spawn Particles</button>
+            <button class="btn" id="connectWalletBtn">Connect Wallet</button>
+            <button class="btn" id="clearLogBtn">Clear Log</button>
+        </div>
+
+        <div class="log-area" id="logArea">
+            <div class="log-entry log-info">🔄 Initializing token game test...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Simple token game test
+        class TokenGameTest {
+            constructor() {
+                this.tokenBalance = 0;
+                this.particlesCollected = 0;
+                this.walletConnected = false;
+                this.walletAddress = null;
+
+                this.logArea = document.getElementById('logArea');
+                this.particleContainer = document.getElementById('particleContainer');
+
+                this.init();
+            }
+
+            init() {
+                this.log('🎯 Token Game Test initialized');
+
+                // Setup event listeners
+                document.getElementById('spawnParticlesBtn').addEventListener('click', () => this.spawnParticles());
+                document.getElementById('connectWalletBtn').addEventListener('click', () => this.connectWallet());
+                document.getElementById('clearLogBtn').addEventListener('click', () => this.clearLog());
+
+                // Initialize token service
+                this.initTokenService();
+
+                // Spawn initial particles
+                setTimeout(() => this.spawnParticles(), 1000);
+            }
+
+            async initTokenService() {
+                try {
+                    this.log('🔧 Initializing TokenService...');
+
+                    // Load blockchain integration if available
+                    if (typeof window.TokenService === 'undefined') {
+                        this.log('⚠️ TokenService not found, loading...');
+
+                        // Try to load from game_token folder
+                        const script = document.createElement('script');
+                        script.src = '/game_token/blockchain_integration.js';
+                        script.onload = () => {
+                            this.log('✅ Blockchain integration loaded');
+                            this.initTokenServiceCore();
+                        };
+                        script.onerror = () => {
+                            this.log('❌ Failed to load blockchain integration', 'error');
+                            this.initTokenServiceCore();
+                        };
+                        document.head.appendChild(script);
+                    } else {
+                        this.initTokenServiceCore();
+                    }
+                } catch (error) {
+                    this.log(`❌ TokenService initialization failed: ${error.message}`, 'error');
+                }
+            }
+
+            initTokenServiceCore() {
+                try {
+                    // Initialize TokenService if available
+                    if (typeof window.TokenService !== 'undefined') {
+                        window.TokenService.initialize().then(() => {
+                            this.log('✅ TokenService initialized successfully');
+                        }).catch(error => {
+                            this.log(`⚠️ TokenService init warning: ${error.message}`, 'error');
+                        });
+                    } else {
+                        this.log('⚠️ TokenService not available, running in demo mode');
+                    }
+                } catch (error) {
+                    this.log(`❌ TokenService core init failed: ${error.message}`, 'error');
+                }
+            }
+
+            spawnParticles() {
+                const particleCount = 3 + Math.floor(Math.random() * 3); // 3-5 particles
+
+                for (let i = 0; i < particleCount; i++) {
+                    setTimeout(() => this.createParticle(), i * 200);
+                }
+
+                this.log(`⚡ Spawned ${particleCount} particles`);
+            }
+
+            createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.textContent = '⚡';
+
+                // Random position
+                const containerRect = this.particleContainer.getBoundingClientRect();
+                const x = Math.random() * (containerRect.width - 60);
+                const y = Math.random() * (containerRect.height - 60);
+
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+
+                // Add click handler
+                particle.addEventListener('click', () => this.collectParticle(particle));
+
+                this.particleContainer.appendChild(particle);
+
+                // Auto-remove after 10 seconds
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 10000);
+            }
+
+            async collectParticle(particle) {
+                // Remove particle
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+
+                // Update counters
+                this.particlesCollected++;
+                this.tokenBalance += 1;
+
+                // Update UI
+                document.getElementById('tokenBalance').textContent = this.tokenBalance;
+                document.getElementById('particlesCollected').textContent = this.particlesCollected;
+
+                this.log(`🎉 Collected particle! +1 token (Total: ${this.tokenBalance})`);
+
+                // Try to mint token
+                await this.mintToken();
+            }
+
+            async mintToken() {
+                try {
+                    // Simulate particle location
+                    const particleLocation = [
+                        Math.floor(Math.random() * 800),
+                        Math.floor(Math.random() * 600)
+                    ];
+
+                    if (typeof window.TokenService !== 'undefined') {
+                        const result = await window.TokenService.mintTokenOnCollect(
+                            particleLocation,
+                            'energy_particle'
+                        );
+
+                        if (result.success) {
+                            this.log(`✅ Real token minted! Balance: ${result.new_balance || this.tokenBalance}`);
+                        } else {
+                            this.log(`⚠️ Token minting failed: ${result.error}`);
+                        }
+                    } else {
+                        this.log('ℹ️ Demo mode: Token would be minted here');
+                    }
+                } catch (error) {
+                    this.log(`❌ Minting error: ${error.message}`, 'error');
+                }
+            }
+
+            async connectWallet() {
+                try {
+                    if (typeof window.solana === 'undefined') {
+                        this.log('❌ Phantom wallet not found. Please install Phantom!', 'error');
+                        window.open('https://phantom.app/', '_blank');
+                        return;
+                    }
+
+                    this.log('🔗 Connecting to Phantom wallet...');
+
+                    const response = await window.solana.connect();
+                    this.walletAddress = response.publicKey.toString();
+                    this.walletConnected = true;
+
+                    document.getElementById('walletStatus').textContent = 'Connected';
+                    document.getElementById('connectWalletBtn').textContent = 'Disconnect';
+
+                    this.log(`✅ Wallet connected: ${this.walletAddress.substring(0, 8)}...`);
+
+                } catch (error) {
+                    this.log(`❌ Wallet connection failed: ${error.message}`, 'error');
+                }
+            }
+
+            log(message, type = 'info') {
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${type}`;
+                logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+
+                this.logArea.appendChild(logEntry);
+                this.logArea.scrollTop = this.logArea.scrollHeight;
+
+                // Also log to console
+                console.log(message);
+            }
+
+            clearLog() {
+                this.logArea.innerHTML = '';
+                this.log('🧹 Log cleared');
+            }
+        }
+
+        // Initialize test when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => new TokenGameTest());
+        } else {
+            new TokenGameTest();
+        }
+    </script>
+</body>
+</html>
+

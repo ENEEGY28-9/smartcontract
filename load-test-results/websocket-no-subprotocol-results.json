@@ -1,0 +1,171 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.WebSocket Connection Test": 300,
+      "vusers.created": 300,
+      "websocket.messages_sent": 600,
+      "errors.Error: WebSocket is not open: readyState 3 (CLOSED)": 300,
+      "errors.WebSocket is not open: readyState 3 (CLOSED)": 300,
+      "vusers.failed": 300
+    },
+    "rates": {
+      "websocket.send_rate": 10
+    },
+    "firstCounterAt": 1761201251820,
+    "lastCounterAt": 1761201313099,
+    "firstMetricAt": 1761201251820,
+    "lastMetricAt": 1761201313099,
+    "period": 1761201310000,
+    "summaries": {},
+    "histograms": {}
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.WebSocket Connection Test": 43,
+        "vusers.created": 43,
+        "websocket.messages_sent": 76,
+        "errors.Error: WebSocket is not open: readyState 3 (CLOSED)": 33,
+        "errors.WebSocket is not open: readyState 3 (CLOSED)": 33,
+        "vusers.failed": 33
+      },
+      "rates": {
+        "websocket.send_rate": 10
+      },
+      "websocket.send_rate": null,
+      "firstCounterAt": 1761201251820,
+      "lastCounterAt": 1761201259951,
+      "firstMetricAt": 1761201251820,
+      "lastMetricAt": 1761201259951,
+      "period": "1761201250000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.WebSocket Connection Test": 50,
+        "vusers.created": 50,
+        "websocket.messages_sent": 100,
+        "errors.Error: WebSocket is not open: readyState 3 (CLOSED)": 50,
+        "errors.WebSocket is not open: readyState 3 (CLOSED)": 50,
+        "vusers.failed": 50
+      },
+      "rates": {
+        "websocket.send_rate": 10
+      },
+      "websocket.send_rate": null,
+      "firstCounterAt": 1761201260008,
+      "lastCounterAt": 1761201269949,
+      "firstMetricAt": 1761201260008,
+      "lastMetricAt": 1761201269949,
+      "period": "1761201260000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.WebSocket Connection Test": 50,
+        "vusers.created": 50,
+        "websocket.messages_sent": 100,
+        "errors.Error: WebSocket is not open: readyState 3 (CLOSED)": 50,
+        "errors.WebSocket is not open: readyState 3 (CLOSED)": 50,
+        "vusers.failed": 50
+      },
+      "rates": {
+        "websocket.send_rate": 10
+      },
+      "websocket.send_rate": null,
+      "firstCounterAt": 1761201270008,
+      "lastCounterAt": 1761201279948,
+      "firstMetricAt": 1761201270008,
+      "lastMetricAt": 1761201279948,
+      "period": "1761201270000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.WebSocket Connection Test": 50,
+        "vusers.created": 50,
+        "websocket.messages_sent": 100,
+        "errors.Error: WebSocket is not open: readyState 3 (CLOSED)": 50,
+        "errors.WebSocket is not open: readyState 3 (CLOSED)": 50,
+        "vusers.failed": 50
+      },
+      "rates": {
+        "websocket.send_rate": 10
+      },
+      "websocket.send_rate": null,
+      "firstCounterAt": 1761201280008,
+      "lastCounterAt": 1761201289948,
+      "firstMetricAt": 1761201280008,
+      "lastMetricAt": 1761201289948,
+      "period": "1761201280000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.WebSocket Connection Test": 50,
+        "vusers.created": 50,
+        "websocket.messages_sent": 100,
+        "errors.Error: WebSocket is not open: readyState 3 (CLOSED)": 50,
+        "errors.WebSocket is not open: readyState 3 (CLOSED)": 50,
+        "vusers.failed": 50
+      },
+      "rates": {
+        "websocket.send_rate": 10
+      },
+      "websocket.send_rate": null,
+      "firstCounterAt": 1761201290008,
+      "lastCounterAt": 1761201299948,
+      "firstMetricAt": 1761201290008,
+      "lastMetricAt": 1761201299948,
+      "period": "1761201290000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.WebSocket Connection Test": 50,
+        "vusers.created": 50,
+        "websocket.messages_sent": 100,
+        "errors.Error: WebSocket is not open: readyState 3 (CLOSED)": 50,
+        "errors.WebSocket is not open: readyState 3 (CLOSED)": 50,
+        "vusers.failed": 50
+      },
+      "rates": {
+        "websocket.send_rate": 10
+      },
+      "websocket.send_rate": null,
+      "firstCounterAt": 1761201300008,
+      "lastCounterAt": 1761201309960,
+      "firstMetricAt": 1761201300008,
+      "lastMetricAt": 1761201309960,
+      "period": "1761201300000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.WebSocket Connection Test": 7,
+        "vusers.created": 7,
+        "websocket.messages_sent": 24,
+        "errors.Error: WebSocket is not open: readyState 3 (CLOSED)": 17,
+        "errors.WebSocket is not open: readyState 3 (CLOSED)": 17,
+        "vusers.failed": 17
+      },
+      "rates": {
+        "websocket.send_rate": 10
+      },
+      "websocket.send_rate": null,
+      "firstCounterAt": 1761201310020,
+      "lastCounterAt": 1761201313099,
+      "firstMetricAt": 1761201310020,
+      "lastMetricAt": 1761201313099,
+      "period": "1761201310000",
+      "summaries": {},
+      "histograms": {}
+    }
+  ]
+}

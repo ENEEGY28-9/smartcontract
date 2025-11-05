@@ -1,0 +1,1 @@
+./scripts/run-comprehensive-tests.sh: line 41: cargo: command not found

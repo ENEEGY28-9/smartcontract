@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser Proxy Test</title>
+</head>
+<body>
+    <h1>Browser Proxy Test</h1>
+    <button onclick="testHealth()">Test Health</button>
+    <button onclick="testCollections()">Test Collections</button>
+    <button onclick="testUserCreation()">Test User Creation</button>
+
+    <div id="results"></div>
+
+    <script>
+        async function testHealth() {
+            try {
+                const response = await fetch('/pb-api/api/health');
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonError) {
+                    throw new Error(`Invalid JSON response: ${response.status} ${response.statusText}`);
+                }
+                addResult('Health Test', response.status, result);
+            } catch (error) {
+                addResult('Health Test', 'Error', error.message);
+            }
+        }
+
+        async function testCollections() {
+            try {
+                const response = await fetch('/pb-api/api/collections');
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonError) {
+                    throw new Error(`Invalid JSON response: ${response.status} ${response.statusText}`);
+                }
+                addResult('Collections Test', response.status, result);
+            } catch (error) {
+                addResult('Collections Test', 'Error', error.message);
+            }
+        }
+
+        async function testUserCreation() {
+            try {
+                const response = await fetch('/pb-api/api/collections/users/records', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'browser' + Date.now() + '@test.com',
+                        password: 'test123456',
+                        passwordConfirm: 'test123456',
+                        name: 'Browser Test'
+                    })
+                });
+
+                const result = await response.text();
+                addResult('User Creation Test', response.status, result);
+            } catch (error) {
+                addResult('User Creation Test', 'Error', error.message);
+            }
+        }
+
+        function addResult(testName, status, data) {
+            const results = document.getElementById('results');
+            results.innerHTML += `
+                <div style="margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+                    <h3>${testName}</h3>
+                    <p><strong>Status:</strong> ${status}</p>
+                    <p><strong>Data:</strong> ${JSON.stringify(data, null, 2)}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

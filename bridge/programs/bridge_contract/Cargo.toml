@@ -1,0 +1,22 @@
+[package]
+name = "bridge_contract"
+version = "0.1.0"
+description = "Bridge contract for token conversion between Solana and other chains"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "bridge_contract"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.29.0"
+anchor-spl = "0.29.0"
+wormhole-anchor-sdk = "0.1.1"
+

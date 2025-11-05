@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Reactivity Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .auth-status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Authentication Reactivity Test</h1>
+        <p>Testing authentication state changes and UI reactivity.</p>
+
+        <div class="auth-status" id="authStatus">
+            Authentication Status: Checking...
+        </div>
+
+        <div id="loginForm">
+            <h3>Login</h3>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" value="fit@eneegy.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" value="12345678">
+            </div>
+
+            <button onclick="login()" id="loginBtn">Login</button>
+            <button onclick="register()" id="registerBtn">Register New User</button>
+        </div>
+
+        <div id="accountInfo" style="display: none;">
+            <h3>Account</h3>
+            <div style="background: #e9ecef; padding: 15px; border-radius: 4px; margin: 15px 0;">
+                <p><strong>Welcome!</strong></p>
+                <p id="userInfo">Loading...</p>
+            </div>
+            <button onclick="logout()">Logout</button>
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        let authCheckInterval;
+
+        function updateAuthStatus() {
+            const statusDiv = document.getElementById('authStatus');
+            const loginForm = document.getElementById('loginForm');
+            const accountInfo = document.getElementById('accountInfo');
+
+            // Check if user is authenticated by looking for auth tokens in localStorage
+            // This simulates what the PocketBase component does
+            const authModel = localStorage.getItem('pocketbase_auth');
+            const isAuthenticated = !!authModel;
+
+            statusDiv.innerHTML = `
+                Authentication Status: ${isAuthenticated ? 'AUTHENTICATED' : 'NOT AUTHENTICATED'}
+                <br>Auth Model: ${authModel ? 'Present' : 'Not present'}
+                <br>Timestamp: ${new Date().toLocaleTimeString()}
+            `;
+
+            if (isAuthenticated) {
+                loginForm.style.display = 'none';
+                accountInfo.style.display = 'block';
+
+                try {
+                    const authData = JSON.parse(authModel);
+                    document.getElementById('userInfo').innerHTML = `
+                        Name: ${authData.model?.name || 'N/A'}<br>
+                        Email: ${authData.model?.email || 'N/A'}<br>
+                        ID: ${authData.model?.id || 'N/A'}
+                    `;
+                } catch (e) {
+                    document.getElementById('userInfo').textContent = 'Error parsing auth data';
+                }
+            } else {
+                loginForm.style.display = 'block';
+                accountInfo.style.display = 'none';
+                document.getElementById('userInfo').textContent = 'Loading...';
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const button = document.getElementById('loginBtn');
+
+            if (!email || !password) {
+                showResult('Please fill in all fields', 'error');
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Logging in...';
+            showResult('Logging in...', 'info');
+
+            try {
+                const response = await fetch('/pb-api/api/collections/users/auth-with-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        identity: email,
+                        password: password
+                    })
+                });
+
+                const result = await response.text();
+                console.log('Login response status:', response.status);
+                console.log('Login response body:', result);
+
+                if (response.ok) {
+                    showResult('✅ Login successful! UI should update automatically.', 'success');
+                    updateAuthStatus();
+
+                    // Check again after a short delay
+                    setTimeout(updateAuthStatus, 100);
+                    setTimeout(updateAuthStatus, 500);
+                } else {
+                    showResult(`❌ Login failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network error: ${error.message}`, 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Login';
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const button = document.getElementById('registerBtn');
+
+            if (!email || !password) {
+                showResult('Please fill in all fields', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showResult('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Registering...';
+            showResult('Registering...', 'info');
+
+            try {
+                const response = await fetch('/pb-api/api/collections/users/records', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        passwordConfirm: password,
+                        name: email.split('@')[0]
+                    })
+                });
+
+                const result = await response.text();
+                console.log('Registration response status:', response.status);
+                console.log('Registration response body:', result);
+
+                if (response.ok) {
+                    showResult('✅ Registration successful! UI should update automatically.', 'success');
+                    updateAuthStatus();
+
+                    // Check again after a short delay
+                    setTimeout(updateAuthStatus, 100);
+                    setTimeout(updateAuthStatus, 500);
+                } else {
+                    showResult(`❌ Registration failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network error: ${error.message}`, 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Register New User';
+            }
+        }
+
+        function logout() {
+            // Clear localStorage to simulate logout
+            localStorage.removeItem('pocketbase_auth');
+            localStorage.removeItem('auth_tokens');
+            localStorage.removeItem('auth_user');
+
+            showResult('✅ Logged out! UI should update automatically.', 'success');
+            updateAuthStatus();
+
+            // Check again after a short delay
+            setTimeout(updateAuthStatus, 100);
+        }
+
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = `result ${type}`;
+            result.style.display = 'block';
+
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                result.style.display = 'none';
+            }, 3000);
+        }
+
+        // Start checking auth status immediately
+        updateAuthStatus();
+
+        // Check auth status every second for testing
+        authCheckInterval = setInterval(updateAuthStatus, 1000);
+
+        // Cleanup interval when page is unloaded
+        window.addEventListener('beforeunload', () => {
+            if (authCheckInterval) {
+                clearInterval(authCheckInterval);
+            }
+        });
+    </script>
+</body>
+</html>

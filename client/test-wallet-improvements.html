@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Improvements Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            backdrop-filter: blur(10px);
+        }
+        .success { color: #2ecc71; }
+        .error { color: #ff6b6b; }
+        .info { color: #feca57; }
+        .warning { color: #f39c12; }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Wallet Improvements Test</h1>
+
+    <div class="test-section">
+        <h3>🔍 Environment Detection</h3>
+        <div id="env-info"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🕵️ Wallet Detection Methods</h3>
+        <button class="btn" onclick="testDetection()">🔍 Test Detection</button>
+        <div id="detection-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 Mock Mode Testing</h3>
+        <button class="btn" onclick="testMockMode()">🧪 Test Mock Mode</button>
+        <div id="mock-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Test Results Summary</h3>
+        <div id="summary"></div>
+    </div>
+
+    <script type="module">
+        // Import wallet functionality
+        import { walletStore, mockWallet } from './src/lib/stores/wallet.js';
+
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const summary = document.getElementById('summary');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            summary.appendChild(div);
+        }
+
+        function updateEnvInfo() {
+            const envDiv = document.getElementById('env-info');
+            const info = {
+                'URL': window.location.href,
+                'User Agent': navigator.userAgent.slice(0, 50) + '...',
+                'Window.solana': !!window.solana,
+                'Window.phantom': !!window.phantom,
+                'Window.sollet': !!window.sollet,
+                'Mock Wallet Available': !!mockWallet
+            };
+
+            envDiv.innerHTML = Object.entries(info)
+                .map(([key, value]) =>
+                    `<div><strong>${key}:</strong> <span class="${value ? 'success' : 'error'}">${value ? '✅ Yes' : '❌ No'}</span></div>`
+                )
+                .join('');
+        }
+
+        async function testDetection() {
+            const resultsDiv = document.getElementById('detection-results');
+            resultsDiv.innerHTML = '<div class="info">🔍 Testing wallet detection...</div>';
+
+            testResults = [];
+
+            // Test multiple detection methods
+            const detectionTests = [
+                {
+                    name: 'Standard window.solana',
+                    test: () => !!window.solana,
+                    details: 'Checks for standard Phantom wallet object'
+                },
+                {
+                    name: 'window.phantom',
+                    test: () => !!window.phantom,
+                    details: 'Alternative Phantom detection method'
+                },
+                {
+                    name: 'window.sollet',
+                    test: () => !!window.sollet,
+                    details: 'Sollet wallet detection'
+                },
+                {
+                    name: 'Mock wallet',
+                    test: () => !!mockWallet,
+                    details: 'Mock wallet for testing'
+                }
+            ];
+
+            for (const test of detectionTests) {
+                const result = test.test();
+                const status = result ? 'success' : 'error';
+                const icon = result ? '✅' : '❌';
+
+                testResults.push({
+                    name: test.name,
+                    status: result,
+                    details: test.details
+                });
+
+                resultsDiv.innerHTML += `
+                    <div class="${status}">
+                        <strong>${test.name}:</strong> ${icon}
+                        <br><small>${test.details}</small>
+                    </div>
+                `;
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            // Test wallet store detection
+            if (walletStore) {
+                try {
+                    const detection = walletStore.detectWallet();
+                    resultsDiv.innerHTML += `
+                        <div class="info">
+                            <strong>Wallet Store Detection:</strong> ${detection.available ? '✅' : '❌'} ${detection.method}
+                            <br><small>${detection.message}</small>
+                        </div>
+                    `;
+                } catch (error) {
+                    resultsDiv.innerHTML += `
+                        <div class="error">
+                            <strong>Wallet Store Error:</strong> ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        async function testMockMode() {
+            const resultsDiv = document.getElementById('mock-results');
+            resultsDiv.innerHTML = '<div class="info">🧪 Testing mock mode...</div>';
+
+            if (!walletStore) {
+                resultsDiv.innerHTML = '<div class="error">❌ Wallet store not available</div>';
+                return;
+            }
+
+            try {
+                // Test enabling mock mode
+                log('Enabling mock mode...', 'info');
+                const enableResult = await walletStore.enableMockMode();
+                log(`Mock mode enabled: ${enableResult?.success ? '✅ Success' : '❌ Failed'}`, enableResult?.success ? 'success' : 'error');
+
+                // Wait a bit
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Test mock wallet properties
+                const isMock = walletStore.isMockMode();
+                const mockWalletRef = walletStore.getMockWallet();
+
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <strong>Mock Mode Status:</strong> ${isMock ? '✅ Active' : '❌ Inactive'}
+                    </div>
+                    <div class="info">
+                        <strong>Mock Wallet:</strong> ${mockWalletRef ? '✅ Available' : '❌ Not found'}
+                    </div>
+                    <div class="info">
+                        <strong>Mock Address:</strong> <code>${mockWalletRef?.publicKey?.toString()}</code>
+                    </div>
+                `;
+
+                // Test disabling mock mode
+                log('Disabling mock mode...', 'info');
+                walletStore.disableMockMode();
+
+                setTimeout(() => {
+                    const isStillMock = walletStore.isMockMode();
+                    log(`Mock mode after disable: ${isStillMock ? '⚠️ Still active' : '✅ Disabled'}`, isStillMock ? 'warning' : 'success');
+                }, 500);
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Mock mode test failed: ${error.message}</div>`;
+                log(`Mock mode error: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize
+        updateEnvInfo();
+        log('Wallet improvements test loaded', 'info');
+        log('Click buttons above to run tests', 'info');
+
+        // Auto-run detection test after 2 seconds
+        setTimeout(() => {
+            testDetection();
+        }, 2000);
+
+        console.log('🧪 Wallet improvements test initialized');
+        console.log('Available objects:', {
+            window: {
+                solana: !!window.solana,
+                phantom: !!window.phantom,
+                sollet: !!window.sollet
+            },
+            walletStore: !!walletStore,
+            mockWallet: !!mockWallet
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

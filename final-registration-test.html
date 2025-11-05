@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Registration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .instructions {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .highlight {
+            background: #e7f3ff;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Final Registration Test</h1>
+
+        <div class="instructions">
+            <strong>📋 Instructions:</strong><br>
+            1. Enter an email and password (minimum 8 characters)<br>
+            2. Click "Test Registration" to test directly with PocketBase<br>
+            3. If you see a clear error message (not "[object Object]"), the fix worked!<br>
+            4. This test bypasses all browser cache issues
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="test@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="minimum 8 characters" required>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirm Password:</label>
+            <input type="password" id="confirmPassword" placeholder="confirm password" required>
+        </div>
+
+        <div class="highlight">
+            <strong>🔧 Test Options:</strong><br>
+            <button onclick="testRegistration('valid')" id="testValid">Test Valid Registration</button>
+            <button onclick="testRegistration('invalid')" id="testInvalid">Test Invalid Registration</button>
+            <button onclick="testRegistration('short')" id="testShort">Test Short Password</button>
+        </div>
+
+        <div id="result" class="result info">
+            <strong>Result:</strong> <span id="resultText">Click a test button above</span>
+        </div>
+
+        <div class="instructions">
+            <strong>✅ Expected Results:</strong><br>
+            • <strong>Valid Registration:</strong> "Registration successful!"<br>
+            • <strong>Invalid Email:</strong> "Failed to create record." or similar clear message<br>
+            • <strong>Short Password:</strong> "The length must be between 8 and 72." or similar<br>
+            • <strong>Any Error:</strong> Clear, readable message (no "[object Object]")
+        </div>
+    </div>
+
+    <script>
+        async function testRegistration(type) {
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const confirmInput = document.getElementById('confirmPassword');
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+
+            // Set test data based on type
+            let email, password, confirmPassword;
+            switch (type) {
+                case 'invalid':
+                    email = 'invalid-email';
+                    password = 'test123456';
+                    confirmPassword = 'test123456';
+                    break;
+                case 'short':
+                    email = `short${Date.now()}@example.com`;
+                    password = '123'; // too short
+                    confirmPassword = '123';
+                    break;
+                case 'valid':
+                default:
+                    email = `valid${Date.now()}@example.com`;
+                    password = 'valid123456';
+                    confirmPassword = 'valid123456';
+                    break;
+            }
+
+            // Update form fields
+            emailInput.value = email;
+            passwordInput.value = password;
+            confirmInput.value = confirmPassword;
+
+            // Disable buttons during test
+            document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+
+            resultText.textContent = `Testing ${type} registration...`;
+            resultDiv.className = 'result info';
+            resultDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('http://localhost:8090/api/collections/users/records', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        passwordConfirm: confirmPassword,
+                        name: email.split('@')[0]
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response statusText:', response.statusText);
+
+                let result;
+                try {
+                    result = await response.json();
+                    console.log('Response parsed successfully:', result);
+                } catch (jsonError) {
+                    console.error('JSON parsing failed:', jsonError);
+                    showResult(`❌ JSON parsing failed: ${jsonError.message}`, 'error');
+                    return;
+                }
+
+                if (response.ok) {
+                    showResult(`✅ Registration successful! User: ${result.email}`, 'success');
+                } else {
+                    console.log('Registration failed:', result);
+
+                    // Test the exact error handling logic from our fixed code
+                    let errorMessage = 'Registration failed';
+                    if (result.message) {
+                        if (typeof result.message === 'string') {
+                            errorMessage = result.message;
+                        } else if (typeof result.message === 'object') {
+                            if (result.message.message && typeof result.message.message === 'string') {
+                                errorMessage = result.message.message;
+                            } else {
+                                try {
+                                    const stringified = JSON.stringify(result.message);
+                                    errorMessage = stringified === undefined ? `HTTP ${response.status}` : stringified;
+                                } catch (stringifyError) {
+                                    console.error('Failed to stringify message object:', stringifyError);
+                                    errorMessage = `Registration failed (Status: ${response.status})`;
+                                }
+                            }
+                        }
+                    } else if (result.error) {
+                        if (typeof result.error === 'string') {
+                            errorMessage = result.error;
+                        } else {
+                            try {
+                                const stringified = JSON.stringify(result.error);
+                                errorMessage = stringified === undefined ? `HTTP ${response.status}` : stringified;
+                            } catch (stringifyError) {
+                                console.error('Failed to stringify error object:', stringifyError);
+                                errorMessage = `Registration failed (Status: ${response.status})`;
+                            }
+                        }
+                    }
+
+                    console.log('Final error message:', errorMessage);
+
+                    if (errorMessage.includes('[object Object]')) {
+                        showResult(`❌ FAILED: Still contains "[object Object]" - ${errorMessage}`, 'error');
+                    } else {
+                        showResult(`✅ SUCCESS: Clear error message - ${errorMessage}`, 'success');
+                    }
+                }
+
+            } catch (error) {
+                console.error('Registration test failed:', error);
+                showResult(`❌ Test failed: ${error.message}`, 'error');
+            } finally {
+                // Re-enable buttons
+                document.querySelectorAll('button').forEach(btn => btn.disabled = false);
+            }
+        }
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+
+            resultText.textContent = message;
+            resultDiv.className = `result ${type}`;
+            resultDiv.style.display = 'block';
+
+            // Console log for debugging
+            console.log('Display result:', message);
+        }
+    </script>
+</body>
+</html>

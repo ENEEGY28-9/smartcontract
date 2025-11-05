@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Check - Direct Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 100%);
+            color: #f6f8ff;
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a1f2e;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: 600;
+        }
+        .success { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+        .error { background: rgba(255, 71, 87, 0.2); color: #ff4757; border: 1px solid #ff4757; }
+        .warning { background: rgba(255, 165, 2, 0.2); color: #ffa502; border: 1px solid #ffa502; }
+        .info { background: rgba(68, 107, 255, 0.2); color: #446bff; border: 1px solid #446bff; }
+        .btn {
+            background: #446bff;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+        .btn:hover { background: #3651d4; }
+        .result-item {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #0f1629;
+            border-radius: 8px;
+            border-left: 4px solid #446bff;
+        }
+        code {
+            background: #253157;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .steps {
+            background: rgba(68, 107, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid rgba(68, 107, 255, 0.3);
+            margin-top: 2rem;
+        }
+        .steps ol {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        .steps li {
+            margin: 0.75rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Phantom Wallet Direct Check</h1>
+        <p>Direct test to check if Phantom wallet is properly installed and working</p>
+
+        <div id="status" class="status info">🔄 Checking...</div>
+
+        <button class="btn" onclick="checkWallet()">🔍 Check Wallet Now</button>
+        <button class="btn" onclick="window.location.href='http://localhost:5174/wallet-test'">🧪 Go to Full Test</button>
+
+        <div id="results"></div>
+
+        <div class="steps">
+            <h3>📋 Troubleshooting Steps:</h3>
+            <ol>
+                <li><strong>Install Phantom:</strong> <a href="https://phantom.app/" target="_blank" style="color: #446bff;">Download Phantom Wallet</a></li>
+                <li><strong>Enable Extension:</strong> Make sure Phantom is enabled in browser extensions</li>
+                <li><strong>Refresh Page:</strong> Refresh this page after installation</li>
+                <li><strong>Check Console:</strong> Open Developer Tools (F12) and check console for errors</li>
+                <li><strong>Try Connect:</strong> Click "Connect Wallet" if wallet is detected</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function checkWallet() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+
+            statusDiv.className = 'status info';
+            statusDiv.textContent = '🔄 Checking Phantom wallet...';
+            resultsDiv.innerHTML = '';
+
+            setTimeout(() => {
+                let results = [];
+
+                // Check 1: Window object
+                results.push({
+                    test: 'Browser Environment',
+                    status: typeof window !== 'undefined' ? 'PASS' : 'FAIL',
+                    details: typeof window !== 'undefined' ? '✅ Browser ready' : '❌ Browser not ready'
+                });
+
+                // Check 2: Phantom wallet
+                if (typeof window.solana !== 'undefined') {
+                    results.push({
+                        test: 'Phantom Extension',
+                        status: 'PASS',
+                        details: '✅ Phantom wallet extension detected!'
+                    });
+
+                    // Check 3: Connection status
+                    if (window.solana.isConnected) {
+                        results.push({
+                            test: 'Wallet Connection',
+                            status: 'PASS',
+                            details: '✅ Wallet is connected and ready'
+                        });
+                    } else {
+                        results.push({
+                            test: 'Wallet Connection',
+                            status: 'INFO',
+                            details: 'ℹ️ Wallet installed but not connected. Click "Connect" in Phantom.'
+                        });
+                    }
+
+                    // Check 4: Public key
+                    if (window.solana.publicKey) {
+                        const address = window.solana.publicKey.toString();
+                        results.push({
+                            test: 'Wallet Address',
+                            status: 'PASS',
+                            details: `📍 ${address.slice(0, 8)}...${address.slice(-8)}`
+                        });
+                    }
+
+                    // Check 5: Try to connect
+                    if (!window.solana.isConnected) {
+                        results.push({
+                            test: 'Auto Connect',
+                            status: 'INFO',
+                            details: '💡 Try clicking the Phantom icon and connect to this site'
+                        });
+                    }
+
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = '✅ Phantom wallet found!';
+
+                } else {
+                    results.push({
+                        test: 'Phantom Extension',
+                        status: 'FAIL',
+                        details: '❌ Phantom wallet not found. Please install from https://phantom.app/'
+                    });
+
+                    // Check alternatives
+                    const alternatives = [];
+                    if (window.phantom) alternatives.push('window.phantom');
+                    if (window.sollet) alternatives.push('window.sollet');
+
+                    if (alternatives.length > 0) {
+                        results.push({
+                            test: 'Alternative Wallets',
+                            status: 'INFO',
+                            details: `Found: ${alternatives.join(', ')}`
+                        });
+                    }
+
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ Phantom wallet not installed';
+                }
+
+                // Check 3: Browser info
+                results.push({
+                    test: 'Browser Info',
+                    status: 'INFO',
+                    details: `${navigator.userAgent.includes('Chrome') ? 'Chrome' :
+                             navigator.userAgent.includes('Firefox') ? 'Firefox' :
+                             navigator.userAgent.includes('Edge') ? 'Edge' : 'Other'} browser`
+                });
+
+                // Check 4: URL info
+                results.push({
+                    test: 'Site Info',
+                    status: 'INFO',
+                    details: `URL: ${window.location.href} (${window.location.protocol})`
+                });
+
+                // Display results
+                let html = '';
+                results.forEach(result => {
+                    const icon = result.status === 'PASS' ? '✅' :
+                               result.status === 'FAIL' ? '❌' : 'ℹ️';
+                    const color = result.status === 'PASS' ? '#2ecc71' :
+                                result.status === 'FAIL' ? '#ff4757' : '#ffa502';
+
+                    html += `
+                        <div class="result-item">
+                            <div style="color: ${color}; font-weight: bold;">
+                                ${icon} ${result.test}
+                            </div>
+                            <div style="margin-top: 0.5rem; color: #ccc;">
+                                ${result.details}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                resultsDiv.innerHTML = html;
+
+                // Add connect button if wallet is available
+                if (window.solana && !window.solana.isConnected) {
+                    html += `
+                        <div class="result-item">
+                            <button class="btn" onclick="connectWallet()">🔗 Connect Wallet</button>
+                            <small style="color: #888; display: block; margin-top: 0.5rem;">
+                                This will prompt Phantom to connect to this site
+                            </small>
+                        </div>
+                    `;
+                    resultsDiv.innerHTML = html;
+                }
+
+            }, 500);
+        }
+
+        function connectWallet() {
+            if (window.solana) {
+                window.solana.connect().then(() => {
+                    console.log('✅ Wallet connected successfully');
+                    checkWallet(); // Re-check after connection
+                }).catch(error => {
+                    console.error('❌ Connection failed:', error);
+                    alert('Connection failed: ' + error.message);
+                });
+            }
+        }
+
+        // Auto-check on page load
+        checkWallet();
+    </script>
+</body>
+</html>
+
+

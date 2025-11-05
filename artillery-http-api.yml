@@ -1,0 +1,235 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: 'Warmup'
+    - duration: 120
+      arrivalRate: 50
+      name: 'Normal Load'
+    - duration: 180
+      arrivalRate: 100
+      name: 'Peak Load'
+    - duration: 120
+      arrivalRate: 150
+      name: 'Stress Test'
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+      Authorization: 'Bearer test-token-12345'
+
+scenarios:
+  # Complete player lifecycle - most realistic scenario
+  - name: 'Complete Player Lifecycle'
+    weight: 30
+    flow:
+      # Health check first
+      - get:
+          url: '/health'
+
+      # Create room
+      - post:
+          url: '/api/rooms'
+          json:
+            room_name: 'GameRoom_Test123'
+            game_mode: 'classic'
+            max_players: 4
+            host_id: 'player_test123'
+
+      # Join the room
+      - post:
+          url: '/api/rooms/room_test123/join'
+          json:
+            player_id: 'player_test456'
+            player_name: 'PlayerTest456'
+            avatar: 'avatar_1'
+
+      # Send multiple game inputs (simulate gameplay)
+      - loop:
+          count: 10
+          over:
+            - post:
+                url: '/api/game/input'
+                json:
+                  room_id: 'room_test123'
+                  player_id: 'player_test456'
+                  input:
+                    movement: [50, 0, 50]
+                    actions: ['move']
+                    sequence: 1
+                    timestamp: '2024-01-01T00:00:00Z'
+
+            - think: 200
+
+      # Send chat messages during gameplay
+      - post:
+          url: '/api/chat'
+          json:
+            room_id: 'room_test123'
+            player_id: 'player_test456'
+            message: "Good game!"
+            message_type: 'text'
+
+      # Check room status
+      - get:
+          url: '/api/rooms/room_test123/status'
+
+      # Get player stats
+      - get:
+          url: '/api/players/player_test456/stats'
+
+      # Leave room
+      - delete:
+          url: '/api/rooms/room_test123/leave'
+          json:
+            player_id: 'player_test456'
+            reason: 'normal_disconnect'
+
+  # Game management scenarios
+  - name: 'Game Management Operations'
+    weight: 20
+    flow:
+      # Create room
+      - post:
+          url: '/api/rooms'
+          json:
+            room_name: 'ManagementRoom_Test'
+            game_mode: 'classic'
+            max_players: 4
+
+      # Start game
+      - post:
+          url: '/api/rooms/room_test/start'
+
+      # Simulate some gameplay
+      - loop:
+          count: 3
+          over:
+            - post:
+                url: '/api/game/input'
+                json:
+                  room_id: 'room_test'
+                  player_id: 'player_test789'
+                  input:
+                    movement: [0, 0, 0]
+                    actions: ['ready']
+
+      # Pause game
+      - post:
+          url: '/api/rooms/room_test/pause'
+
+      # Resume game
+      - post:
+          url: '/api/rooms/room_test/resume'
+
+      # End game
+      - post:
+          url: '/api/rooms/room_test/end'
+
+  # Chat system testing
+  - name: 'Chat System Load Test'
+    weight: 20
+    flow:
+      # Send multiple chat messages
+      - loop:
+          count: 5
+          over:
+            - post:
+                url: '/api/chat'
+                json:
+                  room_id: 'room_test'
+                  player_id: 'chat_player_test'
+                  message: 'Load test message'
+                  message_type: 'text'
+
+      # Get chat history
+      - get:
+          url: '/api/rooms/room_test/chat/history?count=50&offset=0'
+
+      # Moderate chat
+      - post:
+          url: '/api/rooms/room_test/chat/moderate'
+          json:
+            action: 'filter'
+            message_id: 'msg_test'
+            reason: 'spam'
+
+  # Leaderboard and social features
+  - name: 'Social Features Test'
+    weight: 15
+    flow:
+      # Check leaderboards
+      - get:
+          url: '/api/leaderboards/weekly'
+
+      - get:
+          url: '/api/leaderboards/monthly'
+
+      # Update player settings
+      - put:
+          url: '/api/players/player_test/settings'
+          json:
+            theme: 'dark'
+            sound_effects: true
+            music: false
+            notifications: true
+
+      # Get player stats
+      - get:
+          url: '/api/players/player_test/stats'
+
+      # Report cheating
+      - post:
+          url: '/api/leaderboards/report'
+          json:
+            reported_player_id: 'player_test123'
+            reason: 'suspicious_behavior'
+            description: 'Unusual score pattern detected'
+            reporter_id: 'player_test456'
+
+  # High frequency requests (stress test)
+  - name: 'High Frequency Requests'
+    weight: 10
+    flow:
+      # Rapid room status checks
+      - loop:
+          count: 10
+          over:
+            - get:
+                url: '/api/rooms/room_test/status'
+
+      # Rapid game inputs
+      - loop:
+          count: 20
+          over:
+            - post:
+                url: '/api/game/input'
+                json:
+                  room_id: 'room_test'
+                  player_id: 'stress_player_test'
+                  input:
+                    movement: [25, 0, 25]
+                    actions: ['rapid_fire']
+                    sequence: 1
+
+  # Health monitoring and metrics
+  - name: 'Health Monitoring'
+    weight: 5
+    flow:
+      # Health checks
+      - get:
+          url: '/health'
+
+      - get:
+          url: '/ready'
+
+      - get:
+          url: '/live'
+
+      # Metrics endpoint
+      - get:
+          url: '/metrics'
+
+      # Game performance metrics
+      - get:
+          url: '/api/metrics'

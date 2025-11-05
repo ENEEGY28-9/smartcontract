@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jump & Slide Input Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        h1 {
+            color: #4a90e2;
+        }
+        .test-area {
+            border: 3px solid #4a90e2;
+            padding: 30px;
+            margin: 20px 0;
+            background: #2a2a2a;
+            border-radius: 8px;
+            min-height: 200px;
+        }
+        .status {
+            font-size: 24px;
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+        .active {
+            background: #4ecdc4 !important;
+            color: #000;
+            font-weight: bold;
+        }
+        .instructions {
+            background: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            color: #ffa500;
+            margin-top: 0;
+        }
+        .log {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 20px 0;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+        }
+        .log-jump {
+            color: #4ecdc4;
+        }
+        .log-slide {
+            color: #ffa500;
+        }
+        .log-error {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Jump & Slide Input Test</h1>
+    
+    <div class="instructions">
+        <h3>📋 Instructions:</h3>
+        <ol>
+            <li><strong>Click inside the blue test area</strong> to focus it</li>
+            <li>Press <strong>SPACE</strong> to test jump</li>
+            <li>Press <strong>SHIFT</strong> to test slide</li>
+            <li>Watch the status boxes change and check the log below</li>
+        </ol>
+    </div>
+
+    <div class="test-area" id="testArea" tabindex="0">
+        <h2>Click here first, then press SPACE or SHIFT</h2>
+        <div class="status" id="spaceStatus">
+            Space (Jump): ⬜ Not pressed
+        </div>
+        <div class="status" id="shiftStatus">
+            Shift (Slide): ⬜ Not pressed
+        </div>
+        <div class="status" id="focusStatus">
+            Focus: ❌ Not focused
+        </div>
+    </div>
+
+    <h3>📊 Event Log:</h3>
+    <div class="log" id="eventLog"></div>
+
+    <script>
+        const testArea = document.getElementById('testArea');
+        const spaceStatus = document.getElementById('spaceStatus');
+        const shiftStatus = document.getElementById('shiftStatus');
+        const focusStatus = document.getElementById('focusStatus');
+        const eventLog = document.getElementById('eventLog');
+
+        let logEntries = [];
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+            logEntries.unshift(entry);
+            
+            if (logEntries.length > 50) {
+                logEntries.pop();
+            }
+
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            if (type === 'jump') logEntry.classList.add('log-jump');
+            if (type === 'slide') logEntry.classList.add('log-slide');
+            if (type === 'error') logEntry.classList.add('log-error');
+            logEntry.textContent = entry;
+            
+            eventLog.innerHTML = '';
+            logEntries.forEach(log => {
+                const div = document.createElement('div');
+                div.className = 'log-entry';
+                div.textContent = log;
+                eventLog.appendChild(div);
+            });
+        }
+
+        // Focus tracking
+        testArea.addEventListener('focus', () => {
+            focusStatus.textContent = 'Focus: ✅ Focused (Ready for input!)';
+            focusStatus.classList.add('active');
+            addLog('✅ Test area focused - ready for keyboard input');
+        });
+
+        testArea.addEventListener('blur', () => {
+            focusStatus.textContent = 'Focus: ❌ Not focused';
+            focusStatus.classList.remove('active');
+            addLog('❌ Test area lost focus');
+        });
+
+        // Keyboard events
+        testArea.addEventListener('keydown', (e) => {
+            const key = e.key;
+            const code = e.code;
+            
+            addLog(`⌨️ KeyDown: key="${key}", code="${code}", keyCode=${e.keyCode}`);
+
+            // Check for Space
+            if (key === ' ' || code === 'Space') {
+                spaceStatus.textContent = 'Space (Jump): ✅ PRESSED!';
+                spaceStatus.classList.add('active');
+                addLog('🚀 JUMP detected! (Space key pressed)', 'jump');
+                e.preventDefault();
+            }
+
+            // Check for Shift
+            if (key === 'Shift' || code === 'ShiftLeft' || code === 'ShiftRight') {
+                shiftStatus.textContent = 'Shift (Slide): ✅ PRESSED!';
+                shiftStatus.classList.add('active');
+                addLog('🛷 SLIDE detected! (Shift key pressed)', 'slide');
+                e.preventDefault();
+            }
+        });
+
+        testArea.addEventListener('keyup', (e) => {
+            const key = e.key;
+            const code = e.code;
+            
+            addLog(`⌨️ KeyUp: key="${key}", code="${code}"`);
+
+            // Check for Space
+            if (key === ' ' || code === 'Space') {
+                spaceStatus.textContent = 'Space (Jump): ⬜ Not pressed';
+                spaceStatus.classList.remove('active');
+            }
+
+            // Check for Shift
+            if (key === 'Shift' || code === 'ShiftLeft' || code === 'ShiftRight') {
+                shiftStatus.textContent = 'Shift (Slide): ⬜ Not pressed';
+                shiftStatus.classList.remove('active');
+            }
+        });
+
+        // Auto-focus on click
+        testArea.addEventListener('click', () => {
+            testArea.focus();
+            addLog('🖱️ Test area clicked - focusing...');
+        });
+
+        // Initial log
+        addLog('🎮 Jump & Slide Input Test initialized');
+        addLog('📢 Click the blue test area and press Space or Shift');
+    </script>
+</body>
+</html>
+

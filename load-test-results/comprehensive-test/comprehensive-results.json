@@ -1,0 +1,59 @@
+{
+  "startTime": "2025-10-23T03:56:15.794Z",
+  "endTime": null,
+  "scenarios": [
+    {
+      "name": "artillery_basic",
+      "startTime": "2025-10-23T03:56:17.805Z",
+      "endTime": "2025-10-23T03:56:17.810Z",
+      "duration": 0.005,
+      "success": false,
+      "error": "spawn npx ENOENT"
+    },
+    {
+      "name": "websocket_performance",
+      "startTime": "2025-10-23T03:56:17.811Z",
+      "endTime": "2025-10-23T04:02:42.850Z",
+      "duration": 385.039,
+      "success": true
+    },
+    {
+      "name": "stress_1000_clients",
+      "startTime": "2025-10-23T04:02:42.850Z",
+      "endTime": "2025-10-23T04:08:29.490Z",
+      "duration": 346.64,
+      "success": false,
+      "error": "Stress test exited with code 1"
+    },
+    {
+      "name": "mixed_workload",
+      "startTime": "2025-10-23T04:08:29.491Z",
+      "endTime": "2025-10-23T04:13:29.970Z",
+      "duration": 300.479,
+      "success": true
+    },
+    {
+      "name": "memory_stress",
+      "startTime": "2025-10-23T04:13:29.970Z",
+      "endTime": "2025-10-23T04:18:30.208Z",
+      "duration": 300.238,
+      "success": true
+    },
+    {
+      "name": "cpu_intensive",
+      "startTime": "2025-10-23T04:18:30.208Z",
+      "endTime": "2025-10-23T04:23:30.748Z",
+      "duration": 300.54,
+      "success": true
+    }
+  ],
+  "summary": {
+    "totalScenarios": 6,
+    "successfulScenarios": 4,
+    "totalDuration": -1761191775.794,
+    "successRate": 66.66666666666666,
+    "averageScenarioDuration": 272.15683333333334,
+    "overallPerformance": "acceptable"
+  },
+  "overallStatus": "acceptable"
+}

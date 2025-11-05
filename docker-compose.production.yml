@@ -1,0 +1,205 @@
+version: '3.8'
+
+services:
+  # PocketBase Database
+  pocketbase:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    command: ["./bin/pocketbase"]
+    environment:
+      - POCKETBASE_URL=http://pocketbase:8090
+      - POCKETBASE_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL}
+      - POCKETBASE_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD}
+    volumes:
+      - pocketbase_data:/opt/gamev1/data
+      - ./config:/opt/gamev1/config:ro
+    networks:
+      - gamev1_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Worker Service
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    command: ["./bin/worker"]
+    environment:
+      - WORKER_ENDPOINT=0.0.0.0:50051
+      - POCKETBASE_URL=http://pocketbase:8090
+      - RUST_LOG=info,worker=debug
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    volumes:
+      - ./config:/opt/gamev1/config:ro
+      - worker_logs:/opt/gamev1/logs
+    networks:
+      - gamev1_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:50051/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Room Manager Service
+  room-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    command: ["./bin/room-manager"]
+    environment:
+      - POCKETBASE_URL=http://pocketbase:8090
+      - WORKER_ENDPOINT=http://worker:50051
+      - RUST_LOG=info,room-manager=debug
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    volumes:
+      - ./config:/opt/gamev1/config:ro
+      - room_manager_logs:/opt/gamev1/logs
+    networks:
+      - gamev1_network
+    restart: unless-stopped
+
+  # Services (API) Layer
+  services:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    command: ["./bin/services"]
+    environment:
+      - POCKETBASE_URL=http://pocketbase:8090
+      - RUST_LOG=info,services=debug
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    volumes:
+      - ./config:/opt/gamev1/config:ro
+      - services_logs:/opt/gamev1/logs
+    networks:
+      - gamev1_network
+    restart: unless-stopped
+
+  # Gateway (Main API Gateway)
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    command: ["./bin/gateway"]
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - WORKER_ENDPOINT=http://worker:50051
+      - POCKETBASE_URL=http://pocketbase:8090
+      - RUST_LOG=info,gateway=debug
+      - PROMETHEUS_PORT=9090
+    depends_on:
+      worker:
+        condition: service_healthy
+      services:
+        condition: service_started
+    ports:
+      - "8080:8080"   # Main API
+      - "9090:9090"   # Prometheus metrics
+    volumes:
+      - ./config:/opt/gamev1/config:ro
+      - gateway_logs:/opt/gamev1/logs
+    networks:
+      - gamev1_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    environment:
+      - PROMETHEUS_CONFIG_FILE=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9091:9090"
+    networks:
+      - gamev1_network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - gamev1_network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # Load Balancer (nginx)
+  load-balancer:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./config/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - gamev1_network
+    restart: unless-stopped
+    depends_on:
+      - gateway
+
+networks:
+  gamev1_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  pocketbase_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  gateway_logs:
+    driver: local
+  worker_logs:
+    driver: local
+  room_manager_logs:
+    driver: local
+  services_logs:
+    driver: local
+  nginx_logs:
+    driver: local

@@ -1,0 +1,33 @@
+[Unit]
+Description=GameV1 Room Manager Service
+After=network.target
+Before=gateway.service worker.service
+
+[Service]
+Type=simple
+User=gamev1
+Group=gamev1
+WorkingDirectory=/opt/gamev1
+ExecStart=/opt/gamev1/bin/room-manager
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=3
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/gamev1/logs /tmp
+
+# Resource limits
+LimitNOFILE=65536
+MemoryLimit=256M
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Environment variables
+Environment=RUST_LOG=info,room_manager=debug
+
+[Install]
+WantedBy=multi-user.target

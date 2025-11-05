@@ -1,0 +1,180 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    - duration: 30
+      arrivalRate: 50
+      name: 'Ramp Up Phase 1'
+    - duration: 60
+      arrivalRate: 100
+      name: 'Ramp Up Phase 2'
+    - duration: 120
+      arrivalRate: 200
+      name: 'Stress Phase 1'
+    - duration: 180
+      arrivalRate: 500
+      name: 'Stress Phase 2'
+    - duration: 120
+      arrivalRate: 200
+      name: 'Stress Phase 3'
+    - duration: 60
+      arrivalRate: 100
+      name: 'Cool Down Phase 1'
+    - duration: 30
+      arrivalRate: 50
+      name: 'Cool Down Phase 2'
+
+  ws:
+    - target: 'ws://localhost:8080/ws'
+      subprotocols: ['game-protocol']
+
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+      Authorization: 'Bearer stress-token-{{ $randomInt() }}'
+
+  # Global request timeout
+  timeout: 30
+  # Connection timeout
+  connectionTimeout: 10
+
+scenarios:
+  # High-frequency WebSocket connections (60%)
+  - name: 'High Frequency WebSocket Stress'
+    weight: 60
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "stress_player_{{ $randomInt() }}",
+              "token": "stress-token-{{ $randomInt() }}"
+            }
+
+      - think: 0.1
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "stress_room_{{ $randomInt(1, 2000) }}",
+              "player_name": "StressPlayer_{{ $randomInt() }}"
+            }
+
+      - think: 0.2
+
+      # High frequency game input (50ms intervals)
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "game_input",
+                  "input": {
+                    "movement": [{{ $randomInt(-200, 200) }}, {{ $randomInt(-50, 50) }}, {{ $randomInt(-200, 200) }}],
+                    "rotation": [{{ $randomInt(0, 360) }}, {{ $randomInt(0, 360) }}, {{ $randomInt(0, 360) }}],
+                    "actions": [
+                      {{ $randomArrayItem(['jump', 'attack', 'defend', 'special', 'dash', 'block']) }},
+                      {{ $randomArrayItem(['jump', 'attack', 'defend', 'special', 'dash', 'block']) }}
+                    ],
+                    "timestamp": {{ timestamp }},
+                    "sequence": {{ $randomInt() }}
+                  }
+                }
+          - think: 0.05  # 50ms between inputs (20Hz)
+        count: 200  # 10 seconds of high-frequency input
+
+      # Rapid chat messages
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "chat_message",
+                  "message": "Stress test {{ $randomInt() }} - {{ $randomString() }}",
+                  "message_type": "text",
+                  "timestamp": {{ timestamp }}
+                }
+          - think: 0.5
+        count: 10
+
+      - send:
+          payload: |
+            {
+              "type": "leave_room"
+            }
+
+      - think: 0.1
+
+      - disconnect
+
+  # High-frequency HTTP requests (30%)
+  - name: 'High Frequency HTTP Stress'
+    weight: 30
+    requests:
+      - post:
+          url: '/api/rooms'
+          json:
+            room_name: 'Stress Room {{ $randomInt() }}'
+            game_mode: 'stress_test'
+            max_players: {{ $randomInt(8, 16) }}
+            host_id: 'stress_host_{{ $randomInt() }}'
+
+      - think: 0.1
+
+      - post:
+          url: '/api/rooms/{{ $randomInt(1, 2000) }}/join'
+          json:
+            player_id: 'stress_player_{{ $randomInt() }}'
+            player_name: 'StressPlayer_{{ $randomInt() }}'
+
+      - think: 0.1
+
+      # Rapid game input via HTTP
+      - loop:
+          - post:
+              url: '/api/game/input'
+              json:
+                room_id: 'stress_room_{{ $randomInt(1, 2000) }}'
+                player_id: 'stress_player_{{ $randomInt() }}'
+                input:
+                  movement: [{{ $randomInt(-300, 300) }}, 0, {{ $randomInt(-300, 300) }}]
+                  actions: [{{ $randomArrayItem(['rapid_jump', 'rapid_attack', 'rapid_defend']) }}]
+                  timestamp: {{ timestamp }}
+          - think: 0.05
+        count: 50
+
+      # Rapid chat via HTTP
+      - loop:
+          - post:
+              url: '/api/chat'
+              json:
+                room_id: 'stress_room_{{ $randomInt(1, 2000) }}'
+                player_id: 'stress_player_{{ $randomInt() }}'
+                message: 'HTTP Stress {{ $randomInt() }}'
+                message_type: 'text'
+          - think: 0.2
+        count: 20
+
+      - delete:
+          url: '/api/rooms/{{ $randomInt(1, 2000) }}/leave'
+          json:
+            player_id: 'stress_player_{{ $randomInt() }}'
+
+  # System monitoring under stress (10%)
+  - name: 'System Monitoring Under Stress'
+    weight: 10
+    requests:
+      - get:
+          url: '/health'
+
+      - think: 0.5
+
+      - get:
+          url: '/api/metrics'
+
+      - think: 1
+
+      - get:
+          url: '/api/rooms/status/all'

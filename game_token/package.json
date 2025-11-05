@@ -1,0 +1,55 @@
+{
+  "name": "eneegy-game-ui",
+  "version": "1.0.0",
+  "description": "Eneegy Game Token System - Complete Game UI with Blockchain Integration",
+  "main": "game_ui.js",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8000",
+    "test": "node test_game_ui.js",
+    "test:manual": "python -m http.server 8000 && echo 'Open: http://localhost:8000/game_ui.html'",
+    "build": "echo 'No build required - pure HTML/JS game'",
+    "deploy": "echo 'Deploy game_ui.html and related files to web server'",
+    "deploy:production": "./deploy_now.sh",
+    "test:distribution": "node verify_distribution.js",
+    "test:player-earn": "node test_player_earn.js",
+    "init:pdas": "node scripts/initialize_pdas.js",
+    "monitor": "pm2 monit",
+    "logs": "pm2 logs game-token-scheduler",
+    "status": "pm2 status",
+    "restart": "pm2 restart game-token-scheduler",
+    "stop": "pm2 stop game-token-scheduler"
+  },
+  "keywords": [
+    "game",
+    "blockchain",
+    "solana",
+    "token",
+    "web3",
+    "gaming",
+    "play-to-earn",
+    "particle",
+    "energy"
+  ],
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@solana/spl-token": "^0.3.8",
+    "@solana/web3.js": "^1.87.6"
+  },
+  "devDependencies": {
+    "puppeteer": "^21.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-repo/eneegy-game"
+  },
+  "author": "Eneegy Team",
+  "license": "MIT",
+  "browserslist": [
+    "last 2 versions",
+    "not ie <= 11"
+  ]
+}

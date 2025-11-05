@@ -1,0 +1,43 @@
+# Aurora Global Database Configuration
+# Cross-region database replication
+
+global_database:
+  cluster_identifier: "gamev1-global-cluster"
+  engine: "aurora-mysql"
+  engine_version: "8.0.mysql_aurora.3.02.0"
+
+  regions:
+    primary:
+      region: "us-east-1"
+      instance_class: "db.r6g.xlarge"
+      instance_count: 2
+
+    secondary:
+      - region: "eu-west-1"
+        instance_class: "db.r6g.large"
+        instance_count: 1
+
+      - region: "ap-southeast-1"
+        instance_class: "db.r6g.large"
+        instance_count: 1
+
+  backup:
+    retention_period: 7
+    window: "03:00-04:00"
+    copy_tags_to_snapshots: true
+
+  monitoring:
+    enabled: true
+    interval: 60
+    metrics: ["CPUUtilization", "DatabaseConnections", "ReadLatency"]
+
+  security:
+    encryption: true
+    kms_key_id: "arn:aws:kms:us-east-1:123456789012:key/global-db-key"
+    deletion_protection: true
+
+  performance_insights:
+    enabled: true
+    retention_period: 7
+
+  auto_minor_version_upgrade: true

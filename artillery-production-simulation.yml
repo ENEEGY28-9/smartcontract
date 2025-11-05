@@ -1,0 +1,251 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    # Morning ramp-up (users waking up and playing)
+    - duration: 300  # 5 minutes
+      arrivalRate: 2
+      name: 'Morning Ramp Up'
+
+    # Morning peak (breakfast gaming)
+    - duration: 600  # 10 minutes
+      arrivalRate: 15
+      name: 'Morning Peak'
+
+    # Midday steady (work/school breaks)
+    - duration: 1800 # 30 minutes
+      arrivalRate: 8
+      name: 'Midday Steady'
+
+    # Afternoon peak (after work/school)
+    - duration: 900  # 15 minutes
+      arrivalRate: 25
+      name: 'Afternoon Peak'
+
+    # Evening prime time (main gaming hours)
+    - duration: 1800 # 30 minutes
+      arrivalRate: 50
+      name: 'Evening Prime'
+
+    # Late evening (winding down)
+    - duration: 1200 # 20 minutes
+      arrivalRate: 20
+      name: 'Late Evening'
+
+    # Night (hardcore gamers)
+    - duration: 600  # 10 minutes
+      arrivalRate: 10
+      name: 'Night Gaming'
+
+  ws:
+    - target: 'ws://localhost:8080/ws'
+      subprotocols: ['game-protocol']
+
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+      User-Agent: 'Artillery-Production-Test/1.0'
+
+scenarios:
+  # 50% - Casual Players (short sessions, social)
+  - name: 'Casual Player Journey'
+    weight: 50
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "casual_{{ $randomInt() }}",
+              "token": "casual-token-{{ $randomInt() }}"
+            }
+
+      - think: 1
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "casual_room_{{ $randomInt(1, 500) }}",
+              "player_name": "CasualPlayer_{{ $randomInt() }}"
+            }
+
+      - think: 2
+
+      # Casual gameplay (5-15 minutes)
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "game_input",
+                  "input": {
+                    "movement": [{{ $randomInt(-30, 30) }}, 0, {{ $randomInt(-30, 30) }}],
+                    "actions": [{{ $randomArrayItem(['move', 'look_around']) }}],
+                    "timestamp": {{ timestamp }}
+                  }
+                }
+          - think: {{ $randomInt(200, 500) }}ms
+        count: {{ $randomInt(600, 1800) }}  # 2-6 minutes of gameplay
+
+      # Social interaction
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "chat_message",
+                  "message": "{{ $randomArrayItem(['Nice move!', 'Good game!', 'Hello everyone!', 'GG!', 'Fun game!']) }}",
+                  "message_type": "text"
+                }
+          - think: {{ $randomInt(5, 15) }}
+        count: {{ $randomInt(2, 5) }}
+
+      - send:
+          payload: |
+            {
+              "type": "leave_room"
+            }
+
+      - think: {{ $randomInt(1, 3) }}
+
+      - disconnect
+
+  # 30% - Competitive Players (longer sessions, intense gameplay)
+  - name: 'Competitive Player Journey'
+    weight: 30
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "competitive_{{ $randomInt() }}",
+              "token": "comp-token-{{ $randomInt() }}"
+            }
+
+      - think: 1
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "ranked_room_{{ $randomInt(1, 200) }}",
+              "player_name": "ProPlayer_{{ $randomInt() }}"
+            }
+
+      - think: 1
+
+      # Intense gameplay (15-45 minutes)
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "game_input",
+                  "input": {
+                    "movement": [{{ $randomInt(-80, 80) }}, {{ $randomInt(-20, 20) }}, {{ $randomInt(-80, 80) }}],
+                    "rotation": [0, {{ $randomInt(0, 360) }}, 0],
+                    "actions": [
+                      {{ $randomArrayItem(['jump', 'attack', 'defend', 'special', 'dash', 'block', 'combo']) }},
+                      {{ $randomArrayItem(['evade', 'counter', 'power_up']) }}
+                    ],
+                    "timestamp": {{ timestamp }},
+                    "sequence": {{ $randomInt() }}
+                  }
+                }
+          - think: {{ $randomInt(30, 80) }}ms  # High frequency inputs
+        count: {{ $randomInt(10000, 30000) }}  # 5-15 minutes intense play
+
+      # Strategic chat (less frequent, more meaningful)
+      - loop:
+          - send:
+              payload: |
+                {
+                  "type": "chat_message",
+                  "message": "{{ $randomArrayItem(['Strategy question', 'Good strategy!', 'Need help here', 'Position?', 'Cover me!']) }}",
+                  "message_type": "text"
+                }
+          - think: {{ $randomInt(30, 120) }}
+        count: {{ $randomInt(1, 3) }}
+
+      - send:
+          payload: |
+            {
+              "type": "leave_room"
+            }
+
+      - disconnect
+
+  # 15% - Social Players (chat-focused, group activities)
+  - name: 'Social Player Journey'
+    weight: 15
+    flow:
+      # Browse available rooms
+      - get:
+          url: '/api/rooms/public?limit=20'
+
+      - think: 2
+
+      # Join a social room
+      - post:
+          url: '/api/rooms/social_hub/join'
+          json:
+            player_id: 'social_{{ $randomInt() }}'
+            player_name: 'SocialPlayer_{{ $randomInt() }}'
+
+      - think: 1
+
+      # Active social interaction
+      - loop:
+          - post:
+              url: '/api/chat'
+              json:
+                room_id: 'social_hub'
+                player_id: 'social_{{ $randomInt() }}'
+                message: '{{ $randomArrayItem(['Hey everyone!', 'How is everyone?', 'Nice to meet you!', 'Anyone up for a game?', 'This is fun!', 'Great community!']) }}'
+                message_type: 'text'
+          - think: {{ $randomInt(10, 30) }}
+        count: {{ $randomInt(5, 15) }}
+
+      # Check who's online
+      - get:
+          url: '/api/rooms/social_hub/players'
+
+      - think: 2
+
+      # Get recent chat history
+      - get:
+          url: '/api/chat/history/social_hub?count=50'
+
+      - think: 5
+
+      # Leave social hub
+      - delete:
+          url: '/api/rooms/social_hub/leave'
+          json:
+            player_id: 'social_{{ $randomInt() }}'
+
+  # 5% - System/API Users (monitoring, admin functions)
+  - name: 'System/API User Journey'
+    weight: 5
+    flow:
+      - get:
+          url: '/health'
+
+      - think: 5
+
+      - get:
+          url: '/api/metrics'
+
+      - think: 10
+
+      - get:
+          url: '/api/rooms/status/summary'
+
+      - think: 15
+
+      - get:
+          url: '/api/players/online'

@@ -1,0 +1,19 @@
+// COPY AND PASTE THIS INTO BROWSER CONSOLE (F12)
+// Test Phantom Connection Immediately
+
+console.log('🔍 Testing Phantom connection...');
+if (window.solana) {
+  console.log('✅ Phantom found, attempting connection...');
+  window.solana.connect().then(response => {
+    console.log('🎉 SUCCESS! Connected to:', response.publicKey.toString());
+    console.log('💡 Go back to wallet test page - should show Connected now');
+  }).catch(error => {
+    console.error('❌ Connection failed:', error.message);
+    console.log('💡 Make sure Testnet Mode is ON in Phantom settings');
+    console.log('💡 Also enable Auto-Confirm on localhost for easier testing');
+  });
+} else {
+  console.log('❌ Phantom not found');
+  console.log('💡 Check if Phantom extension is enabled');
+}
+

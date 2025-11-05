@@ -1,0 +1,244 @@
+{
+    "CallerReference": "gamev1-global-cdn-1760082227",
+    "Comment": "GameV1 Global CDN Distribution - Multi-Region",
+    "DefaultRootObject": "index.html",
+    "Origins": {
+        "Quantity": 4,
+        "Items": [
+            {
+                "Id": "gamev1-us-east-origin",
+                "DomainName": "api-us.gamev1.com",
+                "OriginPath": "",
+                "CustomHeaders": {
+                    "Quantity": 2,
+                    "Items": [
+                        {
+                            "HeaderName": "X-GameV1-Region",
+                            "HeaderValue": "us-east"
+                        },
+                        {
+                            "HeaderName": "X-GameV1-CDN",
+                            "HeaderValue": "true"
+                        }
+                    ]
+                },
+                "CustomOriginConfig": {
+                    "HTTPPort": 80,
+                    "HTTPSPort": 443,
+                    "OriginProtocolPolicy": "https-only"
+                },
+                "ConnectionAttempts": 3,
+                "ConnectionTimeout": 10,
+                "OriginShield": {
+                    "Enabled": true,
+                    "OriginShieldRegion": "us-east-1"
+                }
+            },
+            {
+                "Id": "gamev1-eu-west-origin",
+                "DomainName": "api-eu.gamev1.com",
+                "OriginPath": "",
+                "CustomHeaders": {
+                    "Quantity": 2,
+                    "Items": [
+                        {
+                            "HeaderName": "X-GameV1-Region",
+                            "HeaderValue": "eu-west"
+                        },
+                        {
+                            "HeaderName": "X-GameV1-CDN",
+                            "HeaderValue": "true"
+                        }
+                    ]
+                },
+                "CustomOriginConfig": {
+                    "HTTPPort": 80,
+                    "HTTPSPort": 443,
+                    "OriginProtocolPolicy": "https-only"
+                },
+                "ConnectionAttempts": 3,
+                "ConnectionTimeout": 10,
+                "OriginShield": {
+                    "Enabled": true,
+                    "OriginShieldRegion": "eu-west-1"
+                }
+            },
+            {
+                "Id": "gamev1-ap-southeast-origin",
+                "DomainName": "api-ap.gamev1.com",
+                "OriginPath": "",
+                "CustomHeaders": {
+                    "Quantity": 2,
+                    "Items": [
+                        {
+                            "HeaderName": "X-GameV1-Region",
+                            "HeaderValue": "ap-southeast"
+                        },
+                        {
+                            "HeaderName": "X-GameV1-CDN",
+                            "HeaderValue": "true"
+                        }
+                    ]
+                },
+                "CustomOriginConfig": {
+                    "HTTPPort": 80,
+                    "HTTPSPort": 443,
+                    "OriginProtocolPolicy": "https-only"
+                },
+                "ConnectionAttempts": 3,
+                "ConnectionTimeout": 10,
+                "OriginShield": {
+                    "Enabled": true,
+                    "OriginShieldRegion": "ap-southeast-1"
+                }
+            },
+            {
+                "Id": "gamev1-static-origin",
+                "DomainName": "static.gamev1.com",
+                "OriginPath": "",
+                "CustomOriginConfig": {
+                    "HTTPPort": 80,
+                    "HTTPSPort": 443,
+                    "OriginProtocolPolicy": "https-only"
+                },
+                "ConnectionAttempts": 3,
+                "ConnectionTimeout": 10
+            }
+        ]
+    },
+    "OriginGroups": {
+        "Quantity": 1,
+        "Items": [
+            {
+                "Id": "gamev1-api-origins",
+                "FailoverCriteria": {
+                    "StatusCodes": {
+                        "Quantity": 2,
+                        "Items": [500, 502]
+                    }
+                },
+                "Members": {
+                    "Quantity": 3,
+                    "Items": [
+                        {
+                            "OriginId": "gamev1-us-east-origin"
+                        },
+                        {
+                            "OriginId": "gamev1-eu-west-origin"
+                        },
+                        {
+                            "OriginId": "gamev1-ap-southeast-origin"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "DefaultCacheBehavior": {
+        "TargetOriginId": "gamev1-api-origins",
+        "ViewerProtocolPolicy": "redirect-to-https",
+        "TrustedSigners": {
+            "Enabled": false,
+            "Quantity": 0
+        },
+        "ForwardedValues": {
+            "QueryString": true,
+            "Cookies": {
+                "Forward": "whitelisted",
+                "WhitelistedNames": ["session_id", "player_id", "auth_token"]
+            },
+            "Headers": {
+                "Quantity": 3,
+                "Items": ["Host", "User-Agent", "X-GameV1-Region"]
+            }
+        },
+        "MinTTL": 0,
+        "DefaultTTL": 0,
+        "MaxTTL": 300,
+        "Compress": true,
+        "LambdaFunctionAssociations": {
+            "Quantity": 1,
+            "Items": [
+                {
+                    "EventType": "viewer-request",
+                    "LambdaFunctionARN": "arn:aws:lambda:us-east-1:123456789012:function:gamev1-api-routing"
+                }
+            ]
+        }
+    },
+    "CacheBehaviors": {
+        "Quantity": 2,
+        "Items": [
+            {
+                "PathPattern": "/api/*",
+                "TargetOriginId": "gamev1-api-origins",
+                "ViewerProtocolPolicy": "redirect-to-https",
+                "ForwardedValues": {
+                    "QueryString": true,
+                    "Cookies": {
+                        "Forward": "whitelisted",
+                        "WhitelistedNames": ["session_id", "player_id", "auth_token"]
+                    }
+                },
+                "MinTTL": 0,
+                "DefaultTTL": 0,
+                "MaxTTL": 0,
+                "Compress": true
+            },
+            {
+                "PathPattern": "/static/*",
+                "TargetOriginId": "gamev1-static-origin",
+                "ViewerProtocolPolicy": "redirect-to-https",
+                "ForwardedValues": {
+                    "QueryString": false,
+                    "Cookies": {
+                        "Forward": "none"
+                    }
+                },
+                "MinTTL": 0,
+                "DefaultTTL": 86400,
+                "MaxTTL": 31536000,
+                "Compress": true
+            }
+        ]
+    },
+    "CustomErrorResponses": {
+        "Quantity": 3,
+        "Items": [
+            {
+                "ErrorCode": 404,
+                "ResponseCode": 200,
+                "ResponsePagePath": "/index.html",
+                "ErrorCachingMinTTL": 300
+            },
+            {
+                "ErrorCode": 403,
+                "ResponseCode": 200,
+                "ResponsePagePath": "/index.html",
+                "ErrorCachingMinTTL": 300
+            },
+            {
+                "ErrorCode": 502,
+                "ResponseCode": 200,
+                "ResponsePagePath": "/error.html",
+                "ErrorCachingMinTTL": 60
+            }
+        ]
+    },
+    "Enabled": true,
+    "IPv6Enabled": true,
+    "HttpVersion": "http2",
+    "PriceClass": "PriceClass_All",
+    "Restrictions": {
+        "GeoRestriction": {
+            "RestrictionType": "none",
+            "Quantity": 0
+        }
+    },
+    "ViewerCertificate": {
+        "ACMCertificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/global-wildcard-cert",
+        "SSLSupportMethod": "sni-only",
+        "MinimumProtocolVersion": "TLSv1.2_2021"
+    },
+    "WebACLId": "arn:aws:wafv2:us-east-1:123456789012:global/webacl/gamev1-global-waf"
+}

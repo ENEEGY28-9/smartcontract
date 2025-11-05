@@ -1,0 +1,46 @@
+# CDN Monitoring Configuration
+# Monitor CloudFront and global infrastructure
+
+monitoring:
+  cloudfront:
+    distribution_id: "E1234567890ABC"
+    metrics:
+      - requests
+      - bytes_downloaded
+      - bytes_uploaded
+      - total_error_rate
+      - 4xx_error_rate
+      - 5xx_error_rate
+      - cache_hit_rate
+
+  edge_locations:
+    - name: "iad"  # Washington DC
+      region: "us-east-1"
+      monitoring_enabled: true
+
+    - name: "lhr"  # London
+      region: "eu-west-1"
+      monitoring_enabled: true
+
+    - name: "nrt"  # Tokyo
+      region: "ap-northeast-1"
+      monitoring_enabled: true
+
+  alerting:
+    - name: "cdn_high_error_rate"
+      condition: "cloudfront_5xx_error_rate > 0.05"
+      severity: "critical"
+      notification_channels: ["email", "slack"]
+
+    - name: "cdn_cache_miss_spike"
+      condition: "cloudfront_cache_hit_rate < 0.8"
+      severity: "warning"
+      notification_channels: ["email"]
+
+  dashboards:
+    - name: "cdn-performance"
+      widgets:
+        - requests_per_second
+        - error_rates
+        - cache_performance
+        - geographic_distribution

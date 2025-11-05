@@ -1,0 +1,85 @@
+# GameV1 Global Infrastructure Configuration
+# CDN, edge computing, and global services
+
+global_services:
+  cdn:
+    provider: "cloudfront"
+    domains:
+      - "api.gamev1.com"
+      - "static.gamev1.com"
+      - "cdn.gamev1.com"
+    ssl_certificate: "global-wildcard-cert"
+    price_class: "PriceClass_All"
+    ipv6_enabled: true
+
+  edge_computing:
+    provider: "cloudflare_workers"
+    locations:
+      - "iad"  # Washington DC
+      - "lhr"  # London
+      - "nrt"  # Tokyo
+      - "sin"  # Singapore
+    functions:
+      - name: "api-routing"
+        script: "edge-functions/api-routing.js"
+      - name: "image-optimization"
+        script: "edge-functions/image-optimization.js"
+
+  global_database:
+    provider: "aws-aurora-global"
+    regions:
+      - "us-east-1"  # Primary
+      - "eu-west-1"
+      - "ap-southeast-1"
+    instance_class: "db.r5.large"
+    read_replicas_per_region: 2
+
+  global_cache:
+    provider: "aws-elasticache-global"
+    regions:
+      - "us-east-1"
+      - "eu-west-1"
+      - "ap-southeast-1"
+    node_type: "cache.t3.medium"
+    num_cache_clusters: 2
+
+  monitoring:
+    global_prometheus:
+      enabled: true
+      federation: true
+      remote_write: true
+
+    global_grafana:
+      enabled: true
+      datasources:
+        - prometheus-global
+        - cloudwatch-global
+
+  security:
+    global_waf:
+      enabled: true
+      rules:
+        - rate_limiting: 10000
+        - geo_blocking: ["blocked-countries"]
+        - sql_injection_protection: true
+        - xss_protection: true
+
+    global_shield:
+      enabled: true
+      protection: "advanced"
+
+  backup:
+    global_backup:
+      enabled: true
+      schedule: "0 2 * * *"
+      retention: 90
+      cross_region: true
+
+infrastructure_costs:
+  estimated_monthly:
+    cdn: "00"
+    edge_computing: "00"
+    global_database: "500"
+    global_cache: "00"
+    monitoring: "00"
+    total: "600"

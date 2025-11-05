@@ -1,0 +1,61 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'gamev1-global-monitor'
+
+rule_files:
+  - "global_alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager-global:9093']
+
+scrape_configs:
+  # Global Prometheus federation
+  - job_name: 'prometheus-federation'
+    scrape_interval: 15s
+    honor_labels: true
+    metrics_path: '/federate'
+    params:
+      'match[]':
+        - '{job="prometheus"}'
+        - '{job="gamev1-gateway"}'
+        - '{job="gamev1-worker"}'
+        - '{job="node-exporter"}'
+    static_configs:
+      - targets:
+          - 'prometheus-us-east:9090'
+          - 'prometheus-eu-west:9090'
+          - 'prometheus-ap-southeast:9090'
+        labels:
+          region: 'global'
+
+  # Regional Prometheus instances
+  - job_name: 'regional-prometheus'
+    static_configs:
+      - targets:
+          - 'prometheus-us-east:9090'
+          - 'prometheus-eu-west:9090'
+          - 'prometheus-ap-southeast:9090'
+        labels:
+          job: 'prometheus-regional'
+
+  # Global Alertmanager
+  - job_name: 'global-alertmanager'
+    static_configs:
+      - targets: ['alertmanager-global:9093']
+
+  # Cross-region service discovery
+  - job_name: 'global-services'
+    consul_sd_configs:
+      - server: 'consul-global.service.consul:8500'
+        services: ['gamev1-gateway', 'gamev1-worker']
+
+  # External service monitoring
+  - job_name: 'external-services'
+    static_configs:
+      - targets: ['cdn.gamev1.com:443']
+        labels:
+          service: 'cdn'

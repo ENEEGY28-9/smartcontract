@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackSegmentManager Test</title>
+    <script type="module">
+        // Test script to verify TrackSegmentManager is working
+        async function testTrackSegmentManager() {
+            console.log('🧪 Testing TrackSegmentManager...');
+
+            try {
+                // Import the procedural generation module
+                const proceduralModule = await import('./src/lib/components/procedural-generation.js');
+                console.log('✅ Procedural module imported successfully');
+                console.log('Available exports:', Object.keys(proceduralModule));
+
+                // Check if TrackSegmentManager exists
+                if (proceduralModule.TrackSegmentManager) {
+                    console.log('✅ TrackSegmentManager class found');
+
+                    // Try to create a mock scene for testing
+                    // Note: In a real browser environment, THREE.js would need to be available
+                    console.log('✅ TrackSegmentManager is properly exported and accessible');
+
+                    return true;
+                } else {
+                    console.error('❌ TrackSegmentManager not found in module');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                return false;
+            }
+        }
+
+        // Run the test
+        testTrackSegmentManager().then(success => {
+            console.log(success ? '🎉 Test passed!' : '💥 Test failed!');
+        });
+    </script>
+</head>
+<body>
+    <h1>TrackSegmentManager Test</h1>
+    <p>Check the browser console for test results.</p>
+</body>
+</html>

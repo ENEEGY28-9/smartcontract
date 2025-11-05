@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Mouse Input</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .debug-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #e8f4fd;
+            border-left: 4px solid #4a90e2;
+        }
+        canvas {
+            border: 2px solid #333;
+            background: #87ceeb;
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-panel">
+        <h1>🔍 Debug Mouse Input</h1>
+        <p>This page helps debug mouse input for player movement control.</p>
+
+        <div class="status">
+            <strong>Mouse Position:</strong> <span id="mousePos">0, 0</span><br>
+            <strong>Mouse Movement:</strong> <span id="mouseMove">0, 0</span><br>
+            <strong>Accumulated Movement:</strong> <span id="accumulated">0, 0</span><br>
+            <strong>Player Position:</strong> <span id="playerPos">400, 300</span>
+        </div>
+
+        <p>Move your mouse around the canvas below to see mouse input values.</p>
+    </div>
+
+    <canvas id="testCanvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+        const mousePos = document.getElementById('mousePos');
+        const mouseMove = document.getElementById('mouseMove');
+        const accumulated = document.getElementById('accumulated');
+        const playerPos = document.getElementById('playerPos');
+
+        let currentMouseX = 0;
+        let currentMouseY = 0;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let accumulatedX = 0;
+        let accumulatedY = 0;
+        let playerX = canvas.width / 2;
+        let playerY = canvas.height / 2;
+
+        function draw() {
+            // Clear canvas with gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#87ceeb');
+            gradient.addColorStop(1, '#98fb98');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid for reference
+            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Draw player (red circle)
+            ctx.fillStyle = '#ff6b6b';
+            ctx.beginPath();
+            ctx.arc(playerX, playerY, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#d63031';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Draw mouse position indicator (blue crosshair)
+            ctx.strokeStyle = '#0984e3';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(currentMouseX - 10, currentMouseY);
+            ctx.lineTo(currentMouseX + 10, currentMouseY);
+            ctx.moveTo(currentMouseX, currentMouseY - 10);
+            ctx.lineTo(currentMouseX, currentMouseY + 10);
+            ctx.stroke();
+
+            // Draw center point
+            ctx.fillStyle = '#fdcb6e';
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function updateMouseInfo() {
+            mousePos.textContent = `${currentMouseX}, ${currentMouseY}`;
+            const deltaX = currentMouseX - lastMouseX;
+            const deltaY = currentMouseY - lastMouseY;
+            mouseMove.textContent = `${deltaX.toFixed(2)}, ${deltaY.toFixed(2)}`;
+            accumulated.textContent = `${accumulatedX.toFixed(2)}, ${accumulatedY.toFixed(2)}`;
+            playerPos.textContent = `${Math.round(playerX)}, ${Math.round(playerY)}`;
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            currentMouseX = e.clientX - rect.left;
+            currentMouseY = e.clientY - rect.top;
+
+            // Calculate mouse movement
+            const deltaX = currentMouseX - lastMouseX;
+            const deltaY = currentMouseY - lastMouseY;
+
+            // Update accumulated movement
+            accumulatedX += deltaX * 0.1; // Scale down for display
+            accumulatedY += deltaY * 0.1;
+
+            // Update player position based on mouse movement (for testing)
+            playerX += deltaX * 0.5;
+            playerY += deltaY * 0.5;
+
+            // Keep player in bounds
+            playerX = Math.max(15, Math.min(canvas.width - 15, playerX));
+            playerY = Math.max(15, Math.min(canvas.height - 15, playerY));
+
+            lastMouseX = currentMouseX;
+            lastMouseY = currentMouseY;
+
+            updateMouseInfo();
+            draw();
+        });
+
+        // Reset accumulated movement on click
+        canvas.addEventListener('click', () => {
+            accumulatedX = 0;
+            accumulatedY = 0;
+            playerX = canvas.width / 2;
+            playerY = canvas.height / 2;
+            updateMouseInfo();
+            draw();
+        });
+
+        // Initial draw
+        draw();
+        updateMouseInfo();
+
+        console.log('🔍 Mouse input debugger initialized');
+        console.log('✅ Move mouse over canvas to see input values');
+    </script>
+</body>
+</html>

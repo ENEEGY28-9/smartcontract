@@ -1,0 +1,114 @@
+[package]
+name = "gateway"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = []
+wallet_disabled = []
+
+[dependencies]
+anyhow = "1"
+axum = { workspace = true }
+bytes = "1"
+hyper = "0.14"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_bytes = "0.11"
+tokio = { version = "1", features = ["full"] }
+tower = { version = "0.5", features = ["limit"] }
+tower-http = { version = "0.6", features = ["trace", "cors", "compression-full", "limit", "timeout"] }
+tower_governor = "0.6"  # rate limiting
+governor = "0.6"  # advanced rate limiting
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+metrics = "0.23"
+metrics-exporter-prometheus = "0.15"
+
+# gRPC client – KHÔNG TLS
+prost = { workspace = true }
+prost-types = { workspace = true }
+tonic = { workspace = true, default-features = false, features = ["transport"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+
+# proto nội bộ
+proto = { path = "../proto" }
+common-net = { path = "../common-net" }
+prometheus = "0.13"
+once_cell = "1"
+futures = "0.3"
+async-trait = "0.1"
+# wtransport = { version = "0.5", optional = true }  # WebTransport/QUIC - disabled due to dependency conflicts
+rcgen = "0.13"  # self-signed certificates
+tokio-tungstenite = "0.24"  # Enhanced WebSocket với backpressure
+dashmap = "6.0"  # Concurrent HashMap cho connection pooling
+lz4_flex = "0.11"  # Compression cho messages
+bincode = "1.3"  # Message serialization
+redis = { version = "0.25", features = ["tokio-comp", "connection-manager"] }  # Session storage and caching
+
+# JWT Authentication
+jsonwebtoken = "9"          # JWT encoding/decoding
+lazy_static = "1.4"         # Lazy static initialization
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }  # HTTP client for PocketBase integration
+urlencoding = "2.1"        # URL encoding for PocketBase queries
+aes-gcm = "0.10"           # AES-GCM encryption for private keys
+base64 = "0.22"            # Base64 encoding/decoding
+# solana-sdk removed - using ed25519-dalek for keypair generation
+bcrypt = "0.15"             # Password hashing
+ed25519-dalek = "2"         # Ed25519 signature verification
+chrono = { version = "0.4", features = ["serde"] }  # Timestamp
+rand = "0.8"                # Random nonce generation
+uuid = { version = "1.0", features = ["v4", "serde"] }  # Unique IDs
+bs58 = "0.5"                # Base58 encoding/decoding cho Solana addresses
+sha2 = "0.10"                # SHA-256 for Ed25519 simulation
+thiserror = "1.0"           # Error handling
+validator = "0.18"          # Input validation
+
+        # Core blockchain libraries (DISABLED - implementing separate microservice)
+        # SOLUTION: Create separate blockchain microservice to avoid dependency conflicts
+        # This microservice will handle all Solana/Anchor operations and communicate
+        # with main gateway via gRPC/WebSocket
+        #
+        # solana-sdk = "1.18"         # Latest stable
+        # solana-client = "1.18"      # Match SDK version
+        # anchor-client = "0.29.0"    # Latest stable
+        # anchor-lang = "0.29.0"      # Match client version
+web3 = "0.19"               # Ethereum RPC client
+bitcoin = "0.31"            # Bitcoin support
+
+# Advanced cryptography & Security (2024 standards)
+bip39 = "2.0"           # BIP39 seed phrases
+pbkdf2 = "0.12"         # Password hashing
+argon2 = "0.5"          # Advanced password hashing
+zeroize = "1.3.0"         # Secure memory zeroing - compatible with Solana SDK
+secp256k1 = "0.29"      # ECDSA signatures
+
+# Multi-chain support (Comprehensive 2024 - VALIDATED DEPENDENCIES)
+ethers = "2.0.14"       # Ethereum integration - FIXED VERSION
+
+# Layer 2 & zkEVM support (VALIDATED)
+# Note: zkSync Rust SDK not available yet - will be added when ready
+
+# Advanced cryptography (VALIDATED)
+ring = "0.17"           # Google's cryptographic library
+
+# Note: Some multi-chain libraries are still in development or have limited Rust support
+# cosmos-rust = "0.10"    # Cosmos SDK Rust bindings - Not available yet
+# avalanche-rs = "0.1"    # Avalanche Rust SDK - Using version 0.0.x instead
+# near-sdk-rs = "4.1"     # NEAR Protocol Rust SDK - For contracts only
+# scroll-sdk-rs = "0.1"   # Scroll L2 Rust SDK - Not available yet
+# uniswap-v3-rs = "0.1"   # Uniswap V3 Rust SDK - Not available yet
+# raydium-rs = "0.1"      # Raydium (Solana) Rust SDK - Not available yet
+# rust-crypto = "0.2"     # Additional crypto primitives - Deprecated
+
+# reqwest = { version = "0.11", features = ["json", "rustls-tls"] }  # duplicate removed
+# room-manager = { path = "../room-manager" }
+# quinn = "0.11"  # QUIC thuần - dùng sau khi fix wtransport
+
+[dev-dependencies]
+reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tokio-tungstenite = { version = "0.24" }
+hyper = "0.14"
+worker = { path = "../worker" }
+

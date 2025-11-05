@@ -1,0 +1,41 @@
+{
+  "name": "eneegy-game-project",
+  "version": "1.0.0",
+  "description": "Multiplayer endless runner game project",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "cd client && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "install:client": "cd client && npm install",
+    "install:all": "npm run install:client",
+    "load-test": "bash scripts/run-load-test.sh",
+    "load-test:quick": "bash scripts/run-load-test.sh quick",
+    "load-test:medium": "bash scripts/run-load-test.sh medium",
+    "load-test:heavy": "bash scripts/run-load-test.sh heavy"
+  },
+  "keywords": [
+    "game",
+    "multiplayer",
+    "endless-runner",
+    "svelte",
+    "threejs"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.12.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
+    "pocketbase": "^0.26.3",
+    "sqlite3": "^5.1.7",
+    "ws": "^8.18.3",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "artillery": "^2.0.8"
+  }
+}

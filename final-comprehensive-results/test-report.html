@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameV1 Test Report</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+        .test-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .test-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        .test-card.success {
+            border-left: 4px solid #28a745;
+        }
+        .test-card.warning {
+            border-left: 4px solid #ffc107;
+        }
+        .test-card.danger {
+            border-left: 4px solid #dc3545;
+        }
+        .test-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .success { color: #28a745; }
+        .warning { color: #ffc107; }
+        .danger { color: #dc3545; }
+        .section {
+            margin-bottom: 40px;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 GameV1 Test Report</h1>
+            <p>Generated on: $(date)</p>
+        </div>
+
+        <div class="test-summary">
+            <div class="test-card warning">
+                <h3>Integration Tests</h3>
+                <div class="test-value warning">MANUAL</div>
+            </div>
+            <div class="test-card success">
+                <h3>Performance Tests</h3>
+                <div class="test-value success">COMPLETED</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Test Results</h2>
+            <h3>Integration Tests Output</h3>
+            <div class="code-block">
+# GameV1 Integration Test Results
+Generated: $(date)
+
+## Integration Test Scenarios
+
+Note: Services should be started manually for integration tests
+❌ Health endpoint not accessible
+❌ Metrics endpoint not accessible
+Note: WebSocket tests require manual verification
+            </div>
+            <h3>Performance Tests Output</h3>
+            <div class="code-block">
+# GameV1 Performance Test Results
+Generated: $(date)
+
+## Test Configuration
+- Test Duration: 5 minutes
+- Concurrent Users: 100, 500, 1000
+- Endpoints Tested: /healthz, /api/rooms, /auth/login
+
+## Results Summary
+
+New configuration template added to /root/.siege
+Run siege -C to view the current settings in that file
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+[[1;33merror[0m] socket: unable to connect sock.c:282: Connection refused
+
+{	"transactions":			           0,
+	"availability":			        0.00,
+	"elapsed_time":			        0.22,
+	"data_transferred":		        0.00,
+	"response_time":		        0.00,
+	"transaction_rate":		        0.00,
+	"throughput":			        0.00,
+	"concurrency":			        0.00,
+	"successful_transactions":	           0,
+	"failed_transactions":		        1123,
+	"longest_transaction":		        0.00,
+	"shortest_transaction":		        0.00
+}
+Note: API endpoints require authentication for full testing
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💡 Recommendations</h2>
+            <ul>
+                <li>All unit tests should pass consistently</li>
+                <li>Integration tests require manual verification of service connectivity</li>
+                <li>Performance tests should show consistent response times</li>
+                <li>Monitor memory usage trends across test runs</li>
+                <li>Set up automated test execution in CI/CD pipeline</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <p style="text-align: center; color: #666; margin-top: 40px;">
+                Generated by GameV1 Testing Suite | $(date)
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+# GameV1 Latency-Based Routing Configuration
+# Routes users to the closest region for optimal performance
+
+routing_rules:
+  - name: "global-api-latency-routing"
+    type: "latency"
+    set_identifier: "global-latency-routing"
+    region: "global"
+    failover: "PRIMARY"
+
+  - name: "us-east-latency-routing"
+    type: "latency"
+    set_identifier: "us-east-latency-routing"
+    region: "us-east-1"
+    failover: "SECONDARY"
+
+  - name: "eu-west-latency-routing"
+    type: "latency"
+    set_identifier: "eu-west-latency-routing"
+    region: "eu-west-1"
+    failover: "SECONDARY"
+
+  - name: "ap-southeast-latency-routing"
+    type: "latency"
+    set_identifier: "ap-southeast-latency-routing"
+    region: "ap-southeast-1"
+    failover: "SECONDARY"
+
+health_checks:
+  - name: "gamev1-global-health"
+    type: "HTTPS"
+    resource_path: "/healthz"
+    fully_qualified_domain_name: "api.gamev1.com"
+    port: 443
+    request_interval: 30
+    failure_threshold: 3
+
+  - name: "gamev1-us-east-health"
+    type: "HTTPS"
+    resource_path: "/healthz"
+    fully_qualified_domain_name: "api-us.gamev1.com"
+    port: 443
+    request_interval: 30
+    failure_threshold: 3
+
+weighted_routing:
+  us_east_weight: 40
+  eu_west_weight: 35
+  ap_southeast_weight: 25
+
+failover_configuration:
+  primary_region: "us-east-1"
+  secondary_regions:
+    - "eu-west-1"
+    - "ap-southeast-1"
+  failover_threshold: 3

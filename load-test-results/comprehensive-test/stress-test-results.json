@@ -1,0 +1,682 @@
+{
+  "startTime": "2025-10-23T04:02:42.915Z",
+  "endTime": "2025-10-23T04:08:29.402Z",
+  "scenarios": [
+    {
+      "name": "connection_flood",
+      "duration": 345.87411569999995,
+      "success": true,
+      "metrics": {
+        "activeConnections": 1000,
+        "totalMessagesSent": 0,
+        "averageLatency": 0,
+        "errorCount": 0
+      }
+    },
+    {
+      "name": "message_flood",
+      "duration": 0.42866629999998257,
+      "success": true,
+      "metrics": {
+        "activeConnections": 1000,
+        "totalMessagesSent": 0,
+        "averageLatency": 0,
+        "errorCount": 0
+      }
+    },
+    {
+      "name": "memory_exhaustion",
+      "duration": 0.18189029999997,
+      "success": true,
+      "metrics": {
+        "activeConnections": 1000,
+        "totalMessagesSent": 0,
+        "averageLatency": 0,
+        "errorCount": 0
+      }
+    }
+  ],
+  "metrics": {
+    "connections": [],
+    "messages": [],
+    "latency": [],
+    "errors": [],
+    "resourceUsage": [
+      {
+        "timestamp": "2025-10-23T04:02:42.915Z",
+        "activeConnections": 0,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 46698496,
+          "heapTotal": 8232960,
+          "heapUsed": 5955112,
+          "external": 2228474,
+          "arrayBuffers": 18675
+        },
+        "cpuUsage": {
+          "user": 46000,
+          "system": 46000
+        },
+        "uptime": 0.0464208
+      },
+      {
+        "timestamp": "2025-10-23T04:02:52.921Z",
+        "activeConnections": 50,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 48209920,
+          "heapTotal": 8650752,
+          "heapUsed": 6460376,
+          "external": 2241082,
+          "arrayBuffers": 18651
+        },
+        "cpuUsage": {
+          "user": 109000,
+          "system": 93000
+        },
+        "uptime": 10.0520481
+      },
+      {
+        "timestamp": "2025-10-23T04:03:02.938Z",
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 50475008,
+          "heapTotal": 9699328,
+          "heapUsed": 6967496,
+          "external": 2246482,
+          "arrayBuffers": 24051
+        },
+        "cpuUsage": {
+          "user": 125000,
+          "system": 109000
+        },
+        "uptime": 20.0686682
+      },
+      {
+        "timestamp": "2025-10-23T04:03:12.938Z",
+        "activeConnections": 100,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 50446336,
+          "heapTotal": 9699328,
+          "heapUsed": 6971088,
+          "external": 2246482,
+          "arrayBuffers": 24051
+        },
+        "cpuUsage": {
+          "user": 125000,
+          "system": 109000
+        },
+        "uptime": 30.068986
+      },
+      {
+        "timestamp": "2025-10-23T04:03:22.945Z",
+        "activeConnections": 150,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 50847744,
+          "heapTotal": 8650752,
+          "heapUsed": 7768336,
+          "external": 2251882,
+          "arrayBuffers": 29451
+        },
+        "cpuUsage": {
+          "user": 140000,
+          "system": 125000
+        },
+        "uptime": 40.0756547
+      },
+      {
+        "timestamp": "2025-10-23T04:03:32.947Z",
+        "activeConnections": 200,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 51224576,
+          "heapTotal": 9175040,
+          "heapUsed": 7519568,
+          "external": 2260074,
+          "arrayBuffers": 26843
+        },
+        "cpuUsage": {
+          "user": 171000,
+          "system": 125000
+        },
+        "uptime": 50.0783429
+      },
+      {
+        "timestamp": "2025-10-23T04:03:42.958Z",
+        "activeConnections": 200,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 51204096,
+          "heapTotal": 9175040,
+          "heapUsed": 7522968,
+          "external": 2260074,
+          "arrayBuffers": 26843
+        },
+        "cpuUsage": {
+          "user": 171000,
+          "system": 125000
+        },
+        "uptime": 60.0891557
+      },
+      {
+        "timestamp": "2025-10-23T04:03:52.958Z",
+        "activeConnections": 250,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 51511296,
+          "heapTotal": 10485760,
+          "heapUsed": 7808088,
+          "external": 2251002,
+          "arrayBuffers": 28571
+        },
+        "cpuUsage": {
+          "user": 203000,
+          "system": 125000
+        },
+        "uptime": 70.0893174
+      },
+      {
+        "timestamp": "2025-10-23T04:04:02.961Z",
+        "activeConnections": 300,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 51830784,
+          "heapTotal": 9699328,
+          "heapUsed": 8059592,
+          "external": 2252082,
+          "arrayBuffers": 29651
+        },
+        "cpuUsage": {
+          "user": 218000,
+          "system": 140000
+        },
+        "uptime": 80.0919201
+      },
+      {
+        "timestamp": "2025-10-23T04:04:12.962Z",
+        "activeConnections": 300,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 51834880,
+          "heapTotal": 9699328,
+          "heapUsed": 8070592,
+          "external": 2252082,
+          "arrayBuffers": 29651
+        },
+        "cpuUsage": {
+          "user": 218000,
+          "system": 140000
+        },
+        "uptime": 90.0927658
+      },
+      {
+        "timestamp": "2025-10-23T04:04:22.972Z",
+        "activeConnections": 350,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 51990528,
+          "heapTotal": 11010048,
+          "heapUsed": 8336968,
+          "external": 2252946,
+          "arrayBuffers": 30515
+        },
+        "cpuUsage": {
+          "user": 234000,
+          "system": 171000
+        },
+        "uptime": 100.1031496
+      },
+      {
+        "timestamp": "2025-10-23T04:04:32.973Z",
+        "activeConnections": 400,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 52346880,
+          "heapTotal": 9961472,
+          "heapUsed": 8651528,
+          "external": 2262434,
+          "arrayBuffers": 40003
+        },
+        "cpuUsage": {
+          "user": 250000,
+          "system": 187000
+        },
+        "uptime": 110.103379
+      },
+      {
+        "timestamp": "2025-10-23T04:04:42.973Z",
+        "activeConnections": 400,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 52346880,
+          "heapTotal": 9961472,
+          "heapUsed": 8655064,
+          "external": 2262434,
+          "arrayBuffers": 40003
+        },
+        "cpuUsage": {
+          "user": 250000,
+          "system": 187000
+        },
+        "uptime": 120.1035099
+      },
+      {
+        "timestamp": "2025-10-23T04:04:52.975Z",
+        "activeConnections": 450,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 53047296,
+          "heapTotal": 11796480,
+          "heapUsed": 9165352,
+          "external": 2267618,
+          "arrayBuffers": 45187
+        },
+        "cpuUsage": {
+          "user": 296000,
+          "system": 203000
+        },
+        "uptime": 130.1061396
+      },
+      {
+        "timestamp": "2025-10-23T04:05:02.986Z",
+        "activeConnections": 500,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 53493760,
+          "heapTotal": 11010048,
+          "heapUsed": 9710920,
+          "external": 2268266,
+          "arrayBuffers": 45835
+        },
+        "cpuUsage": {
+          "user": 296000,
+          "system": 234000
+        },
+        "uptime": 140.1170584
+      },
+      {
+        "timestamp": "2025-10-23T04:05:12.986Z",
+        "activeConnections": 500,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 53493760,
+          "heapTotal": 11010048,
+          "heapUsed": 9713896,
+          "external": 2268266,
+          "arrayBuffers": 45835
+        },
+        "cpuUsage": {
+          "user": 296000,
+          "system": 234000
+        },
+        "uptime": 150.1172232
+      },
+      {
+        "timestamp": "2025-10-23T04:05:22.991Z",
+        "activeConnections": 550,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 53878784,
+          "heapTotal": 11272192,
+          "heapUsed": 10085512,
+          "external": 2268266,
+          "arrayBuffers": 45835
+        },
+        "cpuUsage": {
+          "user": 312000,
+          "system": 250000
+        },
+        "uptime": 160.122303
+      },
+      {
+        "timestamp": "2025-10-23T04:05:33.002Z",
+        "activeConnections": 600,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 54624256,
+          "heapTotal": 11796480,
+          "heapUsed": 9944384,
+          "external": 2276458,
+          "arrayBuffers": 43227
+        },
+        "cpuUsage": {
+          "user": 375000,
+          "system": 296000
+        },
+        "uptime": 170.1333172
+      },
+      {
+        "timestamp": "2025-10-23T04:05:43.014Z",
+        "activeConnections": 600,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 54624256,
+          "heapTotal": 11796480,
+          "heapUsed": 9947720,
+          "external": 2276458,
+          "arrayBuffers": 43227
+        },
+        "cpuUsage": {
+          "user": 375000,
+          "system": 296000
+        },
+        "uptime": 180.144337
+      },
+      {
+        "timestamp": "2025-10-23T04:05:53.015Z",
+        "activeConnections": 650,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 54861824,
+          "heapTotal": 13107200,
+          "heapUsed": 10487872,
+          "external": 2270194,
+          "arrayBuffers": 47763
+        },
+        "cpuUsage": {
+          "user": 375000,
+          "system": 343000
+        },
+        "uptime": 190.1459644
+      },
+      {
+        "timestamp": "2025-10-23T04:06:03.027Z",
+        "activeConnections": 700,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 55029760,
+          "heapTotal": 12320768,
+          "heapUsed": 11157304,
+          "external": 2284650,
+          "arrayBuffers": 62219
+        },
+        "cpuUsage": {
+          "user": 421000,
+          "system": 390000
+        },
+        "uptime": 200.1580547
+      },
+      {
+        "timestamp": "2025-10-23T04:06:13.027Z",
+        "activeConnections": 700,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 55029760,
+          "heapTotal": 12320768,
+          "heapUsed": 11160280,
+          "external": 2284650,
+          "arrayBuffers": 62219
+        },
+        "cpuUsage": {
+          "user": 421000,
+          "system": 390000
+        },
+        "uptime": 210.1581634
+      },
+      {
+        "timestamp": "2025-10-23T04:06:23.029Z",
+        "activeConnections": 750,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 55668736,
+          "heapTotal": 12582912,
+          "heapUsed": 10886424,
+          "external": 2284650,
+          "arrayBuffers": 51419
+        },
+        "cpuUsage": {
+          "user": 437000,
+          "system": 406000
+        },
+        "uptime": 220.1594442
+      },
+      {
+        "timestamp": "2025-10-23T04:06:33.030Z",
+        "activeConnections": 800,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 55472128,
+          "heapTotal": 14155776,
+          "heapUsed": 11258328,
+          "external": 2283986,
+          "arrayBuffers": 61555
+        },
+        "cpuUsage": {
+          "user": 437000,
+          "system": 437000
+        },
+        "uptime": 230.1609658
+      },
+      {
+        "timestamp": "2025-10-23T04:06:43.041Z",
+        "activeConnections": 800,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 55472128,
+          "heapTotal": 14155776,
+          "heapUsed": 11261288,
+          "external": 2283986,
+          "arrayBuffers": 61555
+        },
+        "cpuUsage": {
+          "user": 437000,
+          "system": 437000
+        },
+        "uptime": 240.1719479
+      },
+      {
+        "timestamp": "2025-10-23T04:06:53.041Z",
+        "activeConnections": 850,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 55889920,
+          "heapTotal": 13107200,
+          "heapUsed": 11623968,
+          "external": 2286794,
+          "arrayBuffers": 64363
+        },
+        "cpuUsage": {
+          "user": 468000,
+          "system": 453000
+        },
+        "uptime": 250.1722253
+      },
+      {
+        "timestamp": "2025-10-23T04:07:03.043Z",
+        "activeConnections": 900,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 56315904,
+          "heapTotal": 14680064,
+          "heapUsed": 12249528,
+          "external": 2301034,
+          "arrayBuffers": 78603
+        },
+        "cpuUsage": {
+          "user": 500000,
+          "system": 468000
+        },
+        "uptime": 260.1742655
+      },
+      {
+        "timestamp": "2025-10-23T04:07:13.044Z",
+        "activeConnections": 900,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 56315904,
+          "heapTotal": 14680064,
+          "heapUsed": 12252488,
+          "external": 2301034,
+          "arrayBuffers": 78603
+        },
+        "cpuUsage": {
+          "user": 500000,
+          "system": 468000
+        },
+        "uptime": 270.1743516
+      },
+      {
+        "timestamp": "2025-10-23T04:07:23.052Z",
+        "activeConnections": 950,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 56741888,
+          "heapTotal": 14680064,
+          "heapUsed": 11996216,
+          "external": 2301034,
+          "arrayBuffers": 67803
+        },
+        "cpuUsage": {
+          "user": 515000,
+          "system": 500000
+        },
+        "uptime": 280.182541
+      },
+      {
+        "timestamp": "2025-10-23T04:07:33.057Z",
+        "activeConnections": 1000,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 56938496,
+          "heapTotal": 14155776,
+          "heapUsed": 12323744,
+          "external": 2299290,
+          "arrayBuffers": 76859
+        },
+        "cpuUsage": {
+          "user": 515000,
+          "system": 546000
+        },
+        "uptime": 290.187788
+      },
+      {
+        "timestamp": "2025-10-23T04:07:43.065Z",
+        "activeConnections": 1000,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 57053184,
+          "heapTotal": 14155776,
+          "heapUsed": 12326680,
+          "external": 2299290,
+          "arrayBuffers": 76859
+        },
+        "cpuUsage": {
+          "user": 515000,
+          "system": 546000
+        },
+        "uptime": 300.196353
+      },
+      {
+        "timestamp": "2025-10-23T04:07:53.076Z",
+        "activeConnections": 1000,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 57053184,
+          "heapTotal": 14155776,
+          "heapUsed": 12329616,
+          "external": 2299290,
+          "arrayBuffers": 76859
+        },
+        "cpuUsage": {
+          "user": 515000,
+          "system": 546000
+        },
+        "uptime": 310.2066105
+      },
+      {
+        "timestamp": "2025-10-23T04:08:03.077Z",
+        "activeConnections": 1000,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 57053184,
+          "heapTotal": 14155776,
+          "heapUsed": 12332552,
+          "external": 2299290,
+          "arrayBuffers": 76859
+        },
+        "cpuUsage": {
+          "user": 515000,
+          "system": 546000
+        },
+        "uptime": 320.2076906
+      },
+      {
+        "timestamp": "2025-10-23T04:08:13.091Z",
+        "activeConnections": 1000,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 57053184,
+          "heapTotal": 14155776,
+          "heapUsed": 12335488,
+          "external": 2299290,
+          "arrayBuffers": 76859
+        },
+        "cpuUsage": {
+          "user": 515000,
+          "system": 546000
+        },
+        "uptime": 330.2220117
+      },
+      {
+        "timestamp": "2025-10-23T04:08:23.094Z",
+        "activeConnections": 1000,
+        "totalMessagesSent": 0,
+        "memoryUsage": {
+          "rss": 57053184,
+          "heapTotal": 14155776,
+          "heapUsed": 12338424,
+          "external": 2299290,
+          "arrayBuffers": 76859
+        },
+        "cpuUsage": {
+          "user": 515000,
+          "system": 546000
+        },
+        "uptime": 340.2250367
+      }
+    ]
+  },
+  "summary": {
+    "totalScenarios": 3,
+    "successfulScenarios": 3,
+    "maxConcurrentClients": 1000,
+    "totalMessagesSent": 0,
+    "averageMessagesPerSecond": 0,
+    "totalTestDuration": -1761192162.915,
+    "averageLatency": 0,
+    "totalFailures": 0,
+    "successRate": 100
+  },
+  "failures": [],
+  "stressAnalysis": {
+    "connectionStability": {
+      "stable": false,
+      "maxConnections": 1000,
+      "minConnections": 0,
+      "stabilityScore": 0
+    },
+    "messageThroughput": {
+      "consistent": false,
+      "averageRate": 0,
+      "consistencyScore": null
+    },
+    "latencyUnderLoad": {
+      "acceptable": true
+    },
+    "memoryBehavior": {
+      "stable": false,
+      "maxMemoryMB": 12,
+      "memoryGrowthRate": 1.0719046090149102,
+      "hasMemoryLeak": false
+    },
+    "errorPatterns": {
+      "totalErrors": 0,
+      "errorRate": null,
+      "errorsByType": {},
+      "acceptableErrorRate": false
+    }
+  }
+}

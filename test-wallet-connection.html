@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Wallet Connection Test</h1>
+        <p>Test your Phantom wallet connection directly</p>
+
+        <div id="status"></div>
+
+        <button onclick="runTests()">🔄 Run Tests</button>
+        <button onclick="connectWallet()">🔗 Connect Wallet</button>
+        <button onclick="disconnectWallet()">🚪 Disconnect</button>
+        <button onclick="getBalance()">💰 Get Balance</button>
+
+        <h3>📋 Test Results:</h3>
+        <div id="results"></div>
+
+        <h3>🔍 Debug Info:</h3>
+        <div id="debug"></div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let debugInfo = [];
+
+        function log(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const timestamp = new Date().toLocaleTimeString();
+            statusDiv.innerHTML = `<div class="status ${type}">[${timestamp}] ${message}</div>` + statusDiv.innerHTML;
+        }
+
+        function addResult(name, status, details) {
+            testResults.push({ name, status, details });
+            updateResults();
+        }
+
+        function addDebug(name, status, details) {
+            debugInfo.push({ name, status, details });
+            updateDebug();
+        }
+
+        function updateResults() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = testResults.map(result => `
+                <div class="status ${result.status === 'PASS' ? 'success' : result.status === 'FAIL' ? 'error' : 'info'}">
+                    <strong>${result.name}</strong>: ${result.status}<br>
+                    <small>${result.details}</small>
+                </div>
+            `).join('');
+        }
+
+        function updateDebug() {
+            const debugDiv = document.getElementById('debug');
+            debugDiv.innerHTML = debugInfo.map(info => `
+                <div class="status ${info.status === 'PASS' ? 'success' : info.status === 'FAIL' ? 'error' : 'info'}">
+                    <strong>${info.name}</strong>: ${info.details}
+                </div>
+            `).join('');
+        }
+
+        async function runTests() {
+            log('Starting wallet tests...', 'info');
+            testResults = [];
+            debugInfo = [];
+
+            // Test 1: Browser Environment
+            addResult('Browser Environment', 'PASS', `✅ Running on ${navigator.userAgent.slice(0, 50)}...`);
+
+            // Test 2: Window.solana detection
+            if (typeof window.solana !== 'undefined') {
+                addResult('Phantom Detection', 'PASS', '✅ Phantom wallet detected');
+                addDebug('Window.solana', 'PASS', 'window.solana is available');
+
+                // Test connection status
+                if (window.solana.isConnected) {
+                    addResult('Connection Status', 'PASS', '✅ Wallet is connected');
+                    addDebug('Connection State', 'PASS', `isConnected: ${window.solana.isConnected}`);
+
+                    if (window.solana.publicKey) {
+                        const address = window.solana.publicKey.toString();
+                        addResult('Wallet Address', 'PASS', `📍 ${address.slice(0, 8)}...${address.slice(-8)}`);
+                        addDebug('Public Key', 'PASS', address);
+                    }
+                } else {
+                    addResult('Connection Status', 'INFO', 'ℹ️ Wallet not connected - click Connect Wallet');
+                    addDebug('Connection State', 'INFO', `isConnected: ${window.solana.isConnected}`);
+                }
+            } else {
+                addResult('Phantom Detection', 'FAIL', '❌ Phantom wallet not found');
+                addDebug('Window.solana', 'FAIL', 'window.solana is not available');
+                addResult('Installation Required', 'FAIL', '📥 Please install Phantom wallet from https://phantom.app/');
+            }
+
+            // Test 3: API Connection
+            try {
+                const response = await fetch('http://localhost:8080/health');
+                const data = await response.json();
+                addResult('API Connection', 'PASS', `✅ Gateway API healthy - ${data.status}`);
+            } catch (error) {
+                addResult('API Connection', 'FAIL', `❌ Gateway API error: ${error.message}`);
+            }
+
+            log('Tests completed!', 'success');
+        }
+
+        async function connectWallet() {
+            if (!window.solana) {
+                log('❌ Phantom wallet not found', 'error');
+                return;
+            }
+
+            log('🔗 Connecting to Phantom wallet...', 'info');
+
+            try {
+                const response = await window.solana.connect();
+                log('✅ Wallet connected successfully!', 'success');
+
+                if (response.publicKey) {
+                    const address = response.publicKey.toString();
+                    log(`📍 Connected to: ${address.slice(0, 8)}...${address.slice(-8)}`, 'success');
+                }
+
+                // Refresh tests
+                setTimeout(runTests, 1000);
+            } catch (error) {
+                log(`❌ Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function disconnectWallet() {
+            if (!window.solana) {
+                log('❌ Phantom wallet not found', 'error');
+                return;
+            }
+
+            log('🔌 Disconnecting wallet...', 'info');
+
+            try {
+                await window.solana.disconnect();
+                log('✅ Wallet disconnected successfully!', 'success');
+                setTimeout(runTests, 1000);
+            } catch (error) {
+                log(`❌ Disconnection failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function getBalance() {
+            if (!window.solana || !window.solana.isConnected) {
+                log('❌ Wallet not connected', 'error');
+                return;
+            }
+
+            log('💰 Getting wallet balance...', 'info');
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/wallet/${window.solana.publicKey.toString()}/balance`);
+                const data = await response.json();
+                log(`✅ Balance: ${data.balance} SOL`, 'success');
+            } catch (error) {
+                log(`❌ Balance check failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            log('🚀 Wallet test page loaded', 'info');
+            setTimeout(runTests, 1000);
+        });
+
+        // Listen for wallet events
+        if (typeof window.solana !== 'undefined') {
+            window.solana.on('connect', () => {
+                log('📱 Wallet connected event received', 'success');
+                runTests();
+            });
+
+            window.solana.on('disconnect', () => {
+                log('📱 Wallet disconnected event received', 'info');
+                runTests();
+            });
+        }
+    </script>
+</body>
+</html>

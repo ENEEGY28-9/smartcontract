@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Test Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 100%);
+            color: #f6f8ff;
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a1f2e;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #2a3441;
+        }
+
+        .header h1 {
+            color: #446bff;
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+        }
+
+        .wallet-info {
+            background: #0f1629;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: 1px solid #253157;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #2a3441;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #446bff;
+        }
+
+        .value {
+            font-family: monospace;
+            background: #253157;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border: 1px solid #2ecc71;
+        }
+
+        .status.error {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+            border: 1px solid #ff4757;
+        }
+
+        .status.warning {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+            border: 1px solid #ffa502;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #446bff, #6b73ff);
+            color: white;
+        }
+
+        .btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(68, 107, 255, 0.3);
+        }
+
+        .btn.secondary {
+            background: #253157;
+            color: #f6f8ff;
+            border: 1px solid #446bff;
+        }
+
+        .btn.secondary:hover {
+            background: #2a3441;
+        }
+
+        .copy-btn {
+            background: #446bff;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .copy-btn:hover {
+            background: #3651d4;
+        }
+
+        .instructions {
+            background: rgba(68, 107, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid rgba(68, 107, 255, 0.3);
+            margin-top: 2rem;
+        }
+
+        .instructions h3 {
+            color: #446bff;
+            margin: 0 0 1rem 0;
+        }
+
+        .instructions ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .instructions li {
+            margin: 0.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Wallet Test Interface</h1>
+            <p>Test your Solana wallet integration for ENEEGY game</p>
+        </div>
+
+        <div class="wallet-info">
+            <div class="info-item">
+                <span class="label">📍 Your Wallet Address:</span>
+                <div>
+                    <span class="value">57arM3rLe8LHfzn7coyUu6KGhxLQ6nfP87mHTHpM2SGB</span>
+                    <button class="copy-btn" onclick="copyAddress()">📋 Copy</button>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <span class="label">💰 Current Balance:</span>
+                <span class="value" id="balance">Loading...</span>
+            </div>
+
+            <div class="info-item">
+                <span class="label">🔗 Network:</span>
+                <span class="value">Solana Mainnet</span>
+            </div>
+
+            <div class="info-item">
+                <span class="label">📱 Status:</span>
+                <span class="value" id="status">Checking...</span>
+            </div>
+        </div>
+
+        <div class="status success" id="serverStatus">
+            ✅ Wallet Test Interface Ready! (Standalone Mode)
+            <br><small>Development server: <span id="devServerStatus">Checking...</span></small>
+        </div>
+
+        <div class="actions">
+            <button class="btn primary" onclick="testWalletConnection()">
+                🧪 Test Wallet Connection
+            </button>
+            <button class="btn secondary" onclick="window.location.href='http://localhost:5173/wallet-test'">
+                🧪 Open Full Wallet Test
+            </button>
+            <button class="btn secondary" onclick="window.location.href='http://localhost:5173/'">
+                🏠 Go to Home
+            </button>
+        </div>
+
+        <!-- Test Results Section -->
+        <div class="wallet-info" id="testResults" style="display: none;">
+            <h3>🧪 Test Results</h3>
+            <div id="resultsContent"></div>
+        </div>
+
+        <div class="instructions">
+            <h3>💡 Next Steps:</h3>
+            <ul>
+                <li><strong>1. Get SOL:</strong> <a href="https://faucet.solana.com/" target="_blank" style="color: #446bff;">Visit Solana Faucet</a> to get test SOL</li>
+                <li><strong>2. Install Phantom:</strong> Get the Phantom wallet browser extension</li>
+                <li><strong>3. Connect Wallet:</strong> Click "Connect Wallet" in the interface</li>
+                <li><strong>4. Test Features:</strong> Try message signing and balance checking</li>
+                <li><strong>5. Play Game:</strong> Use SOL for in-game purchases and rewards</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Check if development server is running
+        fetch('http://localhost:5173')
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('serverStatus').className = 'status success';
+                    document.getElementById('serverStatus').innerHTML = '✅ Development server is running! <a href="http://localhost:5173/wallet-test" style="color: #2ecc71;">Go to Wallet Test</a>';
+                } else {
+                    document.getElementById('serverStatus').className = 'status error';
+                    document.getElementById('serverStatus').innerHTML = '❌ Server error. Make sure to run: <code>npm run dev</code>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('serverStatus').className = 'status error';
+                document.getElementById('serverStatus').innerHTML = '❌ Cannot connect to development server. Run: <code>npm run dev</code>';
+            });
+
+        // Check wallet balance (mock)
+        document.getElementById('balance').textContent = '0.0000 SOL (needs funding)';
+        document.getElementById('status').textContent = 'Ready for testing';
+
+        function copyAddress() {
+            navigator.clipboard.writeText('57arM3rLe8LHfzn7coyUu6KGhxLQ6nfP87mHTHpM2SGB');
+            alert('Address copied to clipboard!');
+        }
+
+        // Check development server status
+        fetch('http://localhost:5173')
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('devServerStatus').innerHTML = '<a href="http://localhost:5173/wallet-test" style="color: #2ecc71;">✅ Running - Click to open</a>';
+                } else {
+                    document.getElementById('devServerStatus').innerHTML = '<span style="color: #ffa502;">⚠️ Not responding</span>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('devServerStatus').innerHTML = '<span style="color: #ff4757;">❌ Not available</span>';
+            });
+
+        // Check if Phantom wallet is available
+        if (typeof window.solana !== 'undefined') {
+            document.getElementById('status').textContent = 'Phantom wallet detected! Ready to connect.';
+        } else {
+            document.getElementById('status').textContent = 'Install Phantom wallet to test fully';
+        }
+
+        // Test wallet connection function
+        function testWalletConnection() {
+            const resultsDiv = document.getElementById('testResults');
+            const resultsContent = document.getElementById('resultsContent');
+
+            resultsDiv.style.display = 'block';
+            resultsContent.innerHTML = '<p>🔄 Testing wallet connection...</p>';
+
+            let results = [];
+
+            // Test 1: Check Phantom wallet availability
+            if (typeof window.solana !== 'undefined') {
+                results.push({
+                    name: 'Phantom Wallet',
+                    status: 'PASS',
+                    details: '✅ Phantom wallet extension detected'
+                });
+            } else {
+                results.push({
+                    name: 'Phantom Wallet',
+                    status: 'FAIL',
+                    details: '❌ Phantom wallet not installed. <a href="https://phantom.app/" target="_blank">Install Phantom</a>'
+                });
+            }
+
+            // Test 2: Check wallet connection
+            if (window.solana && window.solana.isConnected) {
+                results.push({
+                    name: 'Wallet Connection',
+                    status: 'PASS',
+                    details: '✅ Wallet is connected'
+                });
+
+                // Test 3: Get wallet address
+                if (window.solana.publicKey) {
+                    const address = window.solana.publicKey.toString();
+                    results.push({
+                        name: 'Wallet Address',
+                        status: 'PASS',
+                        details: `📍 ${address.slice(0, 8)}...${address.slice(-8)}`
+                    });
+                }
+            } else {
+                results.push({
+                    name: 'Wallet Connection',
+                    status: 'INFO',
+                    details: 'ℹ️ Wallet not connected. Click "Connect" in Phantom extension.'
+                });
+            }
+
+            // Test 4: Network check (mock)
+            results.push({
+                name: 'Solana Network',
+                status: 'PASS',
+                details: '✅ Connected to Solana mainnet (simulated)'
+            });
+
+            // Display results
+            let html = '<div class="test-results">';
+            results.forEach(result => {
+                const statusClass = result.status === 'PASS' ? 'success' :
+                                  result.status === 'FAIL' ? 'error' : 'warning';
+                html += `
+                    <div class="result-item ${result.status.toLowerCase()}">
+                        <div class="result-header">
+                            <span class="result-name">${result.name}</span>
+                            <span class="result-status">${result.status}</span>
+                        </div>
+                        <div class="result-details">${result.details}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            // Add CSS for results
+            if (!document.getElementById('test-results-css')) {
+                const css = `
+                    <style id="test-results-css">
+                        .test-results {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 0.75rem;
+                            margin-top: 1rem;
+                        }
+                        .result-item {
+                            padding: 1rem;
+                            border-radius: 6px;
+                            border-left: 4px solid;
+                        }
+                        .result-item.pass {
+                            background: rgba(46, 204, 113, 0.1);
+                            border-left-color: #2ecc71;
+                        }
+                        .result-item.fail {
+                            background: rgba(255, 71, 87, 0.1);
+                            border-left-color: #ff4757;
+                        }
+                        .result-item.info {
+                            background: rgba(68, 107, 255, 0.1);
+                            border-left-color: #446bff;
+                        }
+                        .result-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 0.5rem;
+                        }
+                        .result-name {
+                            font-weight: 600;
+                            color: #f6f8ff;
+                        }
+                        .result-status {
+                            font-size: 0.9rem;
+                            font-weight: 600;
+                        }
+                        .result-details {
+                            color: #ccc;
+                            font-size: 0.9rem;
+                        }
+                    </style>
+                `;
+                document.head.insertAdjacentHTML('beforeend', css);
+            }
+
+            resultsContent.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phantom Wallet Detection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 100%);
+            color: #f6f8ff;
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #1a1f2e;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: 600;
+        }
+        .success {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border: 1px solid #2ecc71;
+        }
+        .error {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+            border: 1px solid #ff4757;
+        }
+        .warning {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+            border: 1px solid #ffa502;
+        }
+        .info {
+            background: rgba(68, 107, 255, 0.2);
+            color: #446bff;
+            border: 1px solid #446bff;
+        }
+        .btn {
+            background: #446bff;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+        .btn:hover {
+            background: #3651d4;
+        }
+        .test-item {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #0f1629;
+            border-radius: 8px;
+            border-left: 4px solid #446bff;
+        }
+        code {
+            background: #253157;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Phantom Wallet Detection Test</h1>
+        <p>Quick test to verify Phantom wallet installation and connection</p>
+
+        <div id="detectionStatus" class="status info">
+            🔄 Checking Phantom wallet...
+        </div>
+
+        <div id="connectionStatus" class="status" style="display: none;">
+            Connection status will appear here
+        </div>
+
+        <button class="btn" onclick="runDetection()">🔄 Run Detection Test</button>
+        <button class="btn" onclick="window.location.href='http://localhost:5173/wallet-test'">
+            🧪 Go to Full Wallet Test
+        </button>
+
+        <div id="testResults"></div>
+
+        <div class="test-item">
+            <h3>📋 Test Results:</h3>
+            <div id="results"></div>
+        </div>
+
+        <div class="test-item">
+            <h3>💡 What to check:</h3>
+            <ul>
+                <li><strong>window.solana exists:</strong> Phantom extension is installed</li>
+                <li><strong>window.solana.isConnected:</strong> Wallet is connected to your site</li>
+                <li><strong>window.solana.publicKey:</strong> Your wallet address is available</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function runDetection() {
+            const detectionDiv = document.getElementById('detectionStatus');
+            const connectionDiv = document.getElementById('connectionStatus');
+            const resultsDiv = document.getElementById('results');
+            const testResultsDiv = document.getElementById('testResults');
+
+            detectionDiv.style.display = 'block';
+            connectionDiv.style.display = 'none';
+            resultsDiv.innerHTML = '';
+            testResultsDiv.style.display = 'none';
+
+            detectionDiv.className = 'status info';
+            detectionDiv.textContent = '🔄 Checking Phantom wallet...';
+
+            setTimeout(() => {
+                let results = [];
+
+                // Test 1: Check if window.solana exists
+                if (typeof window.solana !== 'undefined') {
+                    results.push({
+                        test: 'Phantom Extension',
+                        status: 'PASS',
+                        message: '✅ Phantom wallet extension detected',
+                        details: 'window.solana object found'
+                    });
+
+                    detectionDiv.className = 'status success';
+                    detectionDiv.textContent = '✅ Phantom wallet detected!';
+
+                    // Test 2: Check connection status
+                    if (window.solana.isConnected) {
+                        results.push({
+                            test: 'Wallet Connection',
+                            status: 'PASS',
+                            message: '✅ Wallet is connected',
+                            details: 'Ready to use wallet features'
+                        });
+
+                        connectionDiv.className = 'status success';
+                        connectionDiv.textContent = '✅ Wallet connected successfully';
+                    } else {
+                        results.push({
+                            test: 'Wallet Connection',
+                            status: 'INFO',
+                            message: 'ℹ️ Wallet not connected',
+                            details: 'Click "Connect" in Phantom extension'
+                        });
+
+                        connectionDiv.className = 'status warning';
+                        connectionDiv.textContent = '⚠️ Wallet available but not connected';
+                    }
+
+                    // Test 3: Check public key
+                    if (window.solana.publicKey) {
+                        const address = window.solana.publicKey.toString();
+                        results.push({
+                            test: 'Wallet Address',
+                            status: 'PASS',
+                            message: '✅ Wallet address available',
+                            details: `${address.slice(0, 8)}...${address.slice(-8)}`
+                        });
+                    } else {
+                        results.push({
+                            test: 'Wallet Address',
+                            status: 'INFO',
+                            message: 'ℹ️ No address available',
+                            details: 'Connect wallet to get address'
+                        });
+                    }
+
+                } else {
+                    results.push({
+                        test: 'Phantom Extension',
+                        status: 'FAIL',
+                        message: '❌ Phantom wallet not found',
+                        details: 'Install Phantom wallet extension'
+                    });
+
+                    detectionDiv.className = 'status error';
+                    detectionDiv.textContent = '❌ Phantom wallet not installed';
+
+                    connectionDiv.className = 'status error';
+                    connectionDiv.textContent = 'Cannot connect without Phantom wallet';
+                    connectionDiv.style.display = 'block';
+                }
+
+                // Display results
+                let resultsHtml = '';
+                results.forEach(result => {
+                    const icon = result.status === 'PASS' ? '✅' :
+                               result.status === 'FAIL' ? '❌' : 'ℹ️';
+                    resultsHtml += `
+                        <div style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 4px;">
+                            <div style="font-weight: bold; color: ${result.status === 'PASS' ? '#2ecc71' :
+                                                                  result.status === 'FAIL' ? '#ff4757' : '#ffa502'}">
+                                ${icon} ${result.test}
+                            </div>
+                            <div style="font-size: 0.9rem; margin: 0.25rem 0;">${result.message}</div>
+                            <div style="font-size: 0.8rem; color: #888;">${result.details}</div>
+                        </div>
+                    `;
+                });
+
+                resultsDiv.innerHTML = resultsHtml;
+                connectionDiv.style.display = 'block';
+                testResultsDiv.style.display = 'block';
+
+                // Add connect button if wallet is available but not connected
+                if (window.solana && !window.solana.isConnected) {
+                    connectionDiv.innerHTML += '<br><small><button class="btn" onclick="connectWallet()">Connect Wallet</button></small>';
+                }
+
+            }, 500);
+        }
+
+        function connectWallet() {
+            if (window.solana) {
+                window.solana.connect().then(() => {
+                    runDetection(); // Re-run detection after connection
+                }).catch(error => {
+                    alert('Connection failed: ' + error.message);
+                });
+            }
+        }
+
+        // Auto-run detection on page load
+        runDetection();
+    </script>
+</body>
+</html>
+
+

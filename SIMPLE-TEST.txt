@@ -1,0 +1,20 @@
+// COPY-PASTE THIS INTO BROWSER CONSOLE (F12)
+// Simple manual connection test
+
+console.log('🔍 Testing Phantom connection...');
+if (window.solana) {
+  console.log('✅ Phantom found, connecting...');
+  window.solana.connect()
+    .then(result => {
+      console.log('🎉 SUCCESS! Connected to:', result.publicKey.toString());
+      console.log('💡 Check the wallet test page - should show Connected now');
+    })
+    .catch(error => {
+      console.error('❌ Connection failed:', error.message);
+      console.log('💡 Make sure Phantom wallet is unlocked');
+      console.log('💡 Look for Phantom popup and click Approve');
+    });
+} else {
+  console.log('❌ Phantom not found');
+}
+

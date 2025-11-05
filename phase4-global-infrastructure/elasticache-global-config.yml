@@ -1,0 +1,45 @@
+# ElastiCache Global Datastore Configuration
+# Cross-region cache replication
+
+global_cache:
+  global_replication_group_id: "gamev1-global-cache"
+  description: "GameV1 Global Cache for Session Data"
+
+  regions:
+    primary:
+      region: "us-east-1"
+      availability_zones: ["us-east-1a", "us-east-1b"]
+      node_type: "cache.r6g.large"
+      num_node_groups: 2
+      replicas_per_node_group: 2
+
+    secondary:
+      - region: "eu-west-1"
+        availability_zones: ["eu-west-1a", "eu-west-1b"]
+        node_type: "cache.r6g.medium"
+        num_node_groups: 1
+        replicas_per_node_group: 1
+
+      - region: "ap-southeast-1"
+        availability_zones: ["ap-southeast-1a", "ap-southeast-1b"]
+        node_type: "cache.r6g.medium"
+        num_node_groups: 1
+        replicas_per_node_group: 1
+
+  parameters:
+    maxmemory-policy: "allkeys-lru"
+    maxmemory-samples: 5
+    tcp-keepalive: 300
+
+  security:
+    encryption_in_transit: true
+    encryption_at_rest: true
+    auth_token: "global-cache-auth-token"
+
+  monitoring:
+    enabled: true
+    interval: 60
+
+  maintenance_window: "sun:05:00-sun:09:00"
+  snapshot_window: "05:00-09:00"
+  snapshot_retention_period: 7

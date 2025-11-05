@@ -1,0 +1,32 @@
+apiVersion: 1
+
+notifiers:
+  - name: Discord
+    type: discord
+    uid: discord-webhook
+    orgId: 1
+    isDefault: false
+    sendReminder: true
+    disableResolveMessage: false
+    frequency: 1h
+    settings:
+      webhookUrl: ${DISCORD_WEBHOOK_URL}
+      title: |-
+        [{{ .Status | toUpper }}] {{ .GroupLabels.alertname }}
+      message: |-
+        {{ range .Alerts }}
+        *Alert:* {{ .Annotations.summary }}
+        *Description:* {{ .Annotations.description }}
+        *Severity:* {{ .Labels.severity }}
+        *Started:* {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+        {{ end }}
+
+  - name: Email
+    type: email
+    uid: email-notifier
+    orgId: 1
+    isDefault: true
+    sendReminder: true
+    frequency: 24h
+    settings:
+      addresses: admin@gamev1.com

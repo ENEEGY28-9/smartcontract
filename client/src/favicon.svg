@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- Background -->
+  <rect width="16" height="16" fill="#4a90e2" rx="2"/>
+  <!-- Running person (simplified) -->
+  <path d="M7 3a2 2 0 1 1 2 0 2 2 0 0 1-2 0zm1 3c1.1 0 2 .9 2 2l1.5 1.5a1 1 0 0 1-1.4 1.4L9 9.4V12a1 1 0 1 1-2 0V9H5L4 11a1 1 0 1 1-1.8-.8l1.2-2.4A2 2 0 0 1 5.2 5H8z" fill="#fff"/>
+</svg>

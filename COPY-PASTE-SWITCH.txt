@@ -1,0 +1,38 @@
+// COPY-PASTE FOR WALLET SWITCHING TEST
+// Paste into browser console (F12) after switching wallets
+
+console.log('🔄 Testing wallet switch...');
+
+// Stop auto-connect spam first
+clearInterval(window.autoConnectInterval);
+clearTimeout(window.walletStoreAutoConnect);
+console.log('✅ Auto-connect disabled');
+
+// Check current wallet
+const currentWallet = window.solana?.publicKey?.toString();
+const originalWallet = '57arMrLe8LHfzn7c0yUu6KGhxLQ6nfP87mHTHpM2SGB';
+
+console.log('📋 Switch Results:');
+console.log(`   Original: ${originalWallet.slice(0, 12)}...`);
+console.log(`   Current:  ${currentWallet?.slice(0, 12)}...`);
+console.log(`   Changed: ${currentWallet !== originalWallet}`);
+
+if (currentWallet && currentWallet !== originalWallet) {
+    console.log('\n🎉 WALLET SWITCH SUCCESSFUL!');
+    console.log(`   ✅ New Address: ${currentWallet}`);
+    console.log(`   ✅ Connection: ${window.solana.isConnected ? 'Active' : 'Lost'}`);
+    console.log(`   ✅ Network: Solana Devnet`);
+    console.log('\n💡 Check the wallet test page:');
+    console.log('   - Address field should show new wallet');
+    console.log('   - Balance should update to new wallet');
+    console.log('   - Connection Status should stay Connected');
+} else if (currentWallet === originalWallet) {
+    console.log('\nℹ️ Still on original wallet');
+    console.log('💡 Switch to different account in Phantom and refresh page');
+} else {
+    console.log('\n❌ Wallet not connected');
+    console.log('💡 Click Connect Wallet button first');
+}
+
+console.log('\n🌐 Current URL:', window.location.href);
+

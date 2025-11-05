@@ -1,0 +1,240 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    # Test database connection pool behavior
+    - duration: 60    # 1 minute
+      arrivalRate: 30 # Normal database load
+      name: 'DB Warmup'
+
+    - duration: 120   # 2 minutes
+      arrivalRate: 60 # Increased database operations
+      name: 'DB Load Increase'
+
+    - duration: 180   # 3 minutes
+      arrivalRate: 120 # High database load
+      name: 'DB Stress Phase'
+
+    - duration: 90    # 1.5 minutes
+      arrivalRate: 60  # Cool down
+      name: 'DB Cool Down'
+
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+      Authorization: 'Bearer db-test-token-{{ $randomInt() }}'
+
+scenarios:
+  # 35% - Room Management (Database Intensive)
+  - name: 'Room Management Database Load'
+    weight: 35
+    flow:
+      # Rapid room creation (tests database writes)
+      - loop:
+          - post:
+              url: '/api/rooms'
+              json:
+                room_name: 'DB Stress Room Test'
+                game_mode: 'classic'
+                max_players: 8
+                host_id: 'db_host_test'
+                settings:
+                  difficulty: 'medium'
+                  time_limit: 900
+                  map: 'map_1'
+                  rules: 'standard'
+          - think: 0.2
+        count: 50
+
+      # Rapid player joins (tests complex queries)
+      - loop:
+          - post:
+              url: '/api/rooms/db_room_1/join'
+              json:
+                player_id: 'db_player_test'
+                player_name: 'DBPlayer_Test'
+                stats:
+                  level: 50
+                  experience: 5000
+                  rank: 'gold'
+          - think: 0.1
+        count: 100
+
+      # Rapid player leaves (tests delete operations)
+      - loop:
+          - delete:
+              url: '/api/rooms/db_room_1/leave'
+              json:
+                player_id: 'db_player_test'
+                reason: 'completed'
+          - think: 0.1
+        count: 80
+
+  # 30% - Chat System Database Load
+  - name: 'Chat System Database Load'
+    weight: 30
+    flow:
+      # High-frequency chat messages (tests message persistence)
+      - loop:
+          - post:
+              url: '/api/chat'
+              json:
+                room_id: 'db_chat_room_1'
+                player_id: 'db_chat_player_test'
+                message: 'Database stress test message'
+                message_type: 'text'
+                timestamp: 1234567890
+                metadata:
+                  message_length: 50
+                  attachments: 1
+                  mentions: 0
+          - think: 0.05
+        count: 200
+
+      # Chat history retrieval (tests read queries)
+      - loop:
+          - get:
+              url: '/api/chat/history/{{ $randomInt(1, 200) }}?count={{ $randomInt(20, 100) }}&before={{ $randomInt() }}'
+          - think: 0.2
+        count: 100
+
+      # Chat message updates (tests update operations)
+      - loop:
+          - put:
+              url: '/api/chat/{{ $randomInt(1, 1000) }}/edit'
+              json:
+                player_id: 'db_chat_player_{{ $randomInt() }}'
+                new_message: 'Edited message {{ $randomInt() }} - {{ $randomString() }}'
+                edit_reason: '{{ $randomArrayItem(['typo', 'clarification', 'moderation']) }}'
+            expect:
+              statusCode: [200, 404, 403]
+          - think: 0.3
+        count: 50
+
+  # 20% - Player Statistics Database Load
+  - name: 'Player Statistics Database Load'
+    weight: 20
+    flow:
+      # Player profile updates (tests profile management)
+      - loop:
+          - put:
+              url: '/api/players/db_player_{{ $randomInt() }}/profile'
+              json:
+                display_name: 'DBPlayer_{{ $randomInt() }}'
+                avatar: 'avatar_{{ $randomInt(1, 100) }}'
+                status: '{{ $randomArrayItem(['online', 'away', 'busy', 'offline']) }}'
+                preferences:
+                  notifications: {{ $randomInt(0, 1) }}
+                  privacy: '{{ $randomArrayItem(['public', 'friends', 'private']) }}'
+                  language: '{{ $randomArrayItem(['en', 'es', 'fr', 'de', 'ja', 'ko']) }}'
+          - think: 0.1
+        count: 100
+
+      # Player statistics updates (tests stat tracking)
+      - loop:
+          - post:
+              url: '/api/players/db_player_{{ $randomInt() }}/stats'
+              json:
+                game_id: 'db_game_{{ $randomInt() }}'
+                session_duration: {{ $randomInt(60, 3600) }}
+                score: {{ $randomInt(0, 10000) }}
+                kills: {{ $randomInt(0, 50) }}
+                deaths: {{ $randomInt(0, 20) }}
+                assists: {{ $randomInt(0, 30) }}
+                achievements: ['achievement_{{ $randomInt(1, 50) }}']
+                performance_metrics:
+                  accuracy: {{ $randomInt(0, 100) }}
+                  reaction_time: {{ $randomInt(100, 500) }}
+                  consistency: {{ $randomInt(0, 100) }}
+          - think: 0.05
+        count: 150
+
+      # Leaderboard queries (tests complex aggregations)
+      - loop:
+          - get:
+              url: '/api/leaderboards/global?type={{ $randomArrayItem(['score', 'kills', 'wins']) }}&period={{ $randomArrayItem(['daily', 'weekly', 'monthly']) }}&limit={{ $randomInt(10, 100) }}'
+          - think: 0.5
+        count: 50
+
+  # 10% - Game Session Database Load
+  - name: 'Game Session Database Load'
+    weight: 10
+    flow:
+      # Game session creation (tests session management)
+      - loop:
+          - post:
+              url: '/api/sessions'
+              json:
+                room_id: 'db_game_room_{{ $randomInt(1, 500) }}'
+                host_id: 'db_host_{{ $randomInt() }}'
+                game_mode: '{{ $randomArrayItem(['classic', 'ranked', 'tournament']) }}'
+                start_time: {{ timestamp }}
+                settings:
+                  max_players: {{ $randomInt(2, 16) }}
+                  time_limit: {{ $randomInt(300, 1800) }}
+                  difficulty: '{{ $randomArrayItem(['easy', 'medium', 'hard', 'expert']) }}'
+                  rules: '{{ $randomArrayItem(['standard', 'variant_a', 'variant_b', 'custom']) }}'
+          - think: 0.2
+        count: 30
+
+      # Game events logging (tests high-frequency inserts)
+      - loop:
+          - post:
+              url: '/api/sessions/db_session_{{ $randomInt(1, 200) }}/events'
+              json:
+                event_type: '{{ $randomArrayItem(['player_join', 'player_leave', 'game_start', 'game_end', 'score_update', 'achievement']) }}'
+                player_id: 'db_player_{{ $randomInt() }}'
+                timestamp: {{ timestamp }}
+                data:
+                  event_value: {{ $randomInt(0, 1000) }}
+                  metadata: '{{ $randomString() }}'
+                  coordinates: [{{ $randomInt(-1000, 1000) }}, 0, {{ $randomInt(-1000, 1000) }}]
+          - think: 0.01  # Very high frequency
+        count: 200
+
+      # Session completion (tests transaction handling)
+      - loop:
+          - put:
+              url: '/api/sessions/db_session_{{ $randomInt(1, 200) }}/complete'
+              json:
+                end_time: {{ timestamp }}
+                final_score: {{ $randomInt(0, 10000) }}
+                winner: 'db_player_{{ $randomInt() }}'
+                statistics:
+                  total_players: {{ $randomInt(2, 16) }}
+                  duration: {{ $randomInt(60, 3600) }}
+                  events_count: {{ $randomInt(100, 1000) }}
+                  data_size: {{ $randomInt(1024, 1048576) }}
+          - think: 0.5
+        count: 25
+
+  # 5% - Database Monitoring and Health Checks
+  - name: 'Database Monitoring Under Load'
+    weight: 5
+    flow:
+      # Health checks during database stress
+      - loop:
+          - get:
+              url: '/health'
+          - think: 2
+        count: 50
+
+      # Connection pool monitoring
+      - loop:
+          - get:
+              url: '/api/metrics/database'
+          - think: 5
+        count: 20
+
+      # Query performance monitoring
+      - loop:
+          - get:
+              url: '/api/metrics/queries'
+          - think: 3
+        count: 30
+
+      # Cache performance monitoring
+      - loop:
+          - get:
+              url: '/api/metrics/cache'
+          - think: 4
+        count: 25

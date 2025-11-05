@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Wallet Connection Test</h1>
+        <p>This page tests wallet detection and connection functionality.</p>
+
+        <div id="networkStatus"></div>
+        <div id="walletStatus"></div>
+        <div id="connectionStatus"></div>
+
+        <button onclick="detectWallets()">🔍 Detect Wallets</button>
+        <button onclick="runTests()">🧪 Run Full Tests</button>
+
+        <hr>
+        <h3>Test Custom Address</h3>
+        <input type="text" id="testAddress" placeholder="Enter wallet address to test">
+        <button onclick="testAddress()">✅ Test Address</button>
+        <div id="addressTestResult"></div>
+    </div>
+
+    <script>
+        let currentNetwork = 'ethereum';
+
+        function updateStatus() {
+            const networkDiv = document.getElementById('networkStatus');
+            const walletDiv = document.getElementById('walletStatus');
+            const connectionDiv = document.getElementById('connectionStatus');
+
+            networkDiv.innerHTML = `<div class="status info">
+                <strong>Network:</strong> ${currentNetwork === 'solana' ? 'Solana (Phantom)' : 'Ethereum (MetaMask)'}
+            </div>`;
+
+            if (typeof window !== 'undefined') {
+                if (currentNetwork === 'solana' && window.solana) {
+                    walletDiv.innerHTML = `<div class="status success">
+                        <strong>Wallet Detected:</strong> ✅ Phantom Wallet
+                    </div>`;
+                } else if (currentNetwork === 'ethereum' && window.ethereum) {
+                    walletDiv.innerHTML = `<div class="status success">
+                        <strong>Wallet Detected:</strong> ✅ MetaMask Wallet
+                    </div>`;
+                } else {
+                    walletDiv.innerHTML = `<div class="status error">
+                        <strong>Wallet Detected:</strong> ❌ No ${currentNetwork === 'solana' ? 'Phantom' : 'MetaMask'} wallet found
+                    </div>`;
+                }
+
+                if (currentNetwork === 'solana' && window.solana) {
+                    const connected = window.solana.isConnected;
+                    const address = window.solana.publicKey ? window.solana.publicKey.toString() : 'Not connected';
+                    connectionDiv.innerHTML = `<div class="status ${connected ? 'success' : 'error'}">
+                        <strong>Connection:</strong> ${connected ? '✅ Connected' : '❌ Disconnected'}<br>
+                        <strong>Address:</strong> <code>${connected ? address.slice(0, 8) + '...' + address.slice(-8) : 'N/A'}</code>
+                    </div>`;
+                } else if (currentNetwork === 'ethereum' && window.ethereum) {
+                    const connected = window.ethereum.isConnected;
+                    const address = window.ethereum.selectedAddress || 'Not connected';
+                    connectionDiv.innerHTML = `<div class="status ${connected ? 'success' : 'error'}">
+                        <strong>Connection:</strong> ${connected ? '✅ Connected' : '❌ Disconnected'}<br>
+                        <strong>Address:</strong> <code>${connected ? address.slice(0, 6) + '...' + address.slice(-4) : 'N/A'}</code>
+                    </div>`;
+                } else {
+                    connectionDiv.innerHTML = `<div class="status error">
+                        <strong>Connection:</strong> ❌ Wallet not available
+                    </div>`;
+                }
+            }
+        }
+
+        async function detectWallets() {
+            updateStatus();
+        }
+
+        async function runTests() {
+            console.log('🧪 Running wallet tests...');
+            updateStatus();
+
+            // Test wallet availability
+            if (typeof window !== 'undefined') {
+                if (currentNetwork === 'solana' && window.solana) {
+                    console.log('✅ Phantom wallet detected');
+                    if (window.solana.isConnected) {
+                        console.log('✅ Wallet already connected');
+                        console.log('📍 Address:', window.solana.publicKey.toString());
+                    } else {
+                        console.log('❌ Wallet not connected');
+                    }
+                } else if (currentNetwork === 'ethereum' && window.ethereum) {
+                    console.log('✅ MetaMask wallet detected');
+                    if (window.ethereum.isConnected) {
+                        console.log('✅ Wallet already connected');
+                        console.log('📍 Address:', window.ethereum.selectedAddress);
+                    } else {
+                        console.log('❌ Wallet not connected');
+                    }
+                } else {
+                    console.log(`❌ No ${currentNetwork === 'solana' ? 'Phantom' : 'MetaMask'} wallet found`);
+                }
+            }
+        }
+
+        async function testAddress() {
+            const address = document.getElementById('testAddress').value;
+            const resultDiv = document.getElementById('addressTestResult');
+
+            if (!address.trim()) {
+                resultDiv.innerHTML = `<div class="status error">❌ Please enter an address</div>`;
+                return;
+            }
+
+            if (currentNetwork === 'solana') {
+                // Basic Solana address validation
+                if (address.length < 32 || address.length > 44) {
+                    resultDiv.innerHTML = `<div class="status error">❌ Invalid Solana address length (should be 32-44 characters)</div>`;
+                    return;
+                }
+
+                const base58Regex = /^[1-9A-HJ-NP-Za-km-z]+$/;
+                if (!base58Regex.test(address)) {
+                    resultDiv.innerHTML = `<div class="status error">❌ Invalid Solana address format (should use base58 characters)</div>`;
+                    return;
+                }
+
+                resultDiv.innerHTML = `<div class="status success">
+                    ✅ Valid Solana address!<br>
+                    <strong>Address:</strong> <code>${address.slice(0, 8)}...${address.slice(-8)}</code><br>
+                    <strong>Length:</strong> ${address.length} characters
+                </div>`;
+            } else {
+                // Basic Ethereum address validation
+                const ethRegex = /^0x[a-fA-F0-9]{40}$/;
+                if (!ethRegex.test(address)) {
+                    resultDiv.innerHTML = `<div class="status error">❌ Invalid Ethereum address format (should be 0x + 40 hex characters)</div>`;
+                    return;
+                }
+
+                resultDiv.innerHTML = `<div class="status success">
+                    ✅ Valid Ethereum address!<br>
+                    <strong>Address:</strong> <code>${address.slice(0, 6)}...${address.slice(-4)}</code><br>
+                    <strong>Length:</strong> ${address.length} characters
+                </div>`;
+            }
+        }
+
+        // Auto-detect on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pre-fill test address
+            document.getElementById('testAddress').value = '0x47F0350df3E06c1bBD1Fd1dc86ab12ae772BF2A2';
+
+            updateStatus();
+            console.log('🔄 Wallet test page loaded');
+        });
+
+        // Listen for wallet events
+        if (typeof window !== 'undefined' && window.ethereum) {
+            window.ethereum.on('accountsChanged', function(accounts) {
+                console.log('📋 Accounts changed:', accounts);
+                updateStatus();
+            });
+
+            window.ethereum.on('chainChanged', function(chainId) {
+                console.log('🔗 Chain changed:', chainId);
+                updateStatus();
+            });
+        }
+
+        if (typeof window !== 'undefined' && window.solana) {
+            window.solana.on('connect', function() {
+                console.log('🔗 Phantom connected');
+                updateStatus();
+            });
+
+            window.solana.on('disconnect', function() {
+                console.log('🔌 Phantom disconnected');
+                updateStatus();
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+

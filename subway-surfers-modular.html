@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subway Surfers - Modular Edition</title>
+    <!-- Load Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Modular Game Architecture -->
+    <script src="modules/utils/Utils.js"></script>
+    <script src="modules/core/GameCore.js"></script>
+    <script src="modules/core/PlayerController.js"></script>
+    <script src="modules/core/PhysicsEngine.js"></script>
+    <script src="modules/graphics/GraphicsEngine.js"></script>
+    <script src="modules/graphics/VisualEffects.js"></script>
+    <script src="modules/audio/AudioManager.js"></script>
+    <script src="modules/input/InputManager.js"></script>
+    <script src="modules/gameSystems/PowerUpSystem.js"></script>
+    <script src="modules/gameSystems/MissionSystem.js"></script>
+    <script src="modules/gameSystems/AchievementSystem.js"></script>
+    <script src="modules/ui/UIManager.js"></script>
+    <script src="modules/ui/MenuSystem.js"></script>
+    <script src="modules/performance/PerformanceMonitor.js"></script>
+    <script src="modules/performance/ObjectPool.js"></script>
+    <script src="modules/save/SaveManager.js"></script>
+    <script src="modules/main/Game.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23, #1a1a2e);
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        html {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: rgba(255, 255, 255, 0.05);
+            border-right: 2px solid rgba(74, 158, 255, 0.3);
+            padding: 1rem;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+        }
+
+        .game-container {
+            width: 100%;
+            height: 100%;
+            min-height: 500px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #game3d-container {
+            flex: 1;
+            width: 100%;
+            min-height: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #game3d-container canvas {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            z-index: 1 !important;
+        }
+
+        .section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h3 {
+            margin-bottom: 1rem;
+            color: #4a9eff;
+            font-size: 1.1rem;
+        }
+
+        .btn {
+            background: rgba(74, 158, 255, 0.2);
+            border: 1px solid #4a9eff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin: 0.2rem;
+        }
+
+        .btn:hover {
+            background: rgba(74, 158, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            border-color: #ff6b35;
+            font-weight: bold;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .character-btn {
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .character-btn:hover {
+            background: rgba(74, 158, 255, 0.2);
+            border-color: #4a9eff;
+        }
+
+        .character-btn.selected {
+            background: rgba(74, 158, 255, 0.3);
+            border-color: #4a9eff;
+            box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
+        }
+
+        .character-btn.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Game Over Overlay Styles */
+        .game-over-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .game-over-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            border: 2px solid rgba(255, 107, 53, 0.5);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .game-over-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #ff6b35;
+            text-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+        }
+
+        .final-stats {
+            margin-bottom: 2rem;
+        }
+
+        .final-score, .final-coins, .final-distance {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .final-score span, .final-coins span, .final-distance span {
+            color: #4a9eff;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+
+        .game-over-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 300px;
+            }
+
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                height: auto;
+                max-height: 40vh;
+                width: 100%;
+            }
+
+            .game-area {
+                height: 60vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                padding: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .game-over-content {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0f23, #1a1a2e);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+            font-family: monospace;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #4a9eff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4a9eff, #ff6b35);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Error Screen */
+        .error-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            font-family: monospace;
+        }
+
+        .error-content {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .error-title {
+            color: #ff6b35;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Subway Surfers...</div>
+        <div class="loading-progress">
+            <div class="loading-bar" id="loadingBar"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="section">
+                <h3>Game Controls</h3>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                    <button class="btn" onclick="game.start()">Start Game</button>
+                    <button class="btn" onclick="game.pause()">Pause/Resume</button>
+                    <button class="btn" onclick="game.restart()">Restart</button>
+                    <button class="btn" onclick="saveManager.exportGameData()">Export Save</button>
+                    <button class="btn" onclick="game.enableDebugMode()">Debug Mode</button>
+                    <button class="btn" onclick="game.exportState()">Export State</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Characters</h3>
+                <div class="character-grid">
+                    <div class="character-card">
+                        <button class="character-btn selected" data-char="0">🛹 Jake</button>
+                        <div class="character-info">Unlocked</div>
+                    </div>
+                    <div class="character-card">
+                        <button class="character-btn" data-char="1">🎨 Tricky</button>
+                        <div class="character-info">🪙 500</div>
+                    </div>
+                    <div class="character-card">
+                        <button class="character-btn locked" data-char="2">👟 Fresh</button>
+                        <div class="character-info">🪙 1000</div>
+                    </div>
+                    <div class="character-card">
+                        <button class="character-btn locked" data-char="3">🎸 Spike</button>
+                        <div class="character-info">🪙 1500</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Power-ups</h3>
+                <button class="btn" onclick="game.modules.core.emit('activatePowerUp', 'jetpack')">Jetpack</button>
+                <button class="btn" onclick="game.modules.core.emit('activatePowerUp', 'magnet')">Coin Magnet</button>
+                <button class="btn" onclick="game.modules.core.emit('activatePowerUp', 'multiplier')">2x Multiplier</button>
+                <button class="btn" onclick="game.modules.core.emit('activatePowerUp', 'sneakers')">Super Sneakers</button>
+            </div>
+
+            <div class="section">
+                <h3>Visual Effects</h3>
+                <button class="btn" onclick="togglePaintTrails()">Toggle Paint Trails</button>
+                <button class="btn" onclick="addWeather('rain')">Rain Effect</button>
+                <button class="btn" onclick="addWeather('snow')">Snow Effect</button>
+                <button class="btn" onclick="clearWeather()">Clear Weather</button>
+            </div>
+
+            <div class="section">
+                <h3>Performance</h3>
+                <div id="performanceStats">
+                    <div>FPS: <span id="fpsValue">-</span></div>
+                    <div>Frame Time: <span id="frameTimeValue">-</span>ms</div>
+                    <div>Memory: <span id="memoryValue">-</span>MB</div>
+                    <div>Objects: <span id="objectCountValue">-</span></div>
+                </div>
+                <button class="btn" onclick="performanceMonitor.startMonitoring()">Start Monitoring</button>
+                <button class="btn" onclick="performanceMonitor.stopMonitoring()">Stop Monitoring</button>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="game-container">
+                <!-- 3D Game Canvas -->
+                <div id="game3d-container"></div>
+
+                <!-- Mobile Touch Area -->
+                <div class="swipe-area" id="swipeArea" style="position: absolute; bottom: 0; left: 0; right: 0; height: 200px; background: transparent; z-index: 10;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Screen (fallback) -->
+    <div class="error-screen" id="errorScreen" style="display: none;">
+        <div class="error-content">
+            <div class="error-title">Game Error</div>
+            <div class="error-message" id="errorMessage">An error occurred while loading the game.</div>
+            <div class="error-actions">
+                <button class="btn btn-primary" onclick="location.reload()">Reload Page</button>
+                <button class="btn btn-secondary" onclick="window.game && window.game.destroy()">Reset Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global error handler
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+            showErrorScreen(event.error.message);
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            showErrorScreen(event.reason.message || 'Promise rejection');
+        });
+
+        function showErrorScreen(message) {
+            const errorScreen = document.getElementById('errorScreen');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorScreen.style.display = 'flex';
+
+            // Hide loading screen
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+        }
+
+        // Global functions for UI interaction
+        function togglePaintTrails() {
+            if (window.game && window.game.modules && window.game.modules.core) {
+                const currentSetting = window.game.modules.core.gameState.paintEnabled || true;
+                window.game.modules.core.gameState.paintEnabled = !currentSetting;
+                console.log('Paint trails:', window.game.modules.core.gameState.paintEnabled ? 'enabled' : 'disabled');
+            }
+        }
+
+        function addWeather(type) {
+            if (window.game && window.game.modules && window.game.modules.graphics) {
+                // This would trigger weather effects in the graphics module
+                console.log(`Adding ${type} weather effect`);
+            }
+        }
+
+        function clearWeather() {
+            if (window.game && window.game.modules && window.game.modules.graphics) {
+                console.log('Clearing weather effects');
+            }
+        }
+
+        // Initialize loading progress
+        let loadingProgress = 0;
+        const loadingBar = document.getElementById('loadingBar');
+        const loadingInterval = setInterval(() => {
+            loadingProgress += Math.random() * 15;
+            if (loadingProgress > 90) loadingProgress = 90;
+
+            if (loadingBar) {
+                loadingBar.style.width = loadingProgress + '%';
+            }
+
+            // Check if game is ready
+            if (window.game && window.game.isInitialized) {
+                loadingProgress = 100;
+                loadingBar.style.width = '100%';
+
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    clearInterval(loadingInterval);
+                }, 500);
+            }
+        }, 200);
+
+        console.log('🚀 Modular Subway Surfers game initialized');
+        console.log('📁 Architecture: Modular design with separate modules for each system');
+        console.log('🎮 Use the sidebar controls to interact with the game');
+        console.log('🔧 Debug mode available via sidebar button');
+    </script>
+</body>
+</html>

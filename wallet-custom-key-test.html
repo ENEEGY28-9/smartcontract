@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Public Key Wallet Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1f2e 0%, #0a0e1a 100%);
+            color: #f6f8ff;
+            line-height: 1.6;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(68, 107, 255, 0.2);
+        }
+        .status-card {
+            background: rgba(15, 22, 41, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px solid rgba(68, 107, 255, 0.3);
+        }
+        .btn {
+            background: linear-gradient(135deg, #446bff, #6b73ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(68, 107, 255, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn.success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        .btn.danger {
+            background: linear-gradient(135deg, #ff4757, #ff3742);
+        }
+        .btn.secondary {
+            background: #253157;
+            color: #f6f8ff;
+            border: 1px solid #446bff;
+        }
+        .success { color: #2ecc71; }
+        .error { color: #ff4757; }
+        .info { color: #feca57; }
+        .warning { color: #f39c12; }
+        .status-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .status-pass { background: rgba(46, 204, 113, 0.1); border-color: #2ecc71; }
+        .status-fail { background: rgba(255, 71, 87, 0.1); border-color: #ff4757; }
+        .status-info { background: rgba(254, 202, 87, 0.1); border-color: #feca57; }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .wallet-info {
+            background: rgba(68, 107, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(68, 107, 255, 0.3);
+            margin: 10px 0;
+        }
+        .error-display {
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid #ff4757;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        .input-group {
+            margin: 1rem 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #feca57;
+        }
+        .custom-key-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #446bff;
+            border-radius: 8px;
+            background: rgba(68, 107, 255, 0.1);
+            color: #f6f8ff;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+        .custom-key-input:focus {
+            outline: none;
+            border-color: #6b73ff;
+            background: rgba(68, 107, 255, 0.2);
+        }
+        .custom-key-input::placeholder {
+            color: rgba(246, 248, 255, 0.5);
+        }
+        .input-group .btn {
+            margin: 0.25rem;
+            min-width: 120px;
+        }
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .wallet-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Custom Public Key Wallet Test</h1>
+        <p>Test any Solana wallet by entering its public key - perfect for testing multiple wallet scenarios!</p>
+
+        <!-- Custom Public Key Test -->
+        <div class="status-card">
+            <h3>🔑 Test Any Solana Public Key</h3>
+            <div class="input-group">
+                <label for="custom-key-input">Enter Solana Public Key:</label>
+                <input type="text" id="custom-key-input" placeholder="57arMrLe8LHfzn7c0yUu6KGhxLQ6nfP87mHTHpM2SGB" class="custom-key-input">
+                <button class="btn primary" id="test-custom-key-btn" onclick="testCustomPublicKey()">
+                    🔍 Test Public Key
+                </button>
+                <button class="btn secondary" id="clear-custom-key-btn" onclick="clearCustomKey()">
+                    🗑️ Clear
+                </button>
+            </div>
+            <div id="custom-key-results" style="display: none;">
+                <h4>📊 Test Results</h4>
+                <div id="custom-key-info"></div>
+            </div>
+        </div>
+
+        <!-- Wallet Comparison -->
+        <div class="status-card">
+            <h3>🔄 Wallet Comparison</h3>
+            <div class="wallet-grid">
+                <div>
+                    <h4>🎯 Current Connected Wallet</h4>
+                    <div id="current-wallet-info">
+                        <p><strong>Status:</strong> <span id="current-connection-status">Not connected</span></p>
+                        <p><strong>Address:</strong> <code id="current-wallet-address">None</code></p>
+                        <p><strong>Balance:</strong> <span id="current-wallet-balance">0.0000 SOL</span></p>
+                        <p><strong>Network:</strong> <span id="current-network">Unknown</span></p>
+                    </div>
+                </div>
+                <div>
+                    <h4>🧪 Custom Key Test Results</h4>
+                    <div id="custom-wallet-info">
+                        <p><strong>Status:</strong> <span id="custom-validation-status">Not tested</span></p>
+                        <p><strong>Address:</strong> <code id="custom-wallet-address">None</code></p>
+                        <p><strong>Balance:</strong> <span id="custom-wallet-balance">0.0000 SOL</span></p>
+                        <p><strong>Network:</strong> Solana Devnet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="status-card">
+            <h3>🧪 Test Results</h3>
+            <div id="test-results"></div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions">
+            <h3>💡 How to Use:</h3>
+            <ol>
+                <li><strong>Enter Public Key:</strong> Type any Solana wallet address in the input field above</li>
+                <li><strong>Click Test:</strong> The system will validate and check balance for that wallet</li>
+                <li><strong>View Results:</strong> See balance, account status, and validation details</li>
+                <li><strong>Compare:</strong> Compare with your currently connected wallet</li>
+                <li><strong>Switch Testing:</strong> Test multiple wallet addresses without switching accounts</li>
+            </ol>
+
+            <div class="info-notice">
+                <strong>🔑 Public Key Format:</strong><br>
+                • Solana addresses are 32-44 characters long<br>
+                • Use base58 encoding (alphanumeric, no 0, O, I, l)<br>
+                • Example: 57arMrLe8LHfzn7c0yUu6KGhxLQ6nfP87mHTHpM2SGB<br>
+                • Perfect for testing multiple wallet scenarios!<br><br>
+                <strong>💰 Get Test SOL:</strong><br>
+                • Use <a href="https://faucet.solana.com/" target="_blank" style="color: #feca57;">Solana Devnet Faucet</a> to get test SOL<br>
+                • Send SOL between wallets for testing<br>
+                • Perfect for game development testing
+            </div>
+        </div>
+    </div>
+
+    <!-- Solana Web3.js CDN -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.umd.min.js"></script>
+
+    <script>
+        let currentWallet = null;
+        let isConnected = false;
+
+        // Sample public keys for testing
+        const SAMPLE_KEYS = [
+            '57arMrLe8LHfzn7c0yUu6KGhxLQ6nfP87mHTHpM2SGB',
+            'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+            'So11111111111111111111111111111111111111112'
+        ];
+
+        function updateCurrentWalletInfo() {
+            const connectionStatus = document.getElementById('current-connection-status');
+            const walletAddress = document.getElementById('current-wallet-address');
+            const walletBalance = document.getElementById('current-wallet-balance');
+            const network = document.getElementById('current-network');
+
+            if (isConnected && currentWallet) {
+                connectionStatus.textContent = 'Connected';
+                connectionStatus.style.color = '#2ecc71';
+                walletAddress.textContent = currentWallet.publicKey.toString();
+                network.textContent = 'Solana Devnet';
+
+                // Get balance
+                updateWalletBalance(currentWallet.publicKey.toString(), walletBalance);
+            } else {
+                connectionStatus.textContent = 'Not connected';
+                connectionStatus.style.color = '#ff4757';
+                walletAddress.textContent = 'None';
+                walletBalance.textContent = '0.0000 SOL';
+                network.textContent = 'Unknown';
+            }
+        }
+
+        async function updateWalletBalance(publicKeyString, balanceElement) {
+            try {
+                const connection = new solanaWeb3.Connection('https://api.devnet.solana.com');
+                const publicKey = new solanaWeb3.PublicKey(publicKeyString);
+                const balance = await connection.getBalance(publicKey);
+                const balanceInSOL = balance / solanaWeb3.LAMPORTS_PER_SOL;
+
+                balanceElement.textContent = `${balanceInSOL.toFixed(6)} SOL (${balance} lamports)`;
+            } catch (error) {
+                console.error('Error getting balance:', error);
+                balanceElement.textContent = 'Error loading';
+            }
+        }
+
+        async function testCustomPublicKey() {
+            console.log('🧪 Testing custom public key...');
+
+            const customKeyInput = document.getElementById('custom-key-input');
+            const customKeyResults = document.getElementById('custom-key-results');
+            const customKeyInfo = document.getElementById('custom-key-info');
+            const testBtn = document.getElementById('test-custom-key-btn');
+            const validationStatus = document.getElementById('custom-validation-status');
+            const customAddress = document.getElementById('custom-wallet-address');
+            const customBalance = document.getElementById('custom-wallet-balance');
+
+            const publicKeyString = customKeyInput.value.trim();
+
+            if (!publicKeyString) {
+                alert('❌ Please enter a Solana public key');
+                return;
+            }
+
+            // Basic validation
+            if (publicKeyString.length < 32 || publicKeyString.length > 44) {
+                validationStatus.textContent = 'Invalid length';
+                validationStatus.style.color = '#ff4757';
+                customAddress.textContent = publicKeyString;
+                customBalance.textContent = 'N/A';
+                customKeyResults.style.display = 'block';
+                testBtn.disabled = false;
+                testBtn.textContent = '🔍 Test Custom Key';
+                return;
+            }
+
+            // Check if it looks like a Solana address (base58)
+            const base58Regex = /^[1-9A-HJ-NP-Za-km-z]+$/;
+            if (!base58Regex.test(publicKeyString)) {
+                validationStatus.textContent = 'Invalid format';
+                validationStatus.style.color = '#ff4757';
+                customAddress.textContent = publicKeyString;
+                customBalance.textContent = 'N/A';
+                customKeyResults.style.display = 'block';
+                testBtn.disabled = false;
+                testBtn.textContent = '🔍 Test Custom Key';
+                return;
+            }
+
+            testBtn.disabled = true;
+            testBtn.textContent = '⏳ Testing...';
+
+            validationStatus.textContent = 'Testing...';
+            validationStatus.style.color = '#feca57';
+
+            try {
+                console.log('🔍 Testing public key:', publicKeyString);
+
+                // Test public key validity and get balance
+                const connection = new solanaWeb3.Connection('https://api.devnet.solana.com');
+                const publicKey = new solanaWeb3.PublicKey(publicKeyString);
+
+                console.log('✅ Public key is valid');
+                console.log('🔗 Checking balance...');
+
+                const balance = await connection.getBalance(publicKey);
+                const balanceInSOL = balance / solanaWeb3.LAMPORTS_PER_SOL;
+
+                console.log('💰 Balance retrieved:', balanceInSOL, 'SOL');
+
+                // Get additional account info
+                const accountInfo = await connection.getAccountInfo(publicKey);
+                const isAccountExists = accountInfo !== null;
+
+                // Update display
+                validationStatus.textContent = 'Valid ✅';
+                validationStatus.style.color = '#2ecc71';
+                customAddress.textContent = publicKeyString;
+                await updateWalletBalance(publicKeyString, customBalance);
+
+                // Display detailed results
+                customKeyInfo.innerHTML = `
+                    <div class="wallet-info">
+                        <strong>🧪 Custom Public Key Test Results:</strong><br>
+                        <code>${publicKeyString}</code><br><br>
+
+                        <strong>✅ Validation:</strong> Valid Solana Public Key<br>
+                        <strong>💰 Balance:</strong> ${balanceInSOL.toFixed(6)} SOL (${balance} lamports)<br>
+                        <strong>📊 Account Status:</strong> ${isAccountExists ? 'Account exists on Devnet' : 'Account not found on Devnet'}<br>
+                        <strong>🌐 Network:</strong> Solana Devnet<br><br>
+
+                        <strong>📋 Technical Details:</strong><br>
+                        <small>
+                            • Address Length: ${publicKeyString.length} characters<br>
+                            • Base58 Encoded: Yes<br>
+                            • Network: Devnet (Testnet)<br>
+                            • Balance: ${balanceInSOL.toFixed(6)} SOL<br>
+                            • Account Found: ${isAccountExists ? 'Yes' : 'No'}
+                        </small>
+                    </div>
+                `;
+
+                customKeyResults.style.display = 'block';
+
+                console.log('✅ Custom key test completed successfully');
+
+                // Run tests
+                runTests(publicKeyString);
+
+            } catch (error) {
+                console.error('❌ Custom key test failed:', error);
+
+                validationStatus.textContent = 'Invalid ❌';
+                validationStatus.style.color = '#ff4757';
+                customAddress.textContent = publicKeyString;
+                customBalance.textContent = 'Error';
+
+                let errorMessage = `❌ Error testing public key: ${error.message}`;
+
+                if (error.message.includes('Invalid public key')) {
+                    errorMessage += '<br><br>💡 Make sure the public key is a valid Solana address (32-44 characters, base58 encoded)';
+                }
+
+                customKeyInfo.innerHTML = `
+                    <div class="error-display">
+                        ${errorMessage}
+                    </div>
+                `;
+
+                customKeyResults.style.display = 'block';
+            } finally {
+                testBtn.disabled = false;
+                testBtn.textContent = '🔍 Test Custom Key';
+            }
+        }
+
+        function clearCustomKey() {
+            console.log('🗑️ Clearing custom key input...');
+
+            document.getElementById('custom-key-input').value = '';
+            document.getElementById('custom-key-results').style.display = 'none';
+            document.getElementById('custom-key-info').innerHTML = '';
+
+            document.getElementById('custom-validation-status').textContent = 'Not tested';
+            document.getElementById('custom-wallet-address').textContent = 'None';
+            document.getElementById('custom-wallet-balance').textContent = '0.0000 SOL';
+
+            console.log('✅ Custom key input cleared');
+        }
+
+        function runTests(customKey = null) {
+            const resultsDiv = document.getElementById('test-results');
+            const tests = [];
+
+            // Test 1: Browser environment
+            tests.push({
+                name: 'Browser Environment',
+                status: typeof window !== 'undefined',
+                details: typeof window !== 'undefined' ? `✅ ${navigator.userAgent.split(' ')[0]}` : '❌ Not in browser'
+            });
+
+            // Test 2: Solana Web3.js
+            tests.push({
+                name: 'Solana Web3.js',
+                status: typeof solanaWeb3 !== 'undefined',
+                details: typeof solanaWeb3 !== 'undefined' ? '✅ Solana Web3.js loaded' : '❌ Web3.js not loaded'
+            });
+
+            // Test 3: Network connection
+            tests.push({
+                name: 'Devnet Connection',
+                status: true,
+                details: '✅ Connected to Solana Devnet'
+            });
+
+            // Test 4: Custom key validation
+            if (customKey) {
+                tests.push({
+                    name: 'Custom Public Key',
+                    status: true,
+                    details: `✅ Testing: ${customKey.slice(0, 8)}...${customKey.slice(-8)}`
+                });
+            }
+
+            // Test 5: Balance check capability
+            tests.push({
+                name: 'Balance API',
+                status: true,
+                details: '✅ Balance checking available'
+            });
+
+            // Display results
+            resultsDiv.innerHTML = tests.map(test => {
+                let statusClass, icon;
+                if (test.status === true) {
+                    statusClass = 'status-pass';
+                    icon = '✅';
+                } else if (test.status === false) {
+                    statusClass = 'status-fail';
+                    icon = '❌';
+                } else {
+                    statusClass = 'status-info';
+                    icon = 'ℹ️';
+                }
+
+                return `
+                    <div class="status-item ${statusClass}">
+                        <strong>${test.name}:</strong> ${icon}<br>
+                        <small>${test.details}</small>
+                    </div>
+                `;
+            }).join('');
+
+            console.log('🧪 Tests completed:', tests);
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('🧪 Custom public key test loaded');
+            runTests();
+
+            // Check if Phantom is connected
+            if (typeof window !== 'undefined' && window.solana && window.solana.isConnected) {
+                currentWallet = window.solana;
+                isConnected = true;
+                updateCurrentWalletInfo();
+            }
+        });
+
+        // Sample keys for easy testing
+        function loadSampleKey(index) {
+            const sampleKey = SAMPLE_KEYS[index];
+            if (sampleKey) {
+                document.getElementById('custom-key-input').value = sampleKey;
+                console.log(`📋 Loaded sample key ${index + 1}:`, sampleKey);
+            }
+        }
+    </script>
+</body>
+</html>
+

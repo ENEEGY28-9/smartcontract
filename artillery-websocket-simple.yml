@@ -1,0 +1,66 @@
+config:
+  target: 'ws://localhost:8080/ws'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: 'WebSocket Simple Test'
+  ws:
+    subprotocols: []
+
+scenarios:
+  - name: 'WebSocket Connection Test'
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "ws_test_player",
+              "token": "ws_test_token",
+              "player_name": "WebSocketTestPlayer"
+            }
+
+      - think: 2
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "ws_room_test",
+              "game_mode": "test"
+            }
+
+      - think: 2
+
+      - send:
+          payload: |
+            {
+              "type": "game_input",
+              "input": {
+                "movement": [25, 0, 25],
+                "actions": ["move"],
+                "timestamp": "2024-01-01T00:00:00Z"
+              }
+            }
+
+      - think: 2
+
+      - send:
+          payload: |
+            {
+              "type": "chat_message",
+              "message": "WebSocket test message",
+              "message_type": "text"
+            }
+
+      - think: 2
+
+      - send:
+          payload: |
+            {
+              "type": "leave_room",
+              "reason": "test_complete"
+            }

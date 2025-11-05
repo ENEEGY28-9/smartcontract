@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>PocketBase Admin Setup</title>
+</head>
+<body>
+    <h1>Setting up PocketBase Admin User</h1>
+    <div id="status">Initializing...</div>
+
+    <script>
+        async function setupAdmin() {
+            try {
+                // Try to login first
+                const loginResponse = await fetch('http://localhost:8090/api/admins/auth-with-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        identity: 'vominhhauviettel@gmail.com',
+                        password: 'pt123456789'
+                    })
+                });
+
+                if (loginResponse.ok) {
+                    document.getElementById('status').innerHTML = 'Admin user already exists and login successful!';
+                    return;
+                }
+
+                // If login fails, try to create admin user
+                document.getElementById('status').innerHTML = 'Creating admin user...';
+
+                // Note: This might not work as admin creation typically requires existing admin
+                // This is just for demonstration
+
+            } catch (error) {
+                document.getElementById('status').innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        setupAdmin();
+    </script>
+</body>
+</html>

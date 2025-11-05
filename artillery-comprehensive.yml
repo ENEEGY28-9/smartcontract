@@ -1,0 +1,140 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    - duration: 60
+      arrivalRate: 20
+      name: 'Warmup'
+    - duration: 120
+      arrivalRate: 100
+      name: 'Normal Load'
+    - duration: 180
+      arrivalRate: 200
+      name: 'Peak Load'
+    - duration: 120
+      arrivalRate: 50
+      name: 'Cooldown'
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+      Authorization: 'Bearer test-token-12345'
+
+scenarios:
+  # Health checks - 20% weight
+  - name: 'Health Monitoring'
+    weight: 20
+    flow:
+      - get:
+          url: '/health'
+
+      - think: 1
+
+      - get:
+          url: '/ready'
+
+      - think: 1
+
+      - get:
+          url: '/live'
+
+  # Room operations - 30% weight
+  - name: 'Room Operations'
+    weight: 30
+    flow:
+      - post:
+          url: '/api/rooms'
+          json:
+            room_name: 'LoadTestRoom'
+            game_mode: 'classic'
+            max_players: 4
+
+      - think: 1
+
+      - post:
+          url: '/api/rooms/room_test/join'
+          json:
+            player_id: 'player_loadtest_123'
+            player_name: 'LoadTestPlayer123'
+
+      - think: 2
+
+      - post:
+          url: '/api/game/input'
+          json:
+            room_id: 'room_test'
+            player_id: 'player_loadtest_456'
+            input:
+              movement: [50, 0, 50]
+              actions: ['move']
+              sequence: 1
+
+      - think: 1
+
+      - delete:
+          url: '/api/rooms/room_test/leave'
+          json:
+            player_id: 'player_loadtest_456'
+
+  # Chat system - 25% weight
+  - name: 'Chat Operations'
+    weight: 25
+    flow:
+      - post:
+          url: '/api/chat'
+          json:
+            room_id: 'room_chat_test'
+            player_id: 'chat_player_789'
+            message: 'Load test chat message'
+            message_type: 'text'
+
+      - think: 1
+
+      - get:
+          url: '/api/rooms/room_chat_test/chat/history?count=20&offset=0'
+
+      - think: 1
+
+      - get:
+          url: '/api/leaderboards/weekly'
+
+  # Social features - 15% weight
+  - name: 'Social Features'
+    weight: 15
+    flow:
+      - get:
+          url: '/api/leaderboards/monthly'
+
+      - think: 1
+
+      - get:
+          url: '/api/players/player_test/stats'
+
+      - think: 1
+
+      - put:
+          url: '/api/players/player_test/settings'
+          json:
+            theme: 'dark'
+            sound_effects: true
+            notifications: true
+
+  # Game management - 10% weight
+  - name: 'Game Management'
+    weight: 10
+    flow:
+      - post:
+          url: '/api/rooms/room_test/start'
+
+      - think: 2
+
+      - post:
+          url: '/api/rooms/room_test/pause'
+
+      - think: 1
+
+      - post:
+          url: '/api/rooms/room_test/resume'
+
+      - think: 1
+
+      - post:
+          url: '/api/rooms/room_test/end'

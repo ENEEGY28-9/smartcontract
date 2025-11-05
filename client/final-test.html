@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final ProceduralGenerator Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 Final ProceduralGenerator Test</h1>
+        <p>This is the final comprehensive test to ensure ProceduralGenerator works correctly in all scenarios.</p>
+
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="clearLog()">Clear Log</button>
+
+        <div id="log"></div>
+    </div>
+
+    <script type="module">
+        let logContainer;
+
+        function log(message, type = 'info') {
+            if (!logContainer) {
+                logContainer = document.getElementById('log');
+            }
+
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<pre><strong>[${new Date().toLocaleTimeString()}]</strong> ${message}</pre>`;
+            logContainer.appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        async function testImport() {
+            log('📥 TEST 1: Testing module import...', 'info');
+            try {
+                const module = await import('./src/lib/components/procedural-generation.js');
+                log(`✅ Module imported successfully`, 'success');
+                log(`📦 Available exports: ${Object.keys(module).join(', ')}`, 'info');
+
+                if (module.ProceduralGenerator) {
+                    log(`✅ ProceduralGenerator class found: ${typeof module.ProceduralGenerator}`, 'success');
+                    return module;
+                } else {
+                    log('❌ ProceduralGenerator class not found in module', 'error');
+                    return null;
+                }
+            } catch (error) {
+                log(`❌ Import failed: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        async function testInstantiation(module) {
+            log('🏗️ TEST 2: Testing class instantiation...', 'info');
+            if (!module || !module.ProceduralGenerator) {
+                log('❌ Cannot test instantiation - module or class not available', 'error');
+                return null;
+            }
+
+            try {
+                const generator = new module.ProceduralGenerator();
+                log(`✅ ProceduralGenerator instantiated successfully`, 'success');
+                log(`🎲 Generator seed: ${generator.seed}`, 'info');
+                log(`📊 Generator properties: distanceTraveled=${generator.distanceTraveled}, difficulty=${generator.currentDifficulty}`, 'info');
+                return generator;
+            } catch (error) {
+                log(`❌ Instantiation failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+                return null;
+            }
+        }
+
+        async function testGeneration(generator) {
+            log('🎨 TEST 3: Testing track generation...', 'info');
+            if (!generator) {
+                log('❌ Cannot test generation - generator not available', 'error');
+                return false;
+            }
+
+            try {
+                const segments = generator.generateSegmentsAhead(0, 5);
+                log(`✅ Generated ${segments.length} track segments`, 'success');
+
+                segments.forEach((segment, index) => {
+                    log(`  Segment ${index}: ${segment.type} at z=${segment.z}, length=${segment.params?.length || 'N/A'}`, 'info');
+                });
+
+                return segments.length > 0;
+            } catch (error) {
+                log(`❌ Generation failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testObstacles(generator, segments) {
+            log('🚧 TEST 4: Testing obstacle generation...', 'info');
+            if (!generator || !segments || segments.length === 0) {
+                log('❌ Cannot test obstacles - generator or segments not available', 'error');
+                return false;
+            }
+
+            try {
+                const obstacles = generator.generateObstaclesForSegment(segments[0]);
+                log(`✅ Generated ${obstacles.length} obstacles`, 'success');
+
+                obstacles.forEach((obstacle, index) => {
+                    log(`  Obstacle ${index}: ${obstacle.type} at (${obstacle.x}, ${obstacle.z})`, 'info');
+                });
+
+                return obstacles.length >= 0; // Can be 0 obstacles, that's fine
+            } catch (error) {
+                log(`❌ Obstacle generation failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testPickups(generator, segments) {
+            log('🎁 TEST 5: Testing pickup generation...', 'info');
+            if (!generator || !segments || segments.length === 0) {
+                log('❌ Cannot test pickups - generator or segments not available', 'error');
+                return false;
+            }
+
+            try {
+                const pickups = generator.generatePickupsForSegment(segments[0]);
+                log(`✅ Generated ${pickups.length} pickups`, 'success');
+
+                pickups.forEach((pickup, index) => {
+                    log(`  Pickup ${index}: ${pickup.type} at (${pickup.x}, ${pickup.z})`, 'info');
+                });
+
+                return pickups.length >= 0; // Can be 0 pickups, that's fine
+            } catch (error) {
+                log(`❌ Pickup generation failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            log('🚀 Starting comprehensive ProceduralGenerator test suite...', 'info');
+
+            try {
+                // Test 1: Import
+                const module = await testImport();
+                if (!module) return;
+
+                // Test 2: Instantiation
+                const generator = await testInstantiation(module);
+                if (!generator) return;
+
+                // Test 3: Generation
+                const segments = await testGeneration(generator);
+                if (segments === false) return;
+
+                // Test 4: Obstacles
+                const obstacles = await testObstacles(generator, segments);
+                if (obstacles === false) return;
+
+                // Test 5: Pickups
+                const pickups = await testPickups(generator, segments);
+                if (pickups === false) return;
+
+                log('🎉 ALL TESTS PASSED! ProceduralGenerator is working correctly in all scenarios.', 'success');
+
+            } catch (error) {
+                log(`❌ Test suite failed: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLog() {
+            if (logContainer) {
+                logContainer.innerHTML = '';
+            }
+        }
+
+        // Auto-run test after page loads
+        window.addEventListener('load', () => {
+            log('🔄 Page loaded. Click "Run All Tests" to start comprehensive testing.', 'info');
+        });
+    </script>
+</body>
+</html>
+

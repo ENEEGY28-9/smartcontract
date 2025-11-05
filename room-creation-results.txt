@@ -1,0 +1,16 @@
+﻿Tá»”NG Káº¾T Táº O ROOM
+================
+Thá»i gian: 10/10/2025 13:35:09
+Sá»‘ rooms cáº§n táº¡o: 3
+Sá»‘ rooms thÃ nh cÃ´ng: 3
+Tá»· lá»‡ thÃ nh cÃ´ng: 100%
+
+DANH SÃCH ROOMS:
+11554f0e-4d6d-4f78-96a3-45a1b618b7c0
+17d9d07f-d5fd-49d6-8bc5-27d06e16374b
+d893e974-3718-4490-93c6-ead636fb87ad
+
+LINKS:
+- Game: http://localhost:5173
+- Room Manager API: http://localhost:8080/api/rooms
+- PocketBase Admin: http://localhost:8090/_/

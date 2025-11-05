@@ -1,0 +1,55 @@
+🔄 HOW TO SWITCH TO DIFFERENT PHANTOM WALLET
+===========================================
+
+🎯 YES! You can absolutely switch to a different Phantom wallet!
+
+📋 CURRENT SITUATION:
+- Connected to: 57arMrLe8LHfzn7c0yUu6KGhxLQ6nfP87mHTHpM2SGB
+- Network: Solana Devnet
+- Status: Connected ✅
+
+🔧 WAYS TO SWITCH WALLETS:
+
+📌 METHOD 1: Switch Account in Phantom (Recommended)
+1. Click Phantom extension (🦊 fox icon)
+2. Click your profile picture/wallet name at the top
+3. Select "Manage Accounts" or click account dropdown
+4. Choose different account or "Add Account"
+5. Refresh browser page (Ctrl+F5)
+6. Public key will automatically update!
+
+📌 METHOD 2: Disconnect and Reconnect
+1. Go to: http://localhost:5176/wallet-test
+2. Click "Disconnect" button (red button)
+3. Click "Connect Wallet" again (green button)
+4. Phantom popup appears - select different account
+5. Approve connection
+
+📌 METHOD 3: Multiple Wallets in Phantom
+1. In Phantom extension, click account dropdown
+2. Select "Create New Account" or import existing
+3. Switch between accounts using dropdown
+4. Page will automatically update public key
+
+🎯 WHAT HAPPENS WHEN YOU SWITCH:
+- Connection Status: Updates automatically ✅
+- Address: Changes to new wallet's public key ✅
+- Balance: Shows new wallet's SOL balance ✅
+- All tests: Re-run with new wallet data ✅
+
+💡 PRO TIPS:
+- You can have multiple accounts in one Phantom wallet
+- Each account has different public key and balance
+- Switch between them instantly
+- Perfect for testing different scenarios
+
+🔍 TO VERIFY SWITCH WORKED:
+- Check Connection Status: Still "Connected" ✅
+- Check Address: Should be different public key ✅
+- Check Balance: May show different SOL amount ✅
+- Check Console: Will log new public key ✅
+
+🌐 Test URL: http://localhost:5176/wallet-test
+
+⚡ Ready to test with multiple wallets! 🚀
+

@@ -1,0 +1,10 @@
+{
+  "network": "devnet",
+  "gameTokenMint": "2ecFSNGSMokwyZKr1bDWHBjdNRcH2KERVtwX6MPTxpkN",
+  "gamePoolAccount": "Hejd3YzVqL3Avyu5hkohNMTBk2V6mN26asS9jbRceSfc",
+  "ownerAccount": "zon1Q2Ks1UHBM5VPMrmKshwusJy73UQDMA2h2sjB6Rd",
+  "totalMinted": 10,
+  "deploymentTime": "2025-11-04T07:47:04.210Z",
+  "distributionVerified": true,
+  "monitoringSetup": true
+}

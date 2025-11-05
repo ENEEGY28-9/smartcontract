@@ -1,0 +1,64 @@
+// FINAL COPY-PASTE TEST - Test custom public key
+// Paste into browser console (F12)
+
+console.log('🧪 CUSTOM PUBLIC KEY TEST');
+console.log('==========================');
+
+// Your current wallet for comparison
+const currentWallet = window.solana?.publicKey?.toString();
+console.log('📋 Current Wallet:', currentWallet?.slice(0, 12) + '...');
+
+// Test function for any public key
+async function testWalletKey(publicKeyString) {
+    try {
+        console.log(`🔍 Testing: ${publicKeyString.slice(0, 8)}...`);
+
+        // Validate and get info
+        const connection = new solanaWeb3.Connection('https://api.devnet.solana.com');
+        const publicKey = new solanaWeb3.PublicKey(publicKeyString);
+
+        const balance = await connection.getBalance(publicKey);
+        const balanceInSOL = balance / solanaWeb3.LAMPORTS_PER_SOL;
+
+        const accountInfo = await connection.getAccountInfo(publicKey);
+        const exists = accountInfo !== null;
+
+        console.log(`✅ Valid Public Key`);
+        console.log(`💰 Balance: ${balanceInSOL.toFixed(6)} SOL`);
+        console.log(`📊 Account Exists: ${exists}`);
+        console.log(`🌐 Network: Solana Devnet`);
+
+        return { valid: true, balance: balanceInSOL, exists, address: publicKeyString };
+
+    } catch (error) {
+        console.error(`❌ Invalid: ${error.message}`);
+        return { valid: false, error: error.message };
+    }
+}
+
+// Test your current wallet
+if (currentWallet) {
+    console.log('\n🎯 Testing current wallet...');
+    testWalletKey(currentWallet);
+}
+
+// Test sample wallets
+console.log('\n🧪 Testing sample wallets...');
+const sampleWallets = [
+    '57arMrLe8LHfzn7c0yUu6KGhxLQ6nfP87mHTHpM2SGB', // Your wallet
+    'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // System program
+    'So11111111111111111111111111111111111111112'  // Wrapped SOL
+];
+
+sampleWallets.forEach(wallet => testWalletKey(wallet));
+
+// Instructions
+console.log('\n💡 TO TEST YOUR OWN WALLET:');
+console.log('1. Copy any Solana public key');
+console.log('2. Replace one of the sample keys above');
+console.log('3. Run the test again');
+console.log('4. See balance and validation');
+
+console.log('\n🎮 Perfect for testing different wallet scenarios!');
+console.log('==========================');
+

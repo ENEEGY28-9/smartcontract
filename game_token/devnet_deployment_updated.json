@@ -1,0 +1,12 @@
+{
+  "network": "devnet",
+  "gameTokenMint": "FBDh1XC9nNn1XqEgi1FBXgrsJ14xw7chQzvoB2WnrMcX",
+  "gamePoolAccount": "C17zaaE7LmjGiWXUppJKsvS6msempQSjdQqi6yBmTc5N",
+  "ownerAccount": "B8MM5t3qTxBSx7mpaRvu4AJmMAZeHUty1LUVtfXs7QUv",
+  "totalMinted": 5,
+  "gamePoolBalance": 4,
+  "ownerBalance": 1,
+  "distributionCorrect": true,
+  "deploymentTime": "2025-11-04T10:08:45.991Z",
+  "logicVersion": "80_20_fixed"
+}

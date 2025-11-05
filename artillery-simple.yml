@@ -1,0 +1,34 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: 'Simple Test'
+
+scenarios:
+  - name: 'Health Check Test'
+    flow:
+      - get:
+          url: '/health'
+
+  - name: 'Create Room Test'
+    flow:
+      - post:
+          url: '/api/rooms'
+          json:
+            room_name: 'SimpleTestRoom'
+            game_mode: 'classic'
+            max_players: 4
+
+  - name: 'API Test'
+    flow:
+      - get:
+          url: '/api/leaderboards/weekly'
+
+      - post:
+          url: '/api/chat'
+          json:
+            room_id: 'room_test'
+            player_id: 'simple_test'
+            message: 'Simple test message'
+            message_type: 'text'

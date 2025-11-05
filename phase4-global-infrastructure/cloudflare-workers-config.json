@@ -1,0 +1,54 @@
+{
+  "workers": [
+    {
+      "name": "gamev1-api-routing",
+      "script_name": "gamev1-api-routing",
+      "main_module": "src/index.js",
+      "compatibility_date": "2024-01-01",
+      "compatibility_flags": ["nodejs_compat"],
+      "environment_variables": {
+        "REGION_MAPPING": {
+          "us": "us-east-1",
+          "eu": "eu-west-1",
+          "asia": "ap-southeast-1"
+        },
+        "HEALTH_CHECK_ENDPOINTS": {
+          "us-east-1": "https://api-us.gamev1.com/healthz",
+          "eu-west-1": "https://api-eu.gamev1.com/healthz",
+          "ap-southeast-1": "https://api-ap.gamev1.com/healthz"
+        }
+      },
+      "routes": [
+        {
+          "pattern": "api.gamev1.com/api/*",
+          "script": "gamev1-api-routing"
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "REGION_CACHE",
+          "id": "region_cache_namespace",
+          "preview_id": "region_cache_preview"
+        }
+      ]
+    },
+    {
+      "name": "gamev1-image-optimization",
+      "script_name": "gamev1-image-optimization",
+      "main_module": "src/image-optimization.js",
+      "routes": [
+        {
+          "pattern": "cdn.gamev1.com/images/*",
+          "script": "gamev1-image-optimization"
+        }
+      ]
+    }
+  ],
+  "durable_objects": [
+    {
+      "name": "GAME_SESSION_STORE",
+      "class_name": "GameSessionStore",
+      "script_name": "gamev1-session-store"
+    }
+  ]
+}

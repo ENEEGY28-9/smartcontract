@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Wallet Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1f2e 0%, #0a0e1a 100%);
+            color: #f6f8ff;
+            line-height: 1.6;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(68, 107, 255, 0.2);
+        }
+        .status-card {
+            background: rgba(15, 22, 41, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px solid rgba(68, 107, 255, 0.3);
+        }
+        .btn {
+            background: linear-gradient(135deg, #446bff, #6b73ff);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(68, 107, 255, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn.success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+        .btn.danger {
+            background: linear-gradient(135deg, #ff4757, #ff3742);
+        }
+        .success { color: #2ecc71; }
+        .error { color: #ff4757; }
+        .info { color: #feca57; }
+        .warning { color: #f39c12; }
+        .status-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .status-pass { background: rgba(46, 204, 113, 0.1); border-color: #2ecc71; }
+        .status-fail { background: rgba(255, 71, 87, 0.1); border-color: #ff4757; }
+        .status-info { background: rgba(254, 202, 87, 0.1); border-color: #feca57; }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .wallet-info {
+            background: rgba(68, 107, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(68, 107, 255, 0.3);
+            margin: 10px 0;
+        }
+
+        .input-group {
+            margin: 1rem 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #feca57;
+        }
+
+        .custom-key-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #446bff;
+            border-radius: 8px;
+            background: rgba(68, 107, 255, 0.1);
+            color: #f6f8ff;
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+        }
+
+        .custom-key-input:focus {
+            outline: none;
+            border-color: #6b73ff;
+            background: rgba(68, 107, 255, 0.2);
+        }
+
+        .custom-key-input::placeholder {
+            color: rgba(246, 248, 255, 0.5);
+        }
+
+        .input-group .btn {
+            margin: 0.25rem;
+            min-width: 120px;
+        }
+
+        .network-info {
+            background: rgba(254, 202, 87, 0.1);
+            border: 1px solid rgba(254, 202, 87, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Ethereum Wallet Test</h1>
+        <p>Test your Ethereum wallet integration</p>
+
+        <!-- Network Info -->
+        <div class="network-info">
+            <strong>🌐 Network:</strong> Ethereum Mainnet<br>
+            <strong>💰 Currency:</strong> ETH (Ether)<br>
+            <strong>📋 Address Format:</strong> 0x... (42 characters)
+        </div>
+
+        <!-- Wallet Status -->
+        <div class="status-card">
+            <h3>🔍 Wallet Detection</h3>
+            <div id="detection-status"></div>
+        </div>
+
+        <!-- Connection Controls -->
+        <div class="status-card">
+            <h3>🎮 Connection Controls</h3>
+            <button class="btn" id="connect-btn" onclick="connectWallet()">
+                🔗 Connect MetaMask
+            </button>
+            <button class="btn danger" id="disconnect-btn" onclick="disconnectWallet()" style="display: none;">
+                🚪 Disconnect
+            </button>
+            <button class="btn success" id="check-balance-btn" onclick="checkBalance()" style="display: none;">
+                💰 Check Balance
+            </button>
+            <button class="btn" id="diagnose-btn" onclick="diagnoseWallet()">
+                🔍 Diagnose Wallet
+            </button>
+        </div>
+
+        <!-- Custom Address Test -->
+        <div class="status-card" data-wallet-mode="custom">
+            <h3>🧪 Test Custom Address</h3>
+            <div class="input-group">
+                <label for="custom-address-input">Enter Ethereum Address:</label>
+                <input type="text" id="custom-address-input" placeholder="e.g., 0x47F0350df3E06c1bBD1Fd1dc86ab12ae772BF2A2" class="custom-key-input">
+                <button class="btn" id="test-custom-address-btn" onclick="testCustomAddress()">
+                    🔍 Test Address
+                </button>
+                <button class="btn secondary" id="clear-custom-address-btn" onclick="clearCustomAddress()">
+                    🗑️ Clear
+                </button>
+            </div>
+            <div id="custom-address-results" style="display: none;">
+                <h4>📊 Custom Address Test Results</h4>
+                <div id="custom-address-info"></div>
+            </div>
+        </div>
+
+        <!-- Wallet Information -->
+        <div class="status-card" id="wallet-info" style="display: none;">
+            <h3>📊 Wallet Information</h3>
+            <div id="wallet-details"></div>
+        </div>
+
+        <!-- Balance Information -->
+        <div class="status-card" id="balance-info" style="display: none;">
+            <h3>💰 Balance Information</h3>
+            <div id="balance-details"></div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="status-card">
+            <h3>🧪 Test Results</h3>
+            <div id="test-results"></div>
+        </div>
+
+        <!-- Quick Instructions -->
+        <div style="background: rgba(68, 107, 255, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(68, 107, 255, 0.3); margin: 15px 0; font-size: 14px;">
+            <strong>💡 Quick Start:</strong>
+            • Install <a href="https://metamask.io/" target="_blank" style="color: #feca57;">MetaMask Wallet</a> extension<br>
+            • Click "🔗 Connect MetaMask" to connect your wallet<br>
+            • Or enter a custom Ethereum address to test any wallet
+        </div>
+
+    </div>
+
+    <!-- Web3.js CDN for Ethereum -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.1/dist/web3.min.js"></script>
+
+    <script>
+        let wallet = null;
+        let isConnected = false;
+        let web3 = null;
+
+        // Test wallet address (your provided address)
+        const TEST_ETHEREUM_ADDRESS = '0x47F0350df3E06c1bBD1Fd1dc86ab12ae772BF2A2';
+
+        function updateDetectionStatus() {
+            const statusDiv = document.getElementById('detection-status');
+
+            if (typeof window === 'undefined') {
+                statusDiv.innerHTML = '<div class="status-item status-fail">❌ Not in browser environment</div>';
+                return;
+            }
+
+            const detectionResults = [];
+
+            // Check for MetaMask (Ethereum wallet)
+            if (window.ethereum) {
+                detectionResults.push(`
+                    <div class="status-item status-pass">
+                        ✅ MetaMask wallet detected<br>
+                        <small>Connected: ${window.ethereum.isConnected ? 'Yes' : 'No'}</small>
+                    </div>
+                `);
+
+                if (window.ethereum.selectedAddress) {
+                    detectionResults.push(`
+                        <div class="status-item status-pass">
+                            ✅ Address available<br>
+                            <small>Address: ${window.ethereum.selectedAddress}</small>
+                        </div>
+                    `);
+                }
+            } else {
+                detectionResults.push(`
+                    <div class="status-item status-fail">
+                        ❌ MetaMask wallet not found<br>
+                        <small>Please install from <a href="https://metamask.io/" target="_blank" style="color: #feca57;">metamask.io</a></small>
+                    </div>
+                `);
+            }
+
+            // Check other Ethereum wallets
+            const otherWallets = ['coinbase', 'trust'];
+            otherWallets.forEach(walletName => {
+                if (window[walletName]) {
+                    detectionResults.push(`
+                        <div class="status-item status-info">
+                            ℹ️ ${walletName} wallet detected
+                        </div>
+                    `);
+                }
+            });
+
+            statusDiv.innerHTML = detectionResults.join('');
+        }
+
+        async function connectWallet() {
+            console.log('🔗 Connecting to Ethereum wallet...');
+
+            if (!window.ethereum) {
+                alert('❌ MetaMask not found. Please install MetaMask wallet first.');
+                return;
+            }
+
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const balanceBtn = document.getElementById('check-balance-btn');
+
+            try {
+                connectBtn.disabled = true;
+                connectBtn.textContent = '⏳ Connecting...';
+
+                // Initialize Web3
+                web3 = new Web3(window.ethereum);
+
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                console.log('✅ Connection response:', accounts);
+
+                if (accounts.length > 0) {
+                    wallet = {
+                        address: accounts[0],
+                        web3: web3
+                    };
+                    isConnected = true;
+
+                    // Update UI
+                    connectBtn.style.display = 'none';
+                    disconnectBtn.style.display = 'inline-block';
+                    balanceBtn.style.display = 'inline-block';
+
+                    updateWalletInfo();
+                    runTests();
+
+                    console.log('✅ Wallet connected successfully');
+                } else {
+                    throw new Error('No accounts found');
+                }
+
+            } catch (error) {
+                console.error('❌ Connection failed:', error);
+
+                let errorMessage = `❌ Connection failed: ${error.message}\n\n`;
+                errorMessage += '🔍 Troubleshooting:\n';
+
+                if (error.message.includes('User rejected')) {
+                    errorMessage += '• Approve the connection in MetaMask popup\n';
+                } else if (error.message.includes('locked')) {
+                    errorMessage += '• Unlock your MetaMask wallet\n';
+                } else {
+                    errorMessage += '• Refresh the page\n';
+                    errorMessage += '• Try a different browser\n';
+                    errorMessage += '• Check if MetaMask is properly installed\n';
+                }
+
+                alert(errorMessage);
+            } finally {
+                connectBtn.disabled = false;
+                connectBtn.textContent = '🔗 Connect MetaMask';
+            }
+        }
+
+        function disconnectWallet() {
+            console.log('🔌 Disconnecting wallet...');
+
+            wallet = null;
+            isConnected = false;
+
+            // Update UI
+            document.getElementById('connect-btn').style.display = 'inline-block';
+            document.getElementById('disconnect-btn').style.display = 'none';
+            document.getElementById('check-balance-btn').style.display = 'none';
+            document.getElementById('wallet-info').style.display = 'none';
+            document.getElementById('balance-info').style.display = 'none';
+
+            runTests();
+            console.log('✅ Wallet disconnected');
+        }
+
+        async function checkBalance() {
+            console.log('💰 Checking balance...');
+
+            if (!isConnected || !wallet) {
+                alert('❌ Wallet not connected');
+                return;
+            }
+
+            const balanceBtn = document.getElementById('check-balance-btn');
+            const balanceDiv = document.getElementById('balance-details');
+
+            try {
+                balanceBtn.disabled = true;
+                balanceBtn.textContent = '⏳ Checking...';
+
+                // Get balance in ETH
+                const balance = await web3.eth.getBalance(wallet.address);
+                const balanceInETH = web3.utils.fromWei(balance, 'ether');
+
+                // Get network info
+                const networkId = await web3.eth.net.getId();
+                const networkName = getNetworkName(networkId);
+
+                balanceDiv.innerHTML = `
+                    <div class="status-item status-pass">
+                        ✅ Balance retrieved successfully<br>
+                        <strong>${balanceInETH} ETH</strong><br>
+                        <small>${balance} wei</small><br>
+                        <small>Network: ${networkName} (${networkId})</small>
+                    </div>
+                `;
+
+                document.getElementById('balance-info').style.display = 'block';
+
+                console.log('✅ Balance checked:', balanceInETH, 'ETH');
+
+            } catch (error) {
+                console.error('❌ Balance check failed:', error);
+                balanceDiv.innerHTML = `
+                    <div class="status-item status-fail">
+                        ❌ Balance check failed<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+                document.getElementById('balance-info').style.display = 'block';
+            } finally {
+                balanceBtn.disabled = false;
+                balanceBtn.textContent = '💰 Check Balance';
+            }
+        }
+
+        function getNetworkName(networkId) {
+            const networks = {
+                1: 'Ethereum Mainnet',
+                3: 'Ropsten Testnet',
+                4: 'Rinkeby Testnet',
+                5: 'Goerli Testnet',
+                42: 'Kovan Testnet',
+                11155111: 'Sepolia Testnet'
+            };
+            return networks[networkId] || `Network ID: ${networkId}`;
+        }
+
+        function updateWalletInfo() {
+            const walletDiv = document.getElementById('wallet-details');
+
+            if (isConnected && wallet) {
+                walletDiv.innerHTML = `
+                    <div class="wallet-info">
+                        <strong>Connected Wallet:</strong><br>
+                        <code>${wallet.address}</code><br>
+                        <small>Network: Ethereum</small>
+                    </div>
+                `;
+                document.getElementById('wallet-info').style.display = 'block';
+            }
+        }
+
+        function diagnoseWallet() {
+            console.log('🔍 Running wallet diagnosis...');
+            const results = [];
+
+            // Browser environment check
+            results.push({
+                name: 'Browser Environment',
+                status: typeof window !== 'undefined',
+                details: typeof window !== 'undefined' ? `✅ ${navigator.userAgent.split(' ')[0]}` : '❌ Not in browser'
+            });
+
+            // URL check
+            results.push({
+                name: 'Connection URL',
+                status: true,
+                details: `✅ ${window.location.href}`
+            });
+
+            // HTTPS check
+            results.push({
+                name: 'Secure Connection',
+                status: window.location.protocol === 'https:',
+                details: window.location.protocol === 'https:' ? '✅ HTTPS enabled' : '⚠️ HTTP (some wallets require HTTPS)'
+            });
+
+            // MetaMask detection
+            if (window.ethereum) {
+                results.push({
+                    name: 'MetaMask Detection',
+                    status: true,
+                    details: '✅ MetaMask wallet extension found'
+                });
+
+                results.push({
+                    name: 'MetaMask Version',
+                    status: true,
+                    details: `✅ MetaMask available`
+                });
+
+                results.push({
+                    name: 'Connection State',
+                    status: window.ethereum.isConnected,
+                    details: window.ethereum.isConnected ? '✅ Already connected' : '⭕ Not connected'
+                });
+
+                if (window.ethereum.selectedAddress) {
+                    results.push({
+                        name: 'Selected Address',
+                        status: true,
+                        details: `✅ Available: ${window.ethereum.selectedAddress.slice(0, 8)}...${window.ethereum.selectedAddress.slice(-8)}`
+                    });
+                } else {
+                    results.push({
+                        name: 'Selected Address',
+                        status: false,
+                        details: '❌ No address selected'
+                    });
+                }
+
+            } else {
+                results.push({
+                    name: 'MetaMask Detection',
+                    status: false,
+                    details: '❌ MetaMask wallet not found - install from https://metamask.io/'
+                });
+            }
+
+            // Network connectivity check
+            results.push({
+                name: 'Network Access',
+                status: navigator.onLine,
+                details: navigator.onLine ? '✅ Internet connection available' : '❌ No internet connection'
+            });
+
+            // Display results
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = results.map(result => {
+                let statusClass, icon;
+                if (result.status === true) {
+                    statusClass = 'status-pass';
+                    icon = '✅';
+                } else if (result.status === false) {
+                    statusClass = 'status-fail';
+                    icon = '❌';
+                } else {
+                    statusClass = 'status-info';
+                    icon = '⚠️';
+                }
+
+                return `
+                    <div class="status-item ${statusClass}">
+                        <strong>${result.name}:</strong> ${icon}<br>
+                        <small>${result.details}</small>
+                    </div>
+                `;
+            }).join('');
+
+            console.log('🔍 Diagnosis completed:', results);
+        }
+
+        function runTests() {
+            const resultsDiv = document.getElementById('test-results');
+            const tests = [];
+
+            // Test 1: Browser environment
+            tests.push({
+                name: 'Browser Environment',
+                status: typeof window !== 'undefined',
+                details: typeof window !== 'undefined' ? '✅ Browser detected' : '❌ Not in browser'
+            });
+
+            // Test 2: MetaMask detection
+            tests.push({
+                name: 'MetaMask Detection',
+                status: !!window.ethereum,
+                details: window.ethereum ? '✅ MetaMask wallet found' : '❌ MetaMask wallet not found'
+            });
+
+            // Test 3: Connection status
+            tests.push({
+                name: 'Connection Status',
+                status: isConnected,
+                details: isConnected ? '✅ Connected to wallet' : '❌ Not connected'
+            });
+
+            // Test 4: Address
+            if (window.ethereum && window.ethereum.selectedAddress) {
+                tests.push({
+                    name: 'Wallet Address',
+                    status: true,
+                    details: `✅ Address available: ${window.ethereum.selectedAddress.slice(0, 8)}...${window.ethereum.selectedAddress.slice(-8)}`
+                });
+            }
+
+            // Display results
+            resultsDiv.innerHTML = tests.map(test => {
+                const statusClass = test.status ? 'status-pass' : 'status-fail';
+                const icon = test.status ? '✅' : '❌';
+                return `
+                    <div class="status-item ${statusClass}">
+                        <strong>${test.name}:</strong> ${icon}<br>
+                        <small>${test.details}</small>
+                    </div>
+                `;
+            }).join('');
+
+            console.log('🧪 Tests completed:', tests);
+        }
+
+        async function testCustomAddress() {
+            console.log('🧪 Testing custom Ethereum address...');
+
+            const customAddressInput = document.getElementById('custom-address-input');
+            const customAddressResults = document.getElementById('custom-address-results');
+            const customAddressInfo = document.getElementById('custom-address-info');
+            const testBtn = document.getElementById('test-custom-address-btn');
+
+            const addressString = customAddressInput.value.trim();
+
+            if (!addressString) {
+                alert('❌ Please enter an Ethereum address');
+                return;
+            }
+
+            // Validate Ethereum address format
+            if (!isValidEthereumAddress(addressString)) {
+                alert('❌ Invalid Ethereum address format. Address should start with 0x and be 42 characters long.');
+                return;
+            }
+
+            testBtn.disabled = true;
+            testBtn.textContent = '⏳ Testing...';
+
+            try {
+                console.log('🔍 Testing address:', addressString);
+
+                // Initialize Web3 if not already done
+                if (!web3) {
+                    if (window.ethereum) {
+                        web3 = new Web3(window.ethereum);
+                    } else {
+                        // Use Infura as fallback
+                        web3 = new Web3('https://mainnet.infura.io/v3/YOUR_INFURA_KEY');
+                    }
+                }
+
+                // Test address validity and get balance
+                const isValid = web3.utils.isAddress(addressString);
+                console.log('✅ Address is valid:', isValid);
+
+                if (!isValid) {
+                    throw new Error('Invalid Ethereum address');
+                }
+
+                console.log('🔗 Checking balance...');
+
+                const balance = await web3.eth.getBalance(addressString);
+                const balanceInETH = web3.utils.fromWei(balance, 'ether');
+
+                // Get network info
+                const networkId = await web3.eth.net.getId();
+                const networkName = getNetworkName(networkId);
+
+                console.log('💰 Balance retrieved:', balanceInETH, 'ETH');
+
+                // Get additional account info
+                const code = await web3.eth.getCode(addressString);
+                const isContract = code !== '0x';
+
+                // Display results
+                customAddressInfo.innerHTML = `
+                    <div class="wallet-info">
+                        <strong>Custom Ethereum Address Test Results:</strong><br>
+                        <code>${addressString}</code><br><br>
+
+                        <strong>✅ Validation:</strong> Valid Ethereum Address<br>
+                        <strong>💰 Balance:</strong> ${balanceInETH} ETH (${balance} wei)<br>
+                        <strong>📊 Account Type:</strong> ${isContract ? 'Smart Contract' : 'External Account'}<br>
+                        <strong>🌐 Network:</strong> ${networkName}<br><br>
+
+                        <strong>📋 Address Details:</strong><br>
+                        <small>
+                            • Address Length: ${addressString.length} characters<br>
+                            • Format: 0x... (Hex)<br>
+                            • Checksum: ${web3.utils.checkAddressChecksum(addressString) ? 'Valid' : 'Invalid'}<br>
+                            • Network: ${networkName}
+                        </small>
+                    </div>
+                `;
+
+                customAddressResults.style.display = 'block';
+
+                console.log('✅ Custom address test completed successfully');
+
+            } catch (error) {
+                console.error('❌ Custom address test failed:', error);
+
+                let errorMessage = `❌ Error testing address: ${error.message}`;
+
+                if (error.message.includes('Invalid address')) {
+                    errorMessage += '<br><br>💡 Make sure the address is a valid Ethereum address (42 characters, starting with 0x)';
+                }
+
+                customAddressInfo.innerHTML = `
+                    <div class="error-display">
+                        ${errorMessage}
+                    </div>
+                `;
+
+                customAddressResults.style.display = 'block';
+            } finally {
+                testBtn.disabled = false;
+                testBtn.textContent = '🔍 Test Address';
+            }
+        }
+
+        function isValidEthereumAddress(address) {
+            // Basic format check
+            if (!address || typeof address !== 'string') return false;
+            if (!address.startsWith('0x')) return false;
+            if (address.length !== 42) return false;
+
+            // Check if it's a valid hex string
+            return /^0x[a-fA-F0-9]{40}$/.test(address);
+        }
+
+        function clearCustomAddress() {
+            console.log('🗑️ Clearing custom address input...');
+
+            document.getElementById('custom-address-input').value = '';
+            document.getElementById('custom-address-results').style.display = 'none';
+            document.getElementById('custom-address-info').innerHTML = '';
+
+            console.log('✅ Custom address input cleared');
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('🔗 Ethereum wallet test loaded');
+            updateDetectionStatus();
+            runTests();
+
+            // Auto-populate with your address for testing
+            document.getElementById('custom-address-input').value = TEST_ETHEREUM_ADDRESS;
+
+            // Check if already connected
+            if (window.ethereum && window.ethereum.isConnected) {
+                if (window.ethereum.selectedAddress) {
+                    wallet = {
+                        address: window.ethereum.selectedAddress,
+                        web3: new Web3(window.ethereum)
+                    };
+                    isConnected = true;
+                    document.getElementById('connect-btn').style.display = 'none';
+                    document.getElementById('disconnect-btn').style.display = 'inline-block';
+                    document.getElementById('check-balance-btn').style.display = 'inline-block';
+                    updateWalletInfo();
+                }
+            }
+        });
+
+        // Monitor connection changes
+        if (typeof window !== 'undefined' && window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                console.log('🔄 Accounts changed:', accounts);
+                if (accounts.length > 0) {
+                    wallet = {
+                        address: accounts[0],
+                        web3: web3 || new Web3(window.ethereum)
+                    };
+                    isConnected = true;
+                    updateWalletInfo();
+                } else {
+                    disconnectWallet();
+                }
+            });
+
+            window.ethereum.on('disconnect', () => {
+                console.log('🔌 Wallet disconnected event');
+                disconnectWallet();
+            });
+        }
+    </script>
+</body>
+</html>

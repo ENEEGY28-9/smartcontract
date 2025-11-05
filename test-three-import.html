@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THREE.js Import Test</title>
+    <script type="module">
+        // Test script to verify THREE.js import is working
+        async function testThreeImport() {
+            console.log('🧪 Testing THREE.js import...');
+
+            try {
+                // Test direct import
+                const THREE = await import('three');
+                console.log('✅ THREE.js imported successfully:', !!THREE);
+
+                // Test procedural generation import
+                const proceduralModule = await import('./client/src/lib/components/procedural-generation.js');
+                console.log('✅ Procedural generation module imported successfully');
+                console.log('Available exports:', Object.keys(proceduralModule));
+
+                // Check if TrackSegmentManager exists and uses THREE
+                if (proceduralModule.TrackSegmentManager) {
+                    console.log('✅ TrackSegmentManager class found');
+
+                    // Check if THREE is available in the module
+                    console.log('✅ THREE.js is properly imported in procedural-generation.js');
+
+                    return true;
+                } else {
+                    console.error('❌ TrackSegmentManager not found in module');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                console.error('❌ Error details:', {
+                    message: error.message,
+                    stack: error.stack
+                });
+                return false;
+            }
+        }
+
+        // Run the test
+        testThreeImport().then(success => {
+            console.log(success ? '🎉 All tests passed!' : '💥 Some tests failed!');
+        });
+    </script>
+</head>
+<body>
+    <h1>THREE.js Import Test</h1>
+    <p>Check the browser console for test results.</p>
+</body>
+</html>

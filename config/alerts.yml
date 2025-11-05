@@ -1,0 +1,202 @@
+# Alert rules for GameV1 Development Monitoring
+
+groups:
+  - name: gamev1-development-alerts
+    rules:
+      # Gateway alerts - Optimized for gaming workloads
+      - alert: GatewayHighResponseTime
+        expr: histogram_quantile(0.95, rate(gateway_response_time_seconds_bucket[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: gateway
+        annotations:
+          summary: "High gateway response time detected"
+          description: "Gateway 95th percentile response time is above 50ms for more than 2 minutes"
+
+      - alert: GatewayHighErrorRate
+        expr: rate(gateway_http_requests_failed_total[5m]) / rate(gateway_http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          service: gateway
+        annotations:
+          summary: "High gateway error rate detected"
+          description: "Gateway error rate is above 5% for more than 2 minutes"
+
+      - alert: GatewayConnectionSpike
+        expr: gateway_active_connections > 2000
+        for: 1m
+        labels:
+          severity: warning
+          service: gateway
+        annotations:
+          summary: "High number of active connections"
+          description: "Gateway has more than 2000 active connections for more than 1 minute"
+
+      - alert: GatewayMemoryUsageHigh
+        expr: gateway_memory_usage_bytes > 400000000  # 400MB
+        for: 5m
+        labels:
+          severity: warning
+          service: gateway
+        annotations:
+          summary: "High gateway memory usage"
+          description: "Gateway memory usage is above 400MB for more than 5 minutes"
+
+      # Worker alerts - Gaming optimized
+      - alert: WorkerHighFrameTime
+        expr: histogram_quantile(0.95, rate(worker_frame_time_seconds_bucket[5m])) > 0.016  # 16ms for 60fps
+        for: 2m
+        labels:
+          severity: warning
+          service: worker
+        annotations:
+          summary: "High worker frame time detected"
+          description: "Worker 95th percentile frame time is above 16ms (below 60fps) for more than 2 minutes"
+
+      - alert: WorkerHighErrorRate
+        expr: rate(worker_errors_total[5m]) / rate(worker_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          service: worker
+        annotations:
+          summary: "High worker error rate"
+          description: "Worker error rate is above 5% for more than 2 minutes"
+
+      - alert: WorkerMemoryUsage
+        expr: worker_memory_usage_bytes > 1000000000  # 1GB
+        for: 5m
+        labels:
+          severity: warning
+          service: worker
+        annotations:
+          summary: "High worker memory usage"
+          description: "Worker memory usage is above 1GB for more than 5 minutes"
+
+      # Room Manager alerts
+      - alert: RoomManagerHighQueueDepth
+        expr: room_manager_matchmaking_queue_depth > 100
+        for: 2m
+        labels:
+          severity: warning
+          service: room-manager
+        annotations:
+          summary: "High matchmaking queue depth"
+          description: "Room manager has more than 100 pending matchmaking requests"
+
+      - alert: RoomManagerNoActiveRooms
+        expr: room_manager_active_rooms == 0
+        for: 10m
+        labels:
+          severity: info
+          service: room-manager
+        annotations:
+          summary: "No active rooms in room manager"
+          description: "Room manager has no active rooms for more than 10 minutes"
+
+      # Game-specific alerts - Optimized for real-time gaming
+      - alert: HighGameLatency
+        expr: histogram_quantile(0.95, rate(gateway_game_latency_seconds_bucket[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: game
+        annotations:
+          summary: "High game latency detected"
+          description: "Game 95th percentile latency is above 50ms for more than 2 minutes"
+
+      - alert: GameStateSyncDelay
+        expr: gateway_game_state_sync_delay_seconds > 0.1
+        for: 1m
+        labels:
+          severity: critical
+          service: game
+        annotations:
+          summary: "Game state sync delay too high"
+          description: "Game state synchronization delay is above 100ms for more than 1 minute"
+
+      # Rate limiting alerts - Optimized for gaming traffic
+      - alert: HighRateLimitHits
+        expr: rate(gateway_rate_limited_requests_total[5m]) > 50
+        for: 1m
+        labels:
+          severity: warning
+          service: rate-limiting
+        annotations:
+          summary: "High rate limit hits detected"
+          description: "Rate limiting is triggered more than 50 times per minute - check for abuse or misconfiguration"
+
+      - alert: RateLimitExhaustion
+        expr: gateway_rate_limit_remaining < 1000
+        for: 5m
+        labels:
+          severity: critical
+          service: rate-limiting
+        annotations:
+          summary: "Rate limit capacity running low"
+          description: "Rate limit remaining capacity is below 1000 for more than 5 minutes"
+
+      # Authentication alerts - Gaming security focused
+      - alert: HighAuthFailureRate
+        expr: rate(gateway_auth_failure_total[5m]) / rate(gateway_auth_success_total[5m]) > 0.3
+        for: 2m
+        labels:
+          severity: warning
+          service: authentication
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Authentication failure rate is above 30% for more than 2 minutes - check for brute force attacks"
+
+      - alert: AuthSpikeDetection
+        expr: rate(gateway_auth_requests_total[5m]) > 100
+        for: 1m
+        labels:
+          severity: warning
+          service: authentication
+        annotations:
+          summary: "Authentication request spike detected"
+          description: "Authentication requests spiked above 100/min for more than 1 minute"
+
+      # Database alerts - Production ready
+      - alert: HighDatabaseConnectionUsage
+        expr: gateway_database_connections{status="active"} / gateway_database_connections{status="total"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High database connection usage"
+          description: "Database connection pool usage is above 85% for more than 5 minutes"
+
+      - alert: DatabaseSlowQueries
+        expr: rate(gateway_database_query_duration_seconds_bucket[5m]{le="1"}[5m]) < 0.95
+        for: 3m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High number of slow database queries"
+          description: "More than 5% of database queries are taking over 1 second"
+
+      # Infrastructure alerts
+      - alert: ServiceDown
+        expr: up{job=~"gamev1-.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: infrastructure
+        annotations:
+          summary: "Service is down"
+          description: "A GameV1 service has been down for more than 1 minute"
+
+      - alert: HighSystemLoad
+        expr: gateway_cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High system CPU usage"
+          description: "Gateway CPU usage is above 80% for more than 5 minutes"

@@ -1,0 +1,28 @@
+{
+    "name": "Game Token Production Environment",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+
+    "features": {
+        "ghcr.io/devcontainers/features/rust:1": {},
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "18"
+        }
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "ms-vscode.vscode-json",
+                "ms-vscode.vscode-typescript-next",
+                "ms-vscode.vscode-yaml"
+            ]
+        }
+    },
+
+    "postCreateCommand": "chmod +x setup_production.sh && ./setup_production.sh",
+
+    "forwardPorts": [3000, 4000],
+
+    "remoteUser": "vscode"
+}

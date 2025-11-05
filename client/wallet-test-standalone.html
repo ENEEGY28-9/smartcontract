@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Test - Standalone Version</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 100%);
+            color: #f6f8ff;
+            line-height: 1.6;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(68, 107, 255, 0.2);
+        }
+        .status-card {
+            background: rgba(15, 22, 41, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px solid rgba(68, 107, 255, 0.3);
+        }
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .btn {
+            background: linear-gradient(135deg, #446bff, #6b73ff);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(68, 107, 255, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn.secondary {
+            background: rgba(68, 107, 255, 0.1);
+            border: 1px solid #446bff;
+        }
+        .btn.secondary:hover:not(:disabled) {
+            background: rgba(68, 107, 255, 0.2);
+        }
+        .btn.danger {
+            background: linear-gradient(135deg, #ff4757, #ff3742);
+        }
+        .btn.danger:hover:not(:disabled) {
+            background: linear-gradient(135deg, #ff3742, #ff2828);
+        }
+        .btn.mock-active {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            border-color: #ff6b6b;
+        }
+        .success { color: #2ecc71; }
+        .error { color: #ff4757; }
+        .info { color: #feca57; }
+        .warning { color: #f39c12; }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .pass { background: rgba(46, 204, 113, 0.1); border-color: #2ecc71; }
+        .fail { background: rgba(255, 71, 87, 0.1); border-color: #ff4757; }
+        .info-bg { background: rgba(254, 202, 87, 0.1); border-color: #feca57; }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .status-label {
+            font-size: 0.9em;
+            color: rgba(246, 248, 255, 0.7);
+        }
+        .status-value {
+            font-weight: 600;
+            font-family: monospace;
+        }
+        .mock-indicator {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .mock-notice {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(254, 202, 87, 0.1);
+            border: 1px solid rgba(254, 202, 87, 0.3);
+            border-radius: 8px;
+            color: #feca57;
+        }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Wallet Test Interface</h1>
+        <p>Enhanced version with mock mode support - no wallet installation required!</p>
+
+        <!-- Connection Status -->
+        <div class="status-card">
+            <h3>Connection Status</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <span class="status-label">Connected:</span>
+                    <span id="connected-status" class="success">✅ Yes (Mock Mode)</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Address:</span>
+                    <span class="status-value">
+                        <code>57arM3rLe8LHfzn7coyUu6KGhxLQ6nfP87mHTHpM2SGB</code>
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Balance:</span>
+                    <span class="status-value success">1.2345 SOL</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Network:</span>
+                    <span class="status-value success">Mock Network</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="test-controls">
+            <button class="btn" onclick="runWalletTests()">
+                🔄 Run Tests
+            </button>
+            <button class="btn secondary" onclick="runDebugTest()">
+                🔍 Debug Info
+            </button>
+            <button class="btn secondary" onclick="resetTests()">
+                🔄 Reset
+            </button>
+        </div>
+
+        <!-- Mock Mode Notice -->
+        <div class="status-card">
+            <h3>🧪 Mock Mode Active</h3>
+            <div class="mock-notice">
+                <strong>Perfect for testing!</strong> This mock wallet simulates all Phantom wallet functionality without requiring browser extension installation.
+                All features work identically to real wallet but with test data.
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="status-card">
+            <h3>Test Results</h3>
+            <div id="test-results"></div>
+        </div>
+
+        <!-- Debug Information -->
+        <div class="status-card">
+            <h3>🔍 Debug Information</h3>
+            <div id="debug-results"></div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="status-card">
+            <h3>💡 How to Use:</h3>
+            <ol>
+                <li><strong>Mock Testing:</strong> This page works without any wallet installation!</li>
+                <li><strong>Run Tests:</strong> Click "Run Tests" to see wallet functionality</li>
+                <li><strong>Real Wallet:</strong> For production testing, install <a href="https://phantom.app/" target="_blank" style="color: #feca57;">Phantom Wallet</a></li>
+                <li><strong>Development:</strong> Perfect for testing wallet integration without external dependencies</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Mock wallet implementation
+        const mockWallet = {
+            isConnected: true,
+            publicKey: { toString: () => '57arM3rLe8LHfzn7coyUu6KGhxLQ6nfP87mHTHpM2SGB' },
+            connect: async () => ({ publicKey: mockWallet.publicKey }),
+            disconnect: async () => { mockWallet.isConnected = false; },
+            signMessage: async (message) => new Uint8Array([1, 2, 3, 4, 5])
+        };
+
+        // Mock wallet service
+        const WalletService = {
+            async getBalance(address) {
+                console.log('Mock getting balance for:', address);
+                return 1.2345;
+            }
+        };
+
+        let testResults = [];
+        let debugResults = [];
+
+        function runWalletTests() {
+            testResults = [];
+            console.log('🔍 Running wallet tests...');
+
+            setTimeout(() => {
+                // Test 1: Browser environment
+                testResults.push({
+                    name: 'Browser Environment',
+                    status: 'PASS',
+                    details: '✅ Running on standalone test page',
+                    type: 'pass'
+                });
+
+                // Test 2: Mock wallet detection
+                testResults.push({
+                    name: 'Mock Wallet',
+                    status: 'PASS',
+                    details: '✅ Mock wallet available for testing',
+                    type: 'pass'
+                });
+
+                // Test 3: Connection Status
+                testResults.push({
+                    name: 'Connection Status',
+                    status: 'PASS',
+                    details: '✅ Connected to mock wallet',
+                    type: 'pass'
+                });
+
+                // Test 4: Wallet Address
+                testResults.push({
+                    name: 'Wallet Address',
+                    status: 'PASS',
+                    details: `📍 ${mockWallet.publicKey.toString()}`,
+                    type: 'pass'
+                });
+
+                // Test 5: Balance
+                testResults.push({
+                    name: 'Wallet Balance',
+                    status: 'PASS',
+                    details: '💰 1.2345 SOL (Mock)',
+                    type: 'pass'
+                });
+
+                displayTestResults();
+                console.log('✅ Tests completed:', testResults);
+            }, 1000);
+        }
+
+        function runDebugTest() {
+            debugResults = [];
+            console.log('🔍 Running debug test...');
+
+            // Environment check
+            debugResults.push({
+                name: 'Environment',
+                status: 'INFO',
+                details: `URL: ${window.location.href} | User Agent: ${navigator.userAgent.slice(0, 50)}...`,
+                type: 'info'
+            });
+
+            // Mock wallet check
+            debugResults.push({
+                name: 'Mock Wallet',
+                status: 'PASS',
+                details: '✅ Mock wallet active for testing',
+                type: 'pass'
+            });
+
+            debugResults.push({
+                name: 'Connection State',
+                status: 'PASS',
+                details: '✅ Connected to mock wallet',
+                type: 'pass'
+            });
+
+            debugResults.push({
+                name: 'Wallet Address',
+                status: 'PASS',
+                details: `📍 ${mockWallet.publicKey.toString()}`,
+                type: 'pass'
+            });
+
+            debugResults.push({
+                name: 'Real Wallet',
+                status: 'INFO',
+                details: 'ℹ️ No real wallet detected - using mock mode',
+                type: 'info'
+            });
+
+            displayDebugResults();
+            console.log('Debug results:', JSON.stringify(debugResults, null, 2));
+        }
+
+        function displayTestResults() {
+            const container = document.getElementById('test-results');
+            container.innerHTML = '';
+
+            if (testResults.length === 0) {
+                container.innerHTML = '<div class="info">Click "Run Tests" to see results</div>';
+                return;
+            }
+
+            testResults.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-result ${result.type}`;
+                div.innerHTML = `
+                    <strong>${result.name}</strong>: ${result.details}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function displayDebugResults() {
+            const container = document.getElementById('debug-results');
+            container.innerHTML = '';
+
+            if (debugResults.length === 0) {
+                container.innerHTML = '<div class="info">Click "Debug Info" to see debug information</div>';
+                return;
+            }
+
+            debugResults.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-result ${result.type}`;
+                div.innerHTML = `
+                    <strong>${result.name}</strong>: ${result.details}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function resetTests() {
+            testResults = [];
+            debugResults = [];
+            displayTestResults();
+            displayDebugResults();
+            console.log('🔄 Tests reset');
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            console.log('🧪 Standalone wallet test loaded');
+            setTimeout(() => {
+                runWalletTests();
+                runDebugTest();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

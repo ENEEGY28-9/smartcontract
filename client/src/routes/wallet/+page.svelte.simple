@@ -1,0 +1,1105 @@
+<script lang="ts">
+    import { onMount } from 'svelte';
+    import { ethers } from 'ethers';
+    import { Keypair } from '@solana/web3.js';
+    import { Buffer } from 'buffer';
+    import { pocketbaseService, type WalletData } from '$lib/services/pocketbaseService';
+    
+    // Polyfill Buffer for browser environment BEFORE importing bip39
+    if (typeof window !== 'undefined') {
+        (window as any).Buffer = Buffer;
+        (globalThis as any).Buffer = Buffer;
+    }
+    
+    // Import bip39 dynamically after Buffer is available
+    let bip39: any = null;
+    if (typeof window !== 'undefined') {
+        import('bip39').then(module => {
+            bip39 = module;
+            console.log('✅ bip39 loaded with Buffer support');
+        });
+    }
+
+    // Wallet data
+    interface GeneratedWallet {
+        mnemonic: string;
+        address: string;
+        privateKey: string;
+        publicKey: string;
+        network: string;
+    }
+
+    let isAuthenticated = false;
+    let currentUser: any = null;
+    let userWallets: WalletData[] = [];
+    let isLoadingPage = true;
+    
+    // Modal states
+    let showCreateModal = false;
+    let showWalletInfoModal = false;
+    let isCreating = false;
+    let createError = '';
+    
+    // Generated wallets
+    let generatedWallets: Record<string, GeneratedWallet> = {};
+    let hasSeenWalletInfo = false;
+    
+    // Copy states
+    let copiedStates: Record<string, boolean> = {};
+
+    onMount(async () => {
+        try {
+            console.log('🏦 Wallet page mounted');
+            await checkAuthState();
+            
+            // Listen for auth changes
+            if (typeof window !== 'undefined') {
+                window.addEventListener('pocketbase-auth-success', checkAuthState);
+                window.addEventListener('pocketbase-auth-logout', checkAuthState);
+            }
+        } catch (error) {
+            console.error('❌ Error in onMount:', error);
+        } finally {
+            isLoadingPage = false;
+        }
+    });
+
+    async function checkAuthState() {
+        try {
+            isAuthenticated = pocketbaseService.isAuthenticated();
+            currentUser = pocketbaseService.getCurrentUser();
+            
+            if (isAuthenticated && currentUser) {
+                await loadUserWallets();
+            }
+        } catch (error) {
+            console.error('❌ Error checking auth state:', error);
+            isAuthenticated = false;
+            currentUser = null;
+        }
+    }
+
+    async function loadUserWallets() {
+        try {
+            userWallets = await pocketbaseService.getUserWallets();
+            console.log('📦 Loaded wallets:', userWallets.length);
+        } catch (error) {
+            console.error('❌ Error loading wallets:', error);
+            // Set empty array to prevent undefined errors
+            userWallets = [];
+        }
+    }
+
+    function openCreateModal() {
+        showCreateModal = true;
+        createError = '';
+    }
+
+    function closeCreateModal() {
+        showCreateModal = false;
+    }
+
+    function closeWalletInfoModal() {
+        showWalletInfoModal = false;
+        hasSeenWalletInfo = true;
+        generatedWallets = {}; // Clear sensitive data
+    }
+
+    async function createWallets() {
+        if (!isAuthenticated || !currentUser) {
+            createError = 'Vui lòng đăng nhập để tạo ví';
+            return;
+        }
+
+        if (!bip39) {
+            createError = 'Đang tải thư viện ví... Vui lòng thử lại sau giây lát';
+            // Wait for bip39 to load
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (!bip39) {
+                createError = 'Không thể tải thư viện ví. Vui lòng refresh trang và thử lại.';
+                return;
+            }
+        }
+
+        isCreating = true;
+        createError = '';
+
+        try {
+            console.log('🔄 Creating wallets for user:', currentUser.id);
+
+            // Generate mnemonic
+            const mnemonic = bip39.generateMnemonic();
+            console.log('🔑 Generated mnemonic');
+
+            const wallets: Record<string, GeneratedWallet> = {};
+
+            // Generate Ethereum wallet
+            const ethWallet = ethers.Wallet.fromPhrase(mnemonic);
+            wallets.ethereum = {
+                mnemonic,
+                address: ethWallet.address,
+                privateKey: ethWallet.privateKey,
+                publicKey: ethWallet.publicKey,
+                network: 'ethereum'
+            };
+            console.log('✅ Ethereum wallet created');
+
+            // Generate Solana wallet
+            const seed = await bip39.mnemonicToSeed(mnemonic);
+            const solanaKeypair = Keypair.fromSeed(seed.slice(0, 32));
+            
+            // Convert Uint8Array to hex string without Buffer
+            const secretKeyHex = Array.from(solanaKeypair.secretKey)
+                .map(byte => byte.toString(16).padStart(2, '0'))
+                .join('');
+            
+            wallets.solana = {
+                mnemonic,
+                address: solanaKeypair.publicKey.toBase58(),
+                privateKey: secretKeyHex,
+                publicKey: solanaKeypair.publicKey.toBase58(),
+                network: 'solana'
+            };
+            console.log('✅ Solana wallet created');
+
+            // Generate SUI wallet (simplified demo)
+            const suiWallet = ethers.Wallet.fromPhrase(mnemonic);
+            wallets.sui = {
+                mnemonic,
+                address: 'sui' + suiWallet.address.slice(2, 42),
+                privateKey: suiWallet.privateKey,
+                publicKey: suiWallet.publicKey,
+                network: 'sui'
+            };
+            console.log('✅ SUI wallet created');
+
+            // Save all wallets to database
+            for (const [network, wallet] of Object.entries(wallets)) {
+                await saveWalletToDatabase({
+                    address: wallet.address,
+                    private_key: wallet.privateKey,
+                    mnemonic: wallet.mnemonic,
+                    wallet_type: 'generated',
+                    network: wallet.network
+                });
+            }
+
+            console.log('✅ All wallets saved to database');
+
+            // Show wallet info modal
+            generatedWallets = wallets;
+            showCreateModal = false;
+            showWalletInfoModal = true;
+
+            // Reload wallets list
+            await loadUserWallets();
+
+        } catch (error) {
+            console.error('❌ Error creating wallets:', error);
+            createError = 'Lỗi khi tạo ví. Vui lòng thử lại.';
+        } finally {
+            isCreating = false;
+        }
+    }
+
+    async function saveWalletToDatabase(walletData: any) {
+        try {
+            // Check if wallet already exists
+            const existing = await pocketbaseService.getWalletByAddress(
+                walletData.address,
+                walletData.network
+            );
+
+            if (existing) {
+                console.log('Wallet already exists:', walletData.network);
+                return existing;
+            }
+
+            // Create new wallet
+            const saved = await pocketbaseService.createWallet(walletData);
+            console.log('💾 Saved wallet:', saved.network);
+            return saved;
+        } catch (error) {
+            console.error('❌ Error saving wallet:', error);
+            throw error;
+        }
+    }
+
+    async function copyToClipboard(text: string, key: string) {
+        try {
+            await navigator.clipboard.writeText(text);
+            copiedStates[key] = true;
+            setTimeout(() => {
+                copiedStates[key] = false;
+            }, 2000);
+        } catch (error) {
+            console.error('Failed to copy:', error);
+        }
+    }
+
+    function formatAddress(address: string): string {
+        if (address.length <= 12) return address;
+        return `${address.slice(0, 6)}...${address.slice(-4)}`;
+    }
+</script>
+
+<div class="wallet-page">
+    {#if isLoadingPage}
+        <!-- Loading -->
+        <div class="loading-container">
+            <div class="spinner-large"></div>
+            <p>Đang tải...</p>
+        </div>
+    {:else if !isAuthenticated}
+        <!-- Not logged in -->
+        <div class="not-logged-in">
+            <div class="icon">🔒</div>
+            <h2>Vui lòng đăng nhập</h2>
+            <p>Bạn cần đăng nhập để quản lý ví của mình</p>
+        </div>
+    {:else}
+        <!-- Logged in -->
+        <div class="wallet-container">
+            <div class="wallet-header">
+                <h1>Quản lý Ví</h1>
+                <p>Tạo và quản lý ví của bạn một cách an toàn</p>
+            </div>
+
+            <!-- Wallets list -->
+            {#if userWallets.length === 0}
+                <div class="no-wallets">
+                    <div class="icon">👛</div>
+                    <h2>Chưa có ví</h2>
+                    <p>Bạn chưa có ví nào. Tạo ví mới để bắt đầu!</p>
+                    <button class="create-wallet-btn" on:click={openCreateModal}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Tạo ví mới
+                    </button>
+                </div>
+            {:else}
+                <div class="wallets-section">
+                    <div class="section-header">
+                        <h2>Ví của bạn ({userWallets.length})</h2>
+                        <button class="create-wallet-btn-small" on:click={openCreateModal}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Tạo ví mới
+                        </button>
+                    </div>
+
+                    <div class="wallets-grid">
+                        {#each userWallets as wallet}
+                            <div class="wallet-card">
+                                <div class="wallet-card-header">
+                                    <div class="wallet-network">
+                                        {#if wallet.network === 'ethereum'}
+                                            <span class="network-icon">⟠</span>
+                                            <span>Ethereum</span>
+                                        {:else if wallet.network === 'solana'}
+                                            <span class="network-icon">◎</span>
+                                            <span>Solana</span>
+                                        {:else if wallet.network === 'sui'}
+                                            <span class="network-icon">🔵</span>
+                                            <span>SUI</span>
+                                        {/if}
+                                    </div>
+                                    <div class="wallet-type">{wallet.wallet_type}</div>
+                                </div>
+                                <div class="wallet-address">
+                                    <span class="address-label">Địa chỉ:</span>
+                                    <span class="address" title={wallet.address}>
+                                        {formatAddress(wallet.address)}
+                                    </span>
+                                    <button 
+                                        class="copy-btn" 
+                                        on:click={() => copyToClipboard(wallet.address, `address-${wallet.id}`)}
+                                    >
+                                        {#if copiedStates[`address-${wallet.id}`]}
+                                            ✓
+                                        {:else}
+                                            📋
+                                        {/if}
+                                    </button>
+                                </div>
+                                {#if wallet.balance !== undefined}
+                                    <div class="wallet-balance">
+                                        <span class="balance-label">Số dư:</span>
+                                        <span class="balance">{wallet.balance || 0}</span>
+                                    </div>
+                                {/if}
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+            {/if}
+        </div>
+    {/if}
+</div>
+
+<!-- Create Wallet Confirmation Modal -->
+{#if showCreateModal}
+    <div class="modal-overlay" on:click={closeCreateModal}>
+        <div class="modal" on:click={(e) => e.stopPropagation()}>
+            <button class="modal-close" on:click={closeCreateModal}>✕</button>
+            
+            <div class="modal-header">
+                <h2>Tạo ví mới</h2>
+                <p>Bạn sẽ tạo 3 ví cho Ethereum, Solana và Bitcoin</p>
+            </div>
+
+            <div class="modal-body">
+                <div class="warning-box">
+                    <div class="warning-icon">⚠️</div>
+                    <div class="warning-content">
+                        <h3>Lưu ý quan trọng</h3>
+                        <ul>
+                            <li>Mnemonic và Private Key chỉ hiển thị <strong>MỘT LẦN</strong></li>
+                            <li>Hãy sao chép và lưu trữ chúng ở nơi an toàn</li>
+                            <li>Không chia sẻ thông tin này với bất kỳ ai</li>
+                            <li>Nếu mất thông tin này, bạn sẽ mất quyền truy cập vào ví</li>
+                        </ul>
+                    </div>
+                </div>
+
+                {#if createError}
+                    <div class="error-message">
+                        {createError}
+                    </div>
+                {/if}
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel" on:click={closeCreateModal} disabled={isCreating}>
+                    Hủy
+                </button>
+                <button class="btn-create" on:click={createWallets} disabled={isCreating}>
+                    {#if isCreating}
+                        <div class="spinner"></div>
+                        Đang tạo...
+                    {:else}
+                        Tạo ví
+                    {/if}
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
+
+<!-- Wallet Info Modal (One-time display) -->
+{#if showWalletInfoModal && !hasSeenWalletInfo}
+    <div class="modal-overlay wallet-info-overlay">
+        <div class="modal wallet-info-modal" on:click={(e) => e.stopPropagation()}>
+            <div class="modal-header">
+                <h2>🎉 Ví đã được tạo thành công!</h2>
+                <p class="warning-text">⚠️ Thông tin này chỉ hiển thị MỘT LẦN. Vui lòng sao chép và lưu trữ an toàn!</p>
+            </div>
+
+            <div class="modal-body wallet-info-body">
+                <!-- Mnemonic (shared across all wallets) -->
+                <div class="info-section mnemonic-section">
+                    <h3>🔑 Mnemonic Phrase (Dùng chung cho tất cả ví)</h3>
+                    <div class="info-box">
+                        <div class="info-value mnemonic">{generatedWallets.ethereum?.mnemonic || ''}</div>
+                        <button 
+                            class="copy-btn-large" 
+                            on:click={() => copyToClipboard(generatedWallets.ethereum?.mnemonic || '', 'mnemonic')}
+                        >
+                            {#if copiedStates['mnemonic']}
+                                ✓ Đã sao chép
+                            {:else}
+                                📋 Sao chép
+                            {/if}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Wallets info -->
+                {#each Object.entries(generatedWallets) as [network, wallet]}
+                    <div class="info-section">
+                        <h3>
+                            {#if network === 'ethereum'}
+                                ⟠ Ethereum
+                            {:else if network === 'solana'}
+                                ◎ Solana
+                            {:else if network === 'sui'}
+                                🔵 SUI
+                            {/if}
+                        </h3>
+
+                        <div class="info-item">
+                            <label>Địa chỉ:</label>
+                            <div class="info-box">
+                                <div class="info-value">{wallet.address}</div>
+                                <button 
+                                    class="copy-btn-small" 
+                                    on:click={() => copyToClipboard(wallet.address, `${network}-address`)}
+                                >
+                                    {#if copiedStates[`${network}-address`]}
+                                        ✓
+                                    {:else}
+                                        📋
+                                    {/if}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <label>Private Key:</label>
+                            <div class="info-box">
+                                <div class="info-value private-key">{wallet.privateKey}</div>
+                                <button 
+                                    class="copy-btn-small" 
+                                    on:click={() => copyToClipboard(wallet.privateKey, `${network}-private`)}
+                                >
+                                    {#if copiedStates[`${network}-private`]}
+                                        ✓
+                                    {:else}
+                                        📋
+                                    {/if}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {/each}
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-close-info" on:click={closeWalletInfoModal}>
+                    ✓ Tôi đã lưu thông tin an toàn
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
+
+<style>
+    .wallet-page {
+        min-height: 100vh;
+        background: #000000;
+        color: #ffffff;
+        padding: 2rem;
+    }
+
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        text-align: center;
+    }
+
+    .loading-container p {
+        margin-top: 1rem;
+        font-size: 1rem;
+        color: #a0a0a0;
+    }
+
+    .spinner-large {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-top: 4px solid #6366f1;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .not-logged-in {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        text-align: center;
+    }
+
+    .not-logged-in .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .not-logged-in h2 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: #ffffff;
+    }
+
+    .not-logged-in p {
+        font-size: 1rem;
+        color: #a0a0a0;
+    }
+
+    .wallet-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .wallet-header {
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .wallet-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, #b0b0b0 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .wallet-header p {
+        font-size: 1rem;
+        color: #a0a0a0;
+    }
+
+    .no-wallets {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 50vh;
+        text-align: center;
+    }
+
+    .no-wallets .icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .no-wallets h2 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .no-wallets p {
+        font-size: 1rem;
+        color: #a0a0a0;
+        margin-bottom: 2rem;
+    }
+
+    .create-wallet-btn {
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border: none;
+        border-radius: 12px;
+        color: #ffffff;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+    }
+
+    .create-wallet-btn:hover {
+        background: linear-gradient(135deg, #5855eb, #7c3aed);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .wallets-section {
+        margin-top: 2rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .create-wallet-btn-small {
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #ffffff;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .create-wallet-btn-small:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .wallets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .wallet-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .wallet-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .wallet-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .wallet-network {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .network-icon {
+        font-size: 1.5rem;
+    }
+
+    .wallet-type {
+        padding: 0.25rem 0.75rem;
+        background: rgba(99, 102, 241, 0.2);
+        border-radius: 6px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: #a0b0ff;
+    }
+
+    .wallet-address {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .address-label {
+        font-size: 0.875rem;
+        color: #a0a0a0;
+    }
+
+    .address {
+        flex: 1;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.875rem;
+        color: #ffffff;
+    }
+
+    .copy-btn {
+        padding: 0.25rem 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        color: #ffffff;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+    }
+
+    .copy-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .wallet-balance {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+    }
+
+    .balance-label {
+        font-size: 0.875rem;
+        color: #a0a0a0;
+    }
+
+    .balance {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #4ade80;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(12px);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .modal {
+        background: rgba(0, 0, 0, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        max-width: 500px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .wallet-info-modal {
+        max-width: 700px;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #a0a0a0;
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+    }
+
+    .modal-header {
+        padding: 2rem 1.5rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        text-align: center;
+    }
+
+    .modal-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-header p {
+        font-size: 0.875rem;
+        color: #a0a0a0;
+    }
+
+    .warning-text {
+        color: #ffc107 !important;
+        font-weight: 600;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .wallet-info-body {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .warning-box {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .warning-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .warning-content h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #ffc107;
+    }
+
+    .warning-content ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .warning-content li {
+        font-size: 0.875rem;
+        color: #ffffff;
+        margin-bottom: 0.25rem;
+        padding-left: 1rem;
+        position: relative;
+    }
+
+    .warning-content li::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        color: #ffc107;
+    }
+
+    .info-section {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+
+    .mnemonic-section {
+        background: rgba(255, 193, 7, 0.05);
+        border-color: rgba(255, 193, 7, 0.2);
+    }
+
+    .info-section h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .info-item {
+        margin-bottom: 1rem;
+    }
+
+    .info-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-item label {
+        display: block;
+        font-size: 0.875rem;
+        color: #a0a0a0;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-box {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+    }
+
+    .info-value {
+        flex: 1;
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.875rem;
+        color: #ffffff;
+        word-break: break-all;
+    }
+
+    .mnemonic {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .private-key {
+        font-size: 0.75rem;
+    }
+
+    .copy-btn-large {
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: #ffffff;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+
+    .copy-btn-large:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .copy-btn-small {
+        padding: 0.35rem 0.7rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        color: #ffffff;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+
+    .copy-btn-small:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+
+    .btn-cancel {
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #ffffff;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-cancel:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-create {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border: none;
+        border-radius: 8px;
+        color: #ffffff;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-create:hover:not(:disabled) {
+        background: linear-gradient(135deg, #5855eb, #7c3aed);
+    }
+
+    .btn-create:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .btn-close-info {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #4ade80, #22c55e);
+        border: none;
+        border-radius: 8px;
+        color: #ffffff;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-close-info:hover {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        transform: translateY(-2px);
+    }
+
+    .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top: 2px solid #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .error-message {
+        padding: 1rem;
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 8px;
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .wallet-page {
+            padding: 1rem;
+        }
+
+        .wallet-header h1 {
+            font-size: 2rem;
+        }
+
+        .wallets-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal {
+            max-width: 100%;
+        }
+
+        .wallet-info-modal {
+            max-width: 100%;
+        }
+    }
+</style>

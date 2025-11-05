@@ -1,0 +1,153 @@
+# Artillery Load Testing Configuration for GameV1
+# Tests production-like load with 1000+ concurrent users
+
+config:
+  target: 'http://localhost:8080'
+  phases:
+    # Phase 1: Warmup (100 users over 2 minutes)
+    - duration: 120
+      arrivalRate: 1
+      name: "Warmup Phase"
+
+    # Phase 2: Ramp up to 500 users (over 3 minutes)
+    - duration: 180
+      arrivalRate: 3
+      rampTo: 5
+      name: "Ramp up to 500 users"
+
+    # Phase 3: Peak load (1000+ users for 5 minutes)
+    - duration: 300
+      arrivalRate: 8
+      maxVusers: 1200
+      name: "Peak Load - 1000+ users"
+
+    # Phase 4: Ramp down (back to 100 users over 2 minutes)
+    - duration: 120
+      arrivalRate: 2
+      rampTo: 1
+      name: "Ramp down"
+
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+# Custom reporting configuration
+reporter:
+  - type: 'html'
+    filename: 'load-test-report.html'
+  - type: 'json'
+    filename: 'load-test-results.json'
+
+# Test scenarios
+scenarios:
+  # Authentication flow
+  - name: "User Registration and Login"
+    weight: 20
+    flow:
+      # Register new user
+      - post:
+          url: "/auth/register"
+          json:
+            username: "user_{{ $randomInt(1, 10000) }}"
+            email: "user{{ $randomInt(1, 10000) }}@test.com"
+            password: "password123"
+          expect:
+            - statusCode: [200, 201]
+
+      # Login with created user
+      - post:
+          url: "/auth/login"
+          json:
+            username: "user_{{ $randomInt(1, 10000) }}@test.com"
+            password: "password123"
+          expect:
+            - statusCode: [200, 201]
+          capture:
+            json: "$.access_token"
+            as: "auth_token"
+
+  # Room management flow
+  - name: "Room Creation and Management"
+    weight: 30
+    flow:
+      # Create game room
+      - post:
+          url: "/api/rooms"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          json:
+            name: "Test Room {{ $randomInt(1, 1000) }}"
+            gameMode: "classic"
+            maxPlayers: 8
+            isPrivate: false
+          expect:
+            - statusCode: [200, 201]
+          capture:
+            json: "$.id"
+            as: "room_id"
+
+      # List rooms
+      - get:
+          url: "/api/rooms"
+          expect:
+            - statusCode: [200]
+
+      # Join room
+      - post:
+          url: "/api/rooms/{{ room_id }}/join"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: [200, 201]
+
+  # Game state flow (real-time gaming simulation)
+  - name: "Game State Updates"
+    weight: 40
+    flow:
+      # Send player input (simulate game actions)
+      - post:
+          url: "/api/game/input"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          json:
+            roomId: "room_{{ $randomInt(1, 100) }}"
+            inputType: "move"
+            data:
+              x: "{{ $randomInt(-100, 100) }}"
+              y: "{{ $randomInt(-100, 100) }}"
+              action: "move"
+          expect:
+            - statusCode: [200, 201]
+
+      # Get game state
+      - get:
+          url: "/api/game/state?roomId=room_{{ $randomInt(1, 100) }}"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          expect:
+            - statusCode: [200]
+
+      # Send chat message (social interaction)
+      - post:
+          url: "/api/chat"
+          headers:
+            Authorization: "Bearer {{ auth_token }}"
+          json:
+            message: "Hello from load test user {{ $randomInt(1, 1000) }}!"
+            roomId: "room_{{ $randomInt(1, 100) }}"
+          expect:
+            - statusCode: [200, 201]
+
+  # Health check flow
+  - name: "Health Checks"
+    weight: 10
+    flow:
+      - get:
+          url: "/healthz"
+          expect:
+            - statusCode: [200]
+
+      - get:
+          url: "/metrics"
+          expect:
+            - statusCode: [200]

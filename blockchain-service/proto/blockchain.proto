@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package blockchain;
+
+// Service for blockchain operations
+service BlockchainService {
+    // Mint token when eating energy particle
+    rpc MintTokenOnEatParticle(MintTokenRequest) returns (TransactionResponse);
+
+    // Transfer tokens between players
+    rpc TransferTokens(TransferRequest) returns (TransactionResponse);
+
+    // Get player token balance
+    rpc GetPlayerBalance(BalanceRequest) returns (BalanceResponse);
+
+    // Emit real-time token update
+    rpc EmitTokenUpdate(TokenUpdateRequest) returns (Empty);
+}
+
+// Request/Response messages
+message MintTokenRequest {
+    string player_wallet = 1;
+    int32 particle_x = 2;
+    int32 particle_z = 3;
+}
+
+message TransferRequest {
+    string from_wallet = 1;
+    string to_wallet = 2;
+    uint64 amount = 3;
+}
+
+message BalanceRequest {
+    string player_wallet = 1;
+}
+
+message TokenUpdateRequest {
+    string user_id = 1;
+    int64 amount_minted = 2;
+}
+
+message TransactionResponse {
+    bool success = 1;
+    string transaction_signature = 2;
+    string error_message = 3;
+}
+
+message BalanceResponse {
+    uint64 balance = 1;
+    string wallet_address = 2;
+}
+
+message Empty {}
+
+
+

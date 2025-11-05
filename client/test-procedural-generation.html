@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Procedural Generation</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: white;
+            padding: 20px;
+        }
+        .result {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { border-left: 4px solid #4ade80; }
+        .error { border-left: 4px solid #f87171; }
+        button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Procedural Generation Test</h1>
+    <button onclick="testImport()">Test Import</button>
+    <button onclick="testInstantiation()">Test Instantiation</button>
+    <button onclick="testGeneration()">Test Generation</button>
+    <div id="results"></div>
+
+    <script type="module">
+        let ProceduralGenerator = null;
+        let generator = null;
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<pre>${new Date().toLocaleTimeString()}: ${message}</pre>`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        async function testImport() {
+            log('🔄 Testing import...');
+            try {
+                const module = await import('./src/lib/components/procedural-generation.js');
+                log(`✅ Import successful: ${JSON.stringify(Object.keys(module))}`, 'success');
+
+                if (module.ProceduralGenerator) {
+                    ProceduralGenerator = module.ProceduralGenerator;
+                    log('✅ ProceduralGenerator class found', 'success');
+                } else {
+                    log('❌ ProceduralGenerator class not found', 'error');
+                }
+            } catch (error) {
+                log(`❌ Import failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testInstantiation() {
+            log('🔄 Testing instantiation...');
+            if (!ProceduralGenerator) {
+                log('❌ Cannot test instantiation - class not imported', 'error');
+                return;
+            }
+
+            try {
+                generator = new ProceduralGenerator();
+                log('✅ ProceduralGenerator instantiated successfully', 'success');
+                log(`Generator seed: ${generator.seed}`, 'success');
+            } catch (error) {
+                log(`❌ Instantiation failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGeneration() {
+            log('🔄 Testing generation...');
+            if (!generator) {
+                log('❌ Cannot test generation - generator not instantiated', 'error');
+                return;
+            }
+
+            try {
+                const segments = generator.generateSegmentsAhead(0, 3);
+                log(`✅ Generated ${segments.length} segments`, 'success');
+
+                segments.forEach((segment, index) => {
+                    log(`Segment ${index}: ${segment.type} at z=${segment.z}, obstacles: ${segment.obstacles.length}`, 'success');
+                });
+            } catch (error) {
+                log(`❌ Generation failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run tests
+        setTimeout(async () => {
+            console.log('🚀 Starting procedural generation tests...');
+            await testImport();
+            setTimeout(async () => {
+                await testInstantiation();
+                setTimeout(async () => {
+                    await testGeneration();
+                }, 1000);
+            }, 1000);
+        }, 1000);
+    </script>
+</body>
+</html>

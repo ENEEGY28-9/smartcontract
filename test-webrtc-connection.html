@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.connected { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.connecting { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .status.disconnected { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .ice-servers {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebRTC Connection Test với TURN Servers</h1>
+
+    <div class="test-container">
+        <h2>ICE Servers Configuration</h2>
+        <div class="ice-servers" id="ice-servers">
+            Đang tải cấu hình ICE servers...
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>WebRTC Connection Status</h2>
+        <div id="connection-status" class="status disconnected">
+            Disconnected
+        </div>
+        <div>
+            <button onclick="testWebRTCConnection()" id="test-btn">Test WebRTC Connection</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Connection Log</h2>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const logContainer = document.getElementById('log');
+        const iceServersContainer = document.getElementById('ice-servers');
+
+        // Cấu hình ICE servers giống như trong ứng dụng
+        const iceServers = [
+            // STUN servers for basic NAT traversal
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            // Public TURN servers as fallback (replace with your own for production)
+            {
+                urls: 'turn:openrelay.metered.ca:80',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            },
+            {
+                urls: 'turn:openrelay.metered.ca:443',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            },
+            {
+                urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            }
+        ];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logEntry.className = `log-entry ${type}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function displayIceServers() {
+            const serversHtml = iceServers.map((server, index) => {
+                if (server.username) {
+                    return `${index + 1}. ${server.urls} (Username: ${server.username})`;
+                } else {
+                    return `${index + 1}. ${server.urls}`;
+                }
+            }).join('<br>');
+            iceServersContainer.innerHTML = serversHtml;
+        }
+
+        async function testWebRTCConnection() {
+            const testButton = document.getElementById('test-btn');
+            const statusDiv = document.getElementById('connection-status');
+
+            testButton.disabled = true;
+            statusDiv.className = 'status connecting';
+            statusDiv.textContent = 'Testing WebRTC Connection...';
+
+            log('🔄 Starting WebRTC connection test...');
+            log(`📋 Using ${iceServers.length} ICE servers`);
+
+            try {
+                // Create RTCPeerConnection
+                log('🔧 Creating RTCPeerConnection...');
+                const pc = new RTCPeerConnection({ iceServers });
+
+                // Set up event listeners
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        log(`🧊 ICE candidate found: ${event.candidate.type} - ${event.candidate.protocol} - ${event.candidate.address}`);
+                    }
+                };
+
+                pc.onicegatheringstatechange = () => {
+                    log(`📡 ICE gathering state: ${pc.iceGatheringState}`);
+                };
+
+                pc.onconnectionstatechange = () => {
+                    log(`🔗 Connection state: ${pc.connectionState}`);
+                    updateConnectionStatus(pc.connectionState);
+
+                    if (pc.connectionState === 'connected') {
+                        log('✅ WebRTC connection successful!');
+                        closeConnection(pc);
+                    } else if (pc.connectionState === 'failed') {
+                        log('❌ WebRTC connection failed - will fallback to WebSocket');
+                        closeConnection(pc);
+                    }
+                };
+
+                pc.oniceconnectionstatechange = () => {
+                    log(`🧊 ICE connection state: ${pc.iceConnectionState}`);
+                };
+
+                // Create data channel
+                log('📺 Creating data channel...');
+                const dc = pc.createDataChannel('test', { ordered: true });
+
+                dc.onopen = () => {
+                    log('📺 Data channel opened successfully');
+                };
+
+                dc.onclose = () => {
+                    log('📺 Data channel closed');
+                };
+
+                // Create offer
+                log('📤 Creating SDP offer...');
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+
+                log('✅ SDP offer created successfully');
+                log(`📊 SDP type: ${offer.type}`);
+                log(`📏 SDP size: ${offer.sdp.length} characters`);
+
+                // Set a timeout for the test
+                setTimeout(() => {
+                    if (pc.connectionState === 'connecting' || pc.connectionState === 'new') {
+                        log('⏰ Test timeout - WebRTC may be slow or blocked');
+                        log('💡 This suggests TURN servers are needed');
+                        closeConnection(pc);
+                    }
+                }, 15000); // 15 second timeout
+
+            } catch (error) {
+                log(`❌ Error during WebRTC test: ${error.message}`, 'error');
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `Error: ${error.message}`;
+                testButton.disabled = false;
+            }
+        }
+
+        function updateConnectionStatus(state) {
+            const statusDiv = document.getElementById('connection-status');
+            const testButton = document.getElementById('test-btn');
+
+            switch (state) {
+                case 'connected':
+                    statusDiv.className = 'status connected';
+                    statusDiv.textContent = 'Connected via WebRTC';
+                    testButton.disabled = false;
+                    break;
+                case 'connecting':
+                    statusDiv.className = 'status connecting';
+                    statusDiv.textContent = 'Connecting via WebRTC...';
+                    break;
+                case 'failed':
+                    statusDiv.className = 'status disconnected';
+                    statusDiv.textContent = 'WebRTC Failed - Fallback to WebSocket';
+                    testButton.disabled = false;
+                    break;
+                default:
+                    statusDiv.className = 'status disconnected';
+                    statusDiv.textContent = state;
+            }
+        }
+
+        function closeConnection(pc) {
+            if (pc) {
+                pc.close();
+            }
+            const testButton = document.getElementById('test-btn');
+            if (testButton) {
+                testButton.disabled = false;
+            }
+        }
+
+        function clearLog() {
+            logContainer.innerHTML = '';
+        }
+
+        // Initialize
+        displayIceServers();
+        log('🚀 WebRTC connection test page loaded');
+        log('💡 Click "Test WebRTC Connection" to start testing');
+    </script>
+</body>
+</html>

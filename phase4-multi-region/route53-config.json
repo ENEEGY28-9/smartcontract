@@ -1,0 +1,29 @@
+{
+    "Comment": "GameV1 Global DNS Configuration",
+    "Changes": [
+        {
+            "Action": "CREATE",
+            "ResourceRecordSet": {
+                "Name": "api.gamev1.com",
+                "Type": "A",
+                "AliasTarget": {
+                    "DNSName": "d1234567890.cloudfront.net",
+                    "HostedZoneId": "Z2FDTNDATAQYW2",
+                    "EvaluateTargetHealth": false
+                }
+            }
+        },
+        {
+            "Action": "CREATE",
+            "ResourceRecordSet": {
+                "Name": "gamev1.com",
+                "Type": "A",
+                "AliasTarget": {
+                    "DNSName": "d1234567890.cloudfront.net",
+                    "HostedZoneId": "Z2FDTNDATAQYW2",
+                    "EvaluateTargetHealth": false
+                }
+            }
+        }
+    ]
+}

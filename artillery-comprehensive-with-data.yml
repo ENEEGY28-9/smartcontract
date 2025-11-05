@@ -1,0 +1,97 @@
+config:
+  target: 'http://localhost:3001'
+  phases:
+    - duration: 120  # 2 minutes
+      arrivalRate: 5
+      name: 'Warm up phase'
+    - duration: 240  # 4 minutes
+      arrivalRate: 20
+      name: 'Ramp up load'
+    - duration: 300  # 5 minutes
+      arrivalRate: 50
+      name: 'Peak load'
+    - duration: 120  # 2 minutes
+      arrivalRate: 10
+      name: 'Ramp down'
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: 'Health check'
+    weight: 10
+    flow:
+      - get:
+          url: '/api/health'
+
+  - name: 'Get users list'
+    weight: 15
+    flow:
+      - get:
+          url: '/api/users?limit=20&offset={{ $randomInt(0, 980) }}'
+
+  - name: 'Get user details'
+    weight: 10
+    flow:
+      - get:
+          url: '/api/users/user_{{ $randomInt(1, 1000) }}'
+
+  - name: 'Get rooms list'
+    weight: 15
+    flow:
+      - get:
+          url: '/api/rooms?limit=20&status={{ $randomInt(1, 3) === 1 ? "waiting" : "in_game" }}'
+
+  - name: 'Get room details'
+    weight: 10
+    flow:
+      - get:
+          url: '/api/rooms/room_{{ $randomInt(1, 200) }}'
+
+  - name: 'Get game sessions'
+    weight: 10
+    flow:
+      - get:
+          url: '/api/game-sessions?limit=10&status={{ ["waiting", "active", "completed"][$randomInt(0, 2)] }}'
+
+  - name: 'Get leaderboard'
+    weight: 10
+    flow:
+      - get:
+          url: '/api/leaderboard?limit=50&metric={{ ["score", "kills", "wins", "playtime"][$randomInt(0, 3)] }}'
+
+  - name: 'Test endpoint 1'
+    weight: 5
+    flow:
+      - get:
+          url: '/api/test-endpoint-1?count={{ $randomInt(1, 100) }}'
+
+  - name: 'Test endpoint 2'
+    weight: 5
+    flow:
+      - get:
+          url: '/api/test-endpoint-2'
+
+  - name: 'Load test requests'
+    weight: 5
+    flow:
+      - get:
+          url: '/api/load-test/requests?count={{ $randomInt(10, 100) }}'
+
+  - name: 'Stress test payloads'
+    weight: 5
+    flow:
+      - get:
+          url: '/api/load-test/stress-payloads?count={{ $randomInt(1, 10) }}'
+
+  - name: 'WebSocket info'
+    weight: 5
+    flow:
+      - get:
+          url: '/api/websocket/info'
+
+  - name: 'Generic API endpoint'
+    weight: 5
+    flow:
+      - get:
+          url: '/api/endpoint-{{ $randomInt(100, 999) }}'

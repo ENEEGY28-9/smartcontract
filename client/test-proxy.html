@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Proxy Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .success { background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; }
+        .error { background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔄 PocketBase Proxy Test</h1>
+
+    <div class="test-section">
+        <h3>Test 1: Health Check</h3>
+        <button onclick="testHealth()">Test Health</button>
+        <div id="health-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Collections</h3>
+        <button onclick="testCollections()">Test Collections</button>
+        <div id="collections-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: User Creation</h3>
+        <button onclick="testUserCreation()">Test User Creation</button>
+        <div id="user-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Instructions</h3>
+        <p>1. Click each test button to verify proxy connectivity</p>
+        <p>2. Check browser console (F12) for detailed logs</p>
+        <p>3. All tests should return status 200 if proxy is working</p>
+        <p>4. If tests fail, check if PocketBase server is running on port 8090</p>
+    </div>
+
+    <script>
+        async function testHealth() {
+            const result = document.getElementById('health-result');
+            result.innerHTML = 'Testing...';
+
+            try {
+                const response = await fetch('/pb-api/api/health');
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    throw new Error(`Invalid JSON response: ${response.status} ${response.statusText}`);
+                }
+                result.innerHTML = response.ok ?
+                    `<div class="success">✅ Success: ${response.status}<br>Data: ${JSON.stringify(data)}</div>` :
+                    `<div class="error">❌ Failed: ${response.status}<br>Data: ${JSON.stringify(data)}</div>`;
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testCollections() {
+            const result = document.getElementById('collections-result');
+            result.innerHTML = 'Testing...';
+
+            try {
+                const response = await fetch('/pb-api/api/collections');
+                let data;
+                try {
+                    data = await response.json();
+                } catch (jsonError) {
+                    throw new Error(`Invalid JSON response: ${response.status} ${response.statusText}`);
+                }
+                result.innerHTML = response.ok ?
+                    `<div class="success">✅ Success: ${response.status}<br>Collections: ${data.items?.map(c => c.name).join(', ') || 'None'}</div>` :
+                    `<div class="error">❌ Failed: ${response.status}<br>Data: ${JSON.stringify(data)}</div>`;
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testUserCreation() {
+            const result = document.getElementById('user-result');
+            result.innerHTML = 'Testing...';
+
+            try {
+                const testEmail = 'proxytest' + Date.now() + '@example.com';
+                const response = await fetch('/pb-api/api/collections/users/records', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: testEmail,
+                        password: 'test123456',
+                        passwordConfirm: 'test123456',
+                        name: 'Proxy Test User'
+                    })
+                });
+
+                const data = await response.text();
+                result.innerHTML = response.ok ?
+                    `<div class="success">✅ Success: ${response.status}<br>User created: ${testEmail}</div>` :
+                    `<div class="error">❌ Failed: ${response.status}<br>Response: ${data}</div>`;
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

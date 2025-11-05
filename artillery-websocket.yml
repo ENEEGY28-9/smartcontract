@@ -1,0 +1,246 @@
+config:
+  target: 'ws://localhost:8080/ws'
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: 'Warmup'
+    - duration: 120
+      arrivalRate: 25
+      name: 'Normal Load'
+    - duration: 180
+      arrivalRate: 50
+      name: 'Peak Load'
+  ws:
+    subprotocols: ['game-protocol']
+  defaults:
+    headers:
+      Origin: 'http://localhost:3000'
+
+scenarios:
+  # Realistic Player Journey - Complete game session
+  - name: 'Complete Player Journey'
+    weight: 40
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "player_test123",
+              "token": "auth_token_test123",
+              "player_name": "PlayerTest123"
+            }
+
+      - think: 2
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "room_test",
+              "game_mode": "classic"
+            }
+
+      - think: 1
+
+      # Simulate realistic gameplay (5 minutes of play)
+      - loop:
+          count: 30
+          over:
+            - send:
+                payload: |
+                  {
+                    "type": "game_input",
+                    "input": {
+                      "movement": [50, 0, 50],
+                      "actions": ["move"],
+                      "timestamp": "2024-01-01T00:00:00Z"
+                    }
+                  }
+
+            - think: 2
+
+            - send:
+                payload: |
+                  {
+                    "type": "game_state_sync",
+                    "sequence": 1
+                  }
+
+            - think: 1
+
+      # Occasional chat during gameplay
+      - send:
+          payload: |
+            {
+              "type": "chat_message",
+              "message": "Good game!",
+              "message_type": "text"
+            }
+
+      - think: 2
+
+      # End game session
+      - send:
+          payload: |
+            {
+              "type": "leave_room",
+              "reason": "normal_disconnect"
+            }
+
+      - think: 1
+
+      - disconnect
+
+  # Chat-focused scenario
+  - name: 'Chat Intensive Session'
+    weight: 25
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "chat_player_test",
+              "token": "chat_token_test"
+            }
+
+      - think: 1
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "room_chat_test"
+            }
+
+      - think: 2
+
+      # Send multiple chat messages
+      - loop:
+          count: 10
+          over:
+            - send:
+                payload: |
+                  {
+                    "type": "chat_message",
+                    "message": "Chat message test",
+                    "message_type": "text"
+                  }
+
+            - think: 3
+
+      - send:
+          payload: |
+            {
+              "type": "leave_room"
+            }
+
+      - disconnect
+
+  # Quick Join/Leave scenario (spikes)
+  - name: 'Quick Sessions'
+    weight: 20
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "quick_test",
+              "token": "quick_token_test"
+            }
+
+      - think: 1
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "room_quick_test"
+            }
+
+      - think: 5  # Stay for 5 seconds
+
+      - send:
+          payload: |
+            {
+              "type": "game_input",
+              "input": {
+                "movement": [0, 0, 0],
+                "actions": ["ready"],
+                "timestamp": "2024-01-01T00:00:00Z"
+              }
+            }
+
+      - think: 2
+
+      - send:
+          payload: |
+            {
+              "type": "leave_room"
+            }
+
+      - disconnect
+
+  # High-frequency game input (stress test)
+  - name: 'High Frequency Input'
+    weight: 15
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "stress_test",
+              "token": "stress_token_test"
+            }
+
+      - think: 1
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "room_stress_test"
+            }
+
+      - think: 1
+
+      # High frequency game inputs (60 FPS simulation)
+      - loop:
+          count: 30
+          over:
+            - send:
+                payload: |
+                  {
+                    "type": "game_input",
+                    "input": {
+                      "movement": [10, 0, 10],
+                      "actions": ["move"],
+                      "timestamp": "2024-01-01T00:00:00Z",
+                      "sequence": 1
+                    }
+                  }
+
+            - think: 0.033  # ~30 FPS (33ms between frames)
+
+      - send:
+          payload: |
+            {
+              "type": "leave_room"
+            }
+
+      - disconnect

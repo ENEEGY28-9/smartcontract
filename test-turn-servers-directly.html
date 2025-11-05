@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TURN Servers Direct Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.connected { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.connecting { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .status.disconnected { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .server-list {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Direct TURN Servers Test</h1>
+
+    <div class="test-container">
+        <h2>TURN Servers to Test</h2>
+        <div class="server-list" id="server-list">
+            Đang tải danh sách TURN servers...
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Test Status</h2>
+        <div id="test-status" class="status disconnected">
+            Ready to test
+        </div>
+        <div>
+            <button onclick="testAllTurnServers()" id="test-btn">Test All TURN Servers</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Test Log</h2>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const logContainer = document.getElementById('log');
+        const serverListContainer = document.getElementById('server-list');
+        const testStatus = document.getElementById('test-status');
+        const testButton = document.getElementById('test-btn');
+
+        // Danh sách TURN servers để test
+        const turnServers = [
+            {
+                urls: 'turn:openrelay.metered.ca:80',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            },
+            {
+                urls: 'turn:openrelay.metered.ca:443',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            },
+            {
+                urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            },
+            {
+                urls: 'turn:relay.backups.cz:3478',
+                username: 'webrtc',
+                credential: 'webrtc'
+            },
+            {
+                urls: 'turn:relay.backups.cz:3478?transport=tcp',
+                username: 'webrtc',
+                credential: 'webrtc'
+            }
+        ];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logEntry.className = `log-entry ${type}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function displayServerList() {
+            const serversHtml = turnServers.map((server, index) => {
+                return `${index + 1}. ${server.urls} (${server.username})`;
+            }).join('<br>');
+            serverListContainer.innerHTML = serversHtml;
+        }
+
+        async function testSingleTurnServer(server, index) {
+            return new Promise((resolve) => {
+                log(`🧪 Testing TURN server ${index + 1}: ${server.urls}`);
+
+                const pc = new RTCPeerConnection({
+                    iceServers: [server],
+                    iceCandidatePoolSize: 1
+                });
+
+                let hasCandidate = false;
+                let checkComplete = false;
+
+                const timeout = setTimeout(() => {
+                    log(`⏰ Test timeout for server ${index + 1}`);
+                    pc.close();
+                    if (!checkComplete) {
+                        checkComplete = true;
+                        resolve(hasCandidate);
+                    }
+                }, 5000);
+
+                pc.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        hasCandidate = true;
+                        log(`🧊 Found candidate: ${event.candidate.type} - ${event.candidate.address}`);
+
+                        // Nếu tìm thấy bất kỳ candidate nào, coi như server hoạt động
+                        if (event.candidate.type === 'srflx' || event.candidate.type === 'host' || event.candidate.type === 'relay') {
+                            log(`✅ Server ${index + 1} responsive: ${server.urls}`);
+                            clearTimeout(timeout);
+                            pc.close();
+                            if (!checkComplete) {
+                                checkComplete = true;
+                                resolve(true);
+                            }
+                        }
+                    }
+                };
+
+                pc.onicegatheringstatechange = () => {
+                    if (pc.iceGatheringState === 'complete') {
+                        log(`🏁 ICE gathering complete for server ${index + 1}`);
+                        clearTimeout(timeout);
+                        pc.close();
+                        if (!checkComplete) {
+                            checkComplete = true;
+                            resolve(hasCandidate);
+                        }
+                    }
+                };
+
+                // Tạo offer để trigger ICE gathering
+                pc.createOffer()
+                    .then((offer) => {
+                        log(`📤 Created offer for server ${index + 1}`);
+                        return pc.setLocalDescription(offer);
+                    })
+                    .catch((error) => {
+                        log(`❌ Error creating offer for server ${index + 1}: ${error.message}`);
+                        clearTimeout(timeout);
+                        pc.close();
+                        if (!checkComplete) {
+                            checkComplete = true;
+                            resolve(false);
+                        }
+                    });
+            });
+        }
+
+        async function testAllTurnServers() {
+            testButton.disabled = true;
+            testStatus.className = 'status connecting';
+            testStatus.textContent = 'Testing TURN servers...';
+
+            log('🚀 Starting TURN servers test...');
+            log(`📋 Testing ${turnServers.length} TURN servers`);
+
+            let workingCount = 0;
+            let totalCount = turnServers.length;
+
+            for (let i = 0; i < turnServers.length; i++) {
+                try {
+                    const isWorking = await testSingleTurnServer(turnServers[i], i);
+                    if (isWorking) {
+                        workingCount++;
+                        log(`✅ TURN server ${i + 1} is working`);
+                    } else {
+                        log(`❌ TURN server ${i + 1} is not working`);
+                    }
+                } catch (error) {
+                    log(`❌ Error testing TURN server ${i + 1}: ${error.message}`);
+                }
+            }
+
+            // Update status
+            if (workingCount > 0) {
+                testStatus.className = 'status connected';
+                testStatus.textContent = `${workingCount}/${totalCount} TURN servers working`;
+                log(`✅ Test completed: ${workingCount}/${totalCount} servers working`);
+            } else {
+                testStatus.className = 'status disconnected';
+                testStatus.textContent = 'No TURN servers working';
+                log('❌ Test completed: No servers working');
+            }
+
+            testButton.disabled = false;
+        }
+
+        function clearLog() {
+            logContainer.innerHTML = '';
+        }
+
+        // Initialize
+        displayServerList();
+        log('🚀 TURN servers direct test page loaded');
+        log('💡 Click "Test All TURN Servers" to start testing');
+    </script>
+</body>
+</html>

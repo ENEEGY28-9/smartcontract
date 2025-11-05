@@ -1,0 +1,262 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    # Realistic gaming load progression
+    - duration: 60    # 1 minute
+      arrivalRate: 20 # Start with normal gaming load
+      name: 'Gaming Warmup'
+
+    - duration: 120   # 2 minutes
+      arrivalRate: 50 # Build up to peak gaming hours
+      name: 'Gaming Ramp Up'
+
+    - duration: 300   # 5 minutes
+      arrivalRate: 100 # Peak concurrent gaming
+      name: 'Peak Gaming Load'
+
+    - duration: 180   # 3 minutes
+      arrivalRate: 150 # Stress test gaming capacity
+      name: 'Gaming Stress Phase'
+
+    - duration: 120   # 2 minutes
+      arrivalRate: 75  # Cool down but maintain load
+      name: 'Gaming Cool Down'
+
+    - duration: 60    # 1 minute
+      arrivalRate: 25  # Back to normal
+      name: 'Normal Gaming'
+
+  ws:
+    - target: 'ws://localhost:8080/ws'
+      subprotocols: ['game-protocol']
+
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+      Authorization: 'Bearer gaming-token-{{ $randomInt() }}'
+
+  # Gaming-optimized timeouts
+  timeout: 60       # Longer timeout for gaming operations
+  connectionTimeout: 15
+
+scenarios:
+  # 40% - Realistic Gameplay Sessions (Most Important)
+  - name: 'Realistic Gameplay Session'
+    weight: 40
+    engine: 'ws'
+    flow:
+      - connect:
+          url: 'ws://localhost:8080/ws'
+
+      - send:
+          payload: |
+            {
+              "type": "authenticate",
+              "player_id": "realistic_player_{{ $randomInt() }}",
+              "token": "realistic-token-{{ $randomInt() }}",
+              "device_info": {
+                "platform": "{{ $randomArrayItem(['windows', 'macos', 'linux', 'android', 'ios']) }}",
+                "browser": "{{ $randomArrayItem(['chrome', 'firefox', 'safari', 'edge']) }}",
+                "version": "{{ $randomInt(100, 120) }}.{{ $randomInt(0, 10) }}.{{ $randomInt(1000, 9999) }}"
+              }
+            }
+
+      - think: 1
+
+      - send:
+          payload: |
+            {
+              "type": "join_room",
+              "room_id": "realistic_game_{{ $randomInt(1, 1000) }}",
+              "player_name": "RealisticPlayer_{{ $randomInt() }}",
+              "preferences": {
+                "quality": "{{ $randomArrayItem(['low', 'medium', 'high', 'ultra']) }}",
+                "controls": "{{ $randomArrayItem(['keyboard', 'gamepad', 'touch']) }}",
+                "region": "{{ $randomArrayItem(['na-east', 'na-west', 'eu-west', 'asia-pacific']) }}"
+              }
+            }
+
+      - think: 2
+
+      # Realistic gameplay patterns (10-30 minutes per session)
+      - loop:
+          # Active gameplay phase (70% of time)
+          - loop:
+              - send:
+                  payload: |
+                    {
+                      "type": "game_input",
+                      "input": {
+                        "movement": [{{ $randomInt(-150, 150) }}, 0, {{ $randomInt(-150, 150) }}],
+                        "rotation": [0, {{ $randomInt(0, 360) }}, 0],
+                        "actions": [{{ $randomArrayItem(['move', 'jump', 'attack', 'defend', 'special']) }}],
+                        "camera": {
+                          "zoom": {{ $randomInt(80, 120) }},
+                          "angle": {{ $randomInt(0, 360) }}
+                        },
+                        "timestamp": {{ timestamp }},
+                        "sequence": {{ $randomInt() }},
+                        "ping": {{ $randomInt(5, 50) }}
+                      }
+                    }
+              - think: 60  # Realistic input frequency
+            count: 10000  # 2.5-7.5 minutes active play
+
+          # Pause/AFK phase (10% of time - realistic breaks)
+          - think: 15  # 5-30 second pauses
+
+          # Chat/social phase (20% of time)
+          - loop:
+              - send:
+                  payload: |
+                    {
+                      "type": "chat_message",
+                      "message": "Gaming test message",
+                      "message_type": "text",
+                      "timestamp": {{ timestamp }}
+                    }
+              - think: 5
+            count: 3
+
+        count: 4  # 2-6 gameplay cycles per session
+
+      # Session end
+      - send:
+          payload: |
+            {
+              "type": "leave_room",
+              "reason": "completed",
+              "session_duration": 1200
+            }
+
+      - think: 3
+
+      - disconnect
+
+  # 30% - Chat and Social Features Stress
+  - name: 'Chat and Social Stress'
+    weight: 30
+    flow:
+      # Create multiple rooms for social testing
+      - post:
+          url: '/api/rooms'
+          json:
+            room_name: 'Social Stress Room {{ $randomInt() }}'
+            game_mode: 'social'
+            max_players: {{ $randomInt(10, 50) }}
+            host_id: 'social_host_{{ $randomInt() }}'
+
+      - think: 0.5
+
+      # Join social rooms with multiple players
+      - loop:
+          - post:
+              url: '/api/rooms/social_stress_room_{{ $randomInt(1, 500) }}/join'
+              json:
+                player_id: 'social_player_{{ $randomInt() }}'
+                player_name: 'SocialPlayer_{{ $randomInt() }}'
+          - think: 0.1
+        count: 10
+
+      # High-frequency chat (realistic social gaming)
+      - loop:
+          - post:
+              url: '/api/chat'
+              json:
+                room_id: 'social_stress_room_{{ $randomInt(1, 500) }}'
+                player_id: 'social_player_{{ $randomInt() }}'
+                message: 'Social gaming test message'
+                message_type: 'text'
+                timestamp: {{ timestamp }}
+          - think: 500  # Realistic chat frequency
+        count: 50
+
+      # Check room status and player lists
+      - loop:
+          - get:
+              url: '/api/rooms/social_stress_room_{{ $randomInt(1, 500) }}/players'
+          - think: 1
+        count: 10
+
+      # Leave social rooms
+      - loop:
+          - delete:
+              url: '/api/rooms/social_stress_room_{{ $randomInt(1, 500) }}/leave'
+              json:
+                player_id: 'social_player_{{ $randomInt() }}'
+          - think: 0.5
+        count: 8
+
+  # 20% - System Operations Under Gaming Load
+  - name: 'System Operations Under Gaming Load'
+    weight: 20
+    flow:
+      # Health checks during gaming load
+      - loop:
+          - get:
+              url: '/health'
+          - think: 5
+        count: 20
+
+      # Metrics collection
+      - loop:
+          - get:
+              url: '/api/metrics'
+          - think: 10
+        count: 10
+
+      # Room status monitoring
+      - loop:
+          - get:
+              url: '/api/rooms/status/all'
+          - think: 2
+        count: 50
+
+      # Player statistics
+      - loop:
+          - get:
+              url: '/api/players/online'
+          - think: 3
+        count: 30
+
+  # 10% - Error Simulation and Recovery Testing
+  - name: 'Error Simulation and Recovery'
+    weight: 10
+    flow:
+      # Invalid requests to test error handling
+      - loop:
+          - post:
+              url: '/api/rooms'
+              json:
+                invalid_field: 'invalid_data'
+                malformed: {{ $randomString() }}
+            expect:
+              statusCode: [400, 422, 500]
+          - think: 1
+        count: 10
+
+      # Test rate limiting
+      - loop:
+          - post:
+              url: '/api/chat'
+              json:
+                room_id: 'rate_limit_test'
+                player_id: 'rate_limit_player'
+                message: 'Rate limit test message {{ $randomInt() }}'
+                message_type: 'text'
+          - think: 0.01  # Very fast to trigger rate limits
+        count: 100
+
+      # Test with invalid tokens
+      - loop:
+          - post:
+              url: '/api/rooms/rate_limit_test/join'
+              json:
+                player_id: 'invalid_auth_player_{{ $randomInt() }}'
+                player_name: 'InvalidAuthPlayer'
+            headers:
+              Authorization: 'Bearer invalid-token-{{ $randomInt() }}'
+            expect:
+              statusCode: [401, 403]
+          - think: 0.5
+        count: 20

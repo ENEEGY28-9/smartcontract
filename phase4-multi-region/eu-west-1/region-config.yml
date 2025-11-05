@@ -1,0 +1,83 @@
+# GameV1 Region Configuration for eu-west-1
+# Optimized for low-latency global gaming
+
+region:
+  name: "eu-west-1"
+  provider: "aws"
+  availability_zones: 3
+
+network:
+  vpc_cidr: "10.138.0.0/16"
+  public_subnets:
+    - "10.37.1.0/24"
+    - "10.110.2.0/24"
+    - "10.166.3.0/24"
+  private_subnets:
+    - "10.165.10.0/24"
+    - "10.168.11.0/24"
+    - "10.84.12.0/24"
+
+services:
+  gateway:
+    instance_type: "t3.medium"
+    min_instances: 2
+    max_instances: 10
+    desired_instances: 3
+    health_check_path: "/healthz"
+    health_check_interval: "30s"
+
+  worker:
+    instance_type: "c5.large"
+    min_instances: 1
+    max_instances: 5
+    desired_instances: 2
+    health_check_grace_period: "60s"
+
+  database:
+    instance_type: "db.t3.medium"
+    backup_retention: 7
+    multi_az: true
+    read_replicas: 2
+
+monitoring:
+  prometheus:
+    retention: "30d"
+    remote_write_url: "https://prometheus-global.gamev1.com/write"
+
+  grafana:
+    admin_password: "tBBR0Bzm1cIF9di1"
+
+load_balancer:
+  type: "application"  # application or network
+  scheme: "internet-facing"
+  ssl_policy: "ELBSecurityPolicy-TLS-1-2-2017-01"
+
+cdn:
+  enabled: true
+  provider: "cloudfront"
+  origins:
+    - domain: "api-eu-west-1.gamev1.com"
+      path: "/"
+    - domain: "static-eu-west-1.gamev1.com"
+      path: "/static"
+
+security:
+  ssl_certificate_arn: "arn:aws:acm:eu-west-1:account:certificate/cert-id"
+  security_groups:
+    - name: "gamev1-web-sg"
+      description: "Security group for web traffic"
+      ingress:
+        - protocol: "tcp"
+          port: 80
+          cidr: "0.0.0.0/0"
+        - protocol: "tcp"
+          port: 443
+          cidr: "0.0.0.0/0"
+        - protocol: "tcp"
+          port: 22
+          cidr: "10.0.0.0/8"
+
+backup:
+  schedule: "0 2 * * *"  # Daily at 2 AM UTC
+  retention_days: 30
+  cross_region: true

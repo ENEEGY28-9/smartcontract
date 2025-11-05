@@ -1,0 +1,110 @@
+🔍 HƯỚNG DẪN KIỂM TRA SỐ DƯ VÍ TRONG POCKETBASE
+===============================================
+
+📍 NƠI LƯU SỐ DƯ VÍ CỦA USER:
+------------------------------
+• Collection: "wallets"
+• Field: "balance" (lưu số dư ví)
+• Field: "user_id" (liên kết với user)
+• Field: "balance_last_updated" (thời gian cập nhật)
+
+🎯 CÁCH KIỂM TRA TRỰC TIẾP:
+---------------------------
+
+1️⃣ MỞ POCKETBASE ADMIN PANEL:
+   🌐 http://localhost:8090/_/
+
+2️⃣ CHỌN COLLECTION "WALLETS":
+   • Click vào "wallets" trong sidebar bên trái
+   • Hoặc: Collections → wallets
+
+3️⃣ XEM CỘT "BALANCE":
+   • Cột "balance" = SỐ DƯ VÍ
+   • Cột "user_id" = ID của user sở hữu ví
+   • Cột "network" = Network (ethereum/solana/bitcoin)
+   • Cột "balance_last_updated" = Lần cập nhật cuối
+
+4️⃣ LỌC THEO USER:
+   • Click nút "Filter" hoặc "Search"
+   • Filter theo: user_id = "ID_CỦA_USER"
+   • Chỉ xem wallets của user đó
+
+5️⃣ KIỂM TRA DATA CHI TIẾT:
+   • Click vào từng record để xem full details
+   • Xem balance, address, network, wallet_type
+   • Xem private_key và mnemonic (đã encrypted)
+
+📊 CẤU TRÚC DATABASE:
+-------------------
+USERS Collection:
+├── id (Primary Key)
+├── email (Đăng nhập)
+├── name (Tên hiển thị)
+└── created/updated
+
+WALLETS Collection:
+├── id (Primary Key)
+├── user_id (🔗 Foreign Key → users.id)
+├── address (Địa chỉ ví)
+├── private_key (🔐 Encrypted)
+├── mnemonic (🔐 Encrypted)
+├── wallet_type (metamask/phantom/generated/bitcoin)
+├── network (ethereum/solana/bitcoin)
+├── balance (💰 SỐ DƯ VÍ - CHÍNH)
+├── balance_last_updated (⏰ Cập nhật cuối)
+├── is_connected (🔌 Trạng thái kết nối)
+└── created/updated
+
+🔄 CÁCH DATA ĐƯỢC TẠO:
+---------------------
+1. User đăng nhập vào hệ thống
+2. User tạo/connect wallet
+3. Hệ thống fetch balance từ blockchain
+4. Balance được lưu vào field "balance"
+5. Time được lưu vào "balance_last_updated"
+6. User_id được set để liên kết với user
+
+💡 VÍ DỤ DATA:
+-------------
+Wallet ID: abc123
+User ID: user456
+Address: 0x742d35Cc6634C0532925a3b8D72
+Network: ethereum
+Wallet Type: metamask
+Balance: 1.5 (ETH)
+Balance Last Updated: 2025-01-27T10:30:00Z
+Is Connected: true
+
+🔍 CÁCH DEBUG:
+-------------
+1. Mở Browser Console (F12)
+2. Kiểm tra Network tab khi connect wallet
+3. Xem API calls đến PocketBase
+4. Kiểm tra balance được update trong DB
+
+🚨 LƯU Ý QUAN TRỌNG:
+------------------
+• Balance chỉ được cập nhật khi wallet "connected"
+• Mỗi user chỉ thấy wallets của mình (qua user_id)
+• Private keys được mã hóa bảo mật
+• Auto-refresh mỗi 30 giây khi wallet connected
+
+🎯 TỔNG KẾT:
+-----------
+📍 Nơi lưu số dư ví: Collection "wallets" → Field "balance"
+🔗 Liên kết với user: Field "user_id"
+⏰ Cập nhật: Field "balance_last_updated"
+🔒 Bảo mật: User isolation qua user_id filter
+
+💻 ĐỂ KIỂM TRA NGAY:
+1. Mở: http://localhost:8090/_/
+2. Click: Collections → wallets
+3. Xem: Cột "balance" chứa số dư ví của từng user
+
+
+
+
+
+
+
+

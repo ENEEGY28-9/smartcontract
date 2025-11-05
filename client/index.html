@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameV1 - Hybrid Runner</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" sizes="any">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <meta name="theme-color" content="#4a90e2">
+    <meta name="msapplication-TileColor" content="#4a90e2">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #4a90e2 0%, #8b5cf6 50%, #ef4444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-bottom: 3rem;
+        }
+
+        .game-modes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .mode-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(74, 144, 226, 0.4);
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.2);
+        }
+
+        .mode-card.featured {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.02);
+        }
+
+        .mode-card.featured:hover {
+            border-color: rgba(239, 68, 68, 0.5);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);
+        }
+
+        .mode-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .mode-card.featured h3 {
+            color: #ef4444;
+        }
+
+        .mode-card p {
+            color: #cbd5e1;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
+        }
+
+        .featured-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .featured-btn:hover {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            color: #fbbf24;
+        }
+
+        @media (max-width: 768px) {
+            .game-modes {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏃‍♂️ Endless Runner → 👹 Boss Battles</h1>
+        <p class="subtitle">Hybrid Game Development - Sprint 2 Complete!</p>
+
+        <div class="game-modes">
+            <div class="mode-card">
+                <h3>🏃‍♂️ Endless Runner</h3>
+                <p>Procedural track generation with enhanced gameplay</p>
+                <button class="play-btn" onclick="startEndlessRunner()">
+                    🎮 Play Endless Runner
+                </button>
+            </div>
+
+            <div class="mode-card featured">
+                <h3>👹 Boss Battles</h3>
+                <p>Movement-based combat with weapon shop</p>
+                <button class="play-btn featured-btn" onclick="startBossBattle()">
+                    ⚔️ Enter Boss Battle
+                </button>
+            </div>
+        </div>
+
+        <div class="status">
+            <p>🔧 Debug: Click buttons to see if JavaScript works</p>
+            <p id="debug-status">Ready to test...</p>
+        </div>
+    </div>
+
+    <script>
+        function startEndlessRunner() {
+            const status = document.getElementById('debug-status');
+            status.textContent = '🏃‍♂️ Endless Runner clicked - checking WebGL support...';
+
+            // Test WebGL support
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+            if (gl) {
+                status.textContent = '✅ WebGL supported! Opening Endless Runner...';
+                setTimeout(() => {
+                    window.location.href = '/?mode=endless';
+                }, 1000);
+            } else {
+                status.textContent = '❌ WebGL not supported on this browser';
+            }
+        }
+
+        function startBossBattle() {
+            const status = document.getElementById('debug-status');
+            status.textContent = '⚔️ Boss Battle clicked - opening game...';
+            setTimeout(() => {
+                window.location.href = '/?mode=boss';
+            }, 1000);
+        }
+
+        // Test on page load
+        console.log('🚀 Game selection page loaded');
+        document.getElementById('debug-status').textContent = '✅ Page loaded successfully';
+    </script>
+</body>
+</html>
