@@ -1,0 +1,48 @@
+# Rust
+target/
+Cargo.lock
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Anchor
+.anchor/
+.anchor-lite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.local
+
+# Test artifacts
+test-ledger/
+test-results/
+
+# Build artifacts
+dist/
+build/
+
+
+
+
+
+
+
+
+

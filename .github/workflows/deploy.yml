@@ -1,0 +1,119 @@
+name: 🚀 Deploy Solana Smart Contract
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🦀 Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: ⛓️ Setup Solana CLI
+      uses: solana-labs/actions/cli@v1.0.3
+
+    - name: ⚓ Setup Anchor
+      run: |
+        cargo install --git https://github.com/coral-xyz/anchor avm --locked
+        avm install latest
+        avm use latest
+
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 📦 Install dependencies
+      run: npm install
+
+    - name: 🧹 Clean previous builds
+      run: anchor clean
+
+    - name: 🔨 Build smart contract
+      run: anchor build
+
+    - name: 🚀 Deploy to devnet
+      run: anchor deploy
+      env:
+        ANCHOR_PROVIDER_URL: https://api.devnet.solana.com
+        ANCHOR_WALLET: ~/.config/solana/id.json
+
+    - name: 🔍 Extract Program ID
+      id: program-id
+      run: |
+        # Extract Program ID from anchor deploy output
+        PROGRAM_ID=$(solana address -k target/deploy/game_token-keypair.json)
+        echo "program_id=$PROGRAM_ID" >> $GITHUB_OUTPUT
+        echo "🎯 Deployed Program ID: $PROGRAM_ID"
+
+    - name: ✅ Verify deployment
+      run: |
+        PROGRAM_ID="${{ steps.program-id.outputs.program_id }}"
+        echo "🔍 Verifying program: $PROGRAM_ID"
+        solana program show "$PROGRAM_ID"
+
+    - name: 📊 Generate deployment report
+      run: |
+        PROGRAM_ID="${{ steps.program-id.outputs.program_id }}"
+        cat > deployment_report.md << EOF
+        # 🚀 Smart Contract Deployment Report
+
+        ## 📅 Deployment Info
+        - **Time**: $(date)
+        - **GitHub Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        - **Commit**: ${{ github.sha }}
+        - **Branch**: ${{ github.ref_name }}
+
+        ## 🎯 Program Details
+        - **Program ID**: \`$PROGRAM_ID\`
+        - **Network**: Devnet
+        - **Explorer**: https://explorer.solana.com/address/$PROGRAM_ID?cluster=devnet
+
+        ## 📦 Build Info
+        - **Rust Version**: $(rustc --version)
+        - **Solana CLI**: $(solana --version)
+        - **Anchor Version**: $(anchor --version)
+
+        ## ✅ Deployment Status
+        - Build: ✅ Success
+        - Deploy: ✅ Success
+        - Verify: ✅ Success
+
+        ## 🧪 Testing
+        - Manual testing required
+        - Update client code with Program ID: \`$PROGRAM_ID\`
+
+        ## 🎉 Next Steps
+        1. Test smart contract functionality
+        2. Update frontend with new Program ID
+        3. Deploy to mainnet when ready
+        EOF
+
+    - name: 📤 Upload deployment report
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-report
+        path: deployment_report.md
+
+    - name: 📢 Comment on PR/Issue
+      if: github.event_name == 'push'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('deployment_report.md', 'utf8');
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: report
+          });
