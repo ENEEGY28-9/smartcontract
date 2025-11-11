@@ -1,4 +1,4 @@
-﻿name: ðŸš€ Deploy Solana Smart Contract
+name: Deploy Solana Smart Contract
 
 on:
   push:
@@ -10,108 +10,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: ðŸ“¥ Checkout code
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: ðŸ¦€ Setup Rust
+    - name: Setup Rust
       run: |
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         source ~/.cargo/env
-        rustc --version
 
-    - name: â›“ï¸ Setup Solana CLI
+    - name: Setup Solana CLI
       run: |
-        echo ðŸ“¥ Installing Solana CLI...
         curl -sSfL https://release.anza.xyz/v1.18.26/install | sh
-        echo $HOME/.local/share/solana/install/active_release/bin >> $GITHUB_PATH
-        solana --version
+        echo C:\Users\Fit/.local/share/solana/install/active_release/bin >> 
 
-    - name: âš“ Setup Anchor
+    - name: Setup Anchor
       run: |
-        echo ðŸ“¦ Installing Anchor...
         source ~/.cargo/env
         cargo install --git https://github.com/coral-xyz/anchor avm --locked
         avm install latest
         avm use latest
-        anchor --version
 
-    - name: ðŸ”§ Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: ðŸ“¦ Install dependencies
-      run: npm install
-
-    - name: ðŸ§¹ Clean builds
-      run: anchor clean || true
-
-    - name: ðŸ”¨ Build smart contract
+    - name: Build smart contract
       run: |
         source ~/.cargo/env
         anchor build
 
-    - name: ðŸš€ Deploy to devnet
+    - name: Deploy to devnet
       run: |
-        echo ðŸ”‘ Setting up wallet...
         mkdir -p ~/.config/solana
-        echo $SOLANA_PRIVATE_KEY > ~/.config/solana/id.json
-        solana config set --url devnet
-        solana address
-        
-        echo ðŸ’° Checking balance...
-        solana balance
-        
-        echo ðŸš€ Deploying...
-        source ~/.cargo/env
+        echo ${{ secrets.SOLANA_PRIVATE_KEY }} > ~/.config/solana/id.json
+        chmod 600 ~/.config/solana/id.json
+        solana config set --url devnet --keypair ~/.config/solana/id.json
+        solana airdrop 2 || true
         anchor deploy
-      env:
-        SOLANA_PRIVATE_KEY: ${{ secrets.SOLANA_PRIVATE_KEY }}
 
-    - name: ðŸ” Extract Program ID
-      id: program-id
+    - name: Extract Program ID
       run: |
-        PROGRAM_ID=$(solana address -k target/deploy/game_token-keypair.json 2>/dev/null || echo ")
- echo program_id=$PROGRAM_ID >> $GITHUB_OUTPUT
- echo ðŸŽ¯ Deployed Program ID: $PROGRAM_ID
+        PROGRAM_ID=$(solana address -k target/deploy/game_token-keypair.json)
+        echo Program ID: $PROGRAM_ID
+        echo ## Deployment Report > deployment_report.md
+        echo - Program ID: $PROGRAM_ID >> deployment_report.md
+        echo - Explorer: https://explorer.solana.com/address/$PROGRAM_ID?cluster=devnet >> deployment_report.md
 
- - name: âœ… Verify deployment
- run: |
- PROGRAM_ID=${{ steps.program-id.outputs.program_id }}
- if [ -n $PROGRAM_ID ]; then
- echo ðŸ” Verifying program: $PROGRAM_ID
- solana program show $PROGRAM_ID || echo Verification failed
- fi
-
- - name: ðŸ“Š Generate report
- run: |
- PROGRAM_ID=${{ steps.program-id.outputs.program_id }}
- cat > deployment_report.md << EOF
-# ðŸš€ Smart Contract Deployment Report
-
-## ðŸ“… Deployment Info
-- **Time**: $(date)
-- **GitHub Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-- **Status**: âœ… SUCCESS
-
-## ðŸŽ¯ Program Details
-- **Program ID**: \`\
-- **Network**: Devnet
-- **Explorer**: https://explorer.solana.com/address/$PROGRAM_ID?cluster=devnet
-
-## âœ… Deployment Status
-- Build: âœ… Success
-- Deploy: âœ… Success
-- Verify: âœ… Success
-
-## ðŸŽ‰ Next Steps
-1. Test smart contract functionality
-2. Update client code with Program ID: \`\
-3. Deploy to mainnet when ready
-EOF
-
- - name: ðŸ“¤ Upload report
- uses: actions/upload-artifact@v4
- with:
- name: deployment-report
- path: deployment_report.md
+    - name: Upload report
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-report
+        path: deployment_report.md
