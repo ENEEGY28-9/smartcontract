@@ -1,4 +1,4 @@
-name: Deploy Solana Smart Contract
+name: Deploy Solana Smart Contract Final
 
 on:
   push:
@@ -20,8 +20,8 @@ jobs:
 
     - name: Setup Solana CLI
       run: |
-        curl -sSfL https://release.anza.xyz/v1.18.26/install | sh
-        echo C:\Users\Fit/.local/share/solana/install/active_release/bin >> 
+        sh -c $(curl -sSfL https://release.solana.com/v1.18.26/install)
+        export PATH=C:\Users\Fit/.local/share/solana/install/active_release/bin:
 
     - name: Setup Anchor
       run: |
