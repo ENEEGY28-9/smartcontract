@@ -31,3 +31,12 @@ console.log('='.repeat(50));
   console.log('Balance endpoint: ⚠️  UNDER DEVELOPMENT (not critical)');
 })();
 
+
+
+
+
+
+
+
+
+

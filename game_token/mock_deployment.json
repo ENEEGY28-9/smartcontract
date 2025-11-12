@@ -1,0 +1,7 @@
+{
+  "programId": "Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf",
+  "status": "Mock Deployment (Real deployment requires .so file)",
+  "network": "devnet",
+  "timestamp": "2025-11-11T01:36:25.633Z",
+  "note": "Use anchor build && anchor deploy for real deployment"
+}

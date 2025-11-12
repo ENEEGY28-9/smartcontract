@@ -1,0 +1,15 @@
+{
+  "ownerWallet": "A1Tk1KLSkH4dbeS1mKv9CrUKVRuErHGBg6oH9XUD2sLB",
+  "simulatedSOL": 2,
+  "userWallet": "4UkWvx2Y59XSuhaCfeYDS56RM1WcsSdgjJ7yzLEbMyNf",
+  "gamePool": "5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc",
+  "note": "Simulation mode - demonstrates transfer logic",
+  "timestamp": "2025-11-10T01:22:44.758Z",
+  "transferLogic": {
+    "from": "5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc",
+    "to": "4UkWvx2Y59XSuhaCfeYDS56RM1WcsSdgjJ7yzLEbMyNf",
+    "amount": 1,
+    "authority": "A1Tk1KLSkH4dbeS1mKv9CrUKVRuErHGBg6oH9XUD2sLB",
+    "simulatedFee": 0.000005
+  }
+}

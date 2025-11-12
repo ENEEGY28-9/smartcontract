@@ -69,3 +69,12 @@ echo 3. Deploy to Devnet: anchor deploy --provider.cluster devnet
 
 pause
 
+
+
+
+
+
+
+
+
+

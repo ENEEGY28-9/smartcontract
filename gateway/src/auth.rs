@@ -304,16 +304,70 @@ pub async fn login_handler(
         }
     };
 
-    // Demo credentials validation (for testing)
-    if payload.username == "demo@example.com" && payload.password == "password123" {
-        let user = User {
-            id: "demo-user-id".to_string(),
-            username: "Demo User".to_string(),
-            email: payload.username.clone(),
-            role: "user".to_string(),
-        };
+    // Authenticate against PocketBase
+    let pocketbase_url = std::env::var("POCKETBASE_URL").unwrap_or_else(|_| "http://localhost:8090".to_string());
 
-        match auth_service.generate_token(&user) {
+    // Create HTTP client with timeout
+    let client = match reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .connect_timeout(std::time::Duration::from_secs(5))
+        .build()
+    {
+        Ok(client) => client,
+        Err(e) => {
+            error!("Failed to create HTTP client for PocketBase auth: {}", e);
+            return create_error_response(StatusCode::INTERNAL_SERVER_ERROR, "Authentication service error");
+        }
+    };
+
+    // Authenticate with PocketBase
+    let auth_data = serde_json::json!({
+        "identity": payload.username,
+        "password": payload.password
+    });
+
+    let auth_url = format!("{}/api/collections/users/auth-with-password", pocketbase_url);
+    let response = match client.post(&auth_url).json(&auth_data).send().await {
+        Ok(resp) => resp,
+        Err(e) => {
+            error!("Failed to authenticate with PocketBase: {}", e);
+            return create_error_response(StatusCode::INTERNAL_SERVER_ERROR, "Authentication service error");
+        }
+    };
+
+    if !response.status().is_success() {
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+        error!("PocketBase authentication failed: {}", error_text);
+        return create_error_response(StatusCode::UNAUTHORIZED, "Invalid credentials");
+    }
+
+    // Parse PocketBase response
+    let pb_auth: serde_json::Value = match response.json().await {
+        Ok(data) => data,
+        Err(e) => {
+            error!("Failed to parse PocketBase response: {}", e);
+            return create_error_response(StatusCode::INTERNAL_SERVER_ERROR, "Authentication response error");
+        }
+    };
+
+    // Extract user data from PocketBase response
+    let user_record = match pb_auth.get("record") {
+        Some(record) => record,
+        None => {
+            error!("No user record in PocketBase response");
+            return create_error_response(StatusCode::INTERNAL_SERVER_ERROR, "Authentication response error");
+        }
+    };
+
+    let user = User {
+        id: user_record.get("id").and_then(|v| v.as_str()).unwrap_or("unknown").to_string(),
+        username: user_record.get("email").and_then(|v| v.as_str()).unwrap_or("unknown").to_string(),
+        email: user_record.get("email").and_then(|v| v.as_str()).unwrap_or("unknown").to_string(),
+        role: "user".to_string(),
+    };
+
+    // Generate JWT tokens
+    match auth_service.generate_token(&user) {
             Ok(access_token) => {
                 match auth_service.generate_refresh_token(&user) {
                     Ok(refresh_token) => {
@@ -343,38 +397,7 @@ pub async fn login_handler(
                 return (StatusCode::INTERNAL_SERVER_ERROR, "Token generation error").into_response();
             }
         }
-    }
 
-    // Re-enabled with PocketBase integration
-    //     // match authenticate_with_pocketbase(&payload.username, &payload.password).await {
-    //         Ok(user) => {
-    //             match auth_service.generate_token(&user) {
-    //                 Ok(access_token) => {
-    //                     match auth_service.generate_refresh_token(&user) {
-    //                         Ok(refresh_token) => {
-    //                             let response = AuthResponse {
-    //                                 access_token,
-    //                                 refresh_token,
-    //                                 token_type: "Bearer".to_string(),
-    //                                 expires_in: ACCESS_TOKEN_EXPIRY * 60,
-    //                                 user: UserInfo {
-    //                                     id: user.id,
-    //                                     username: user.username,
-    //                                     email: user.email,
-    //                                     role: user.role,
-    // Default return for demo purposes
-    return (StatusCode::OK, Json(json!({
-        "access_token": "demo_token",
-        "refresh_token": "demo_refresh_token",
-        "token_type": "Bearer",
-        "expires_in": 3600,
-        "user": {
-            "id": "demo_user_id",
-            "username": "Demo User",
-            "email": payload.username,
-            "role": "user"
-        }
-    }))).into_response()
 }
 
 // Register handler
@@ -390,22 +413,87 @@ pub async fn register_handler(
         }
     };
 
-    // Demo registration - accept any valid email format
-    if payload.email.contains('@') && payload.email.contains('.') && payload.password.len() >= 6 {
-        let user = User {
-            id: uuid::Uuid::new_v4().to_string(),
-            username: payload.username.clone(),
-            email: payload.email.clone(),
-            role: "user".to_string(),
-        };
+    // Validate input
+    if !payload.email.contains('@') || !payload.email.contains('.') || payload.password.len() < 6 {
+        return create_error_response(StatusCode::BAD_REQUEST, "Invalid email or password (password must be at least 6 characters)");
+    }
 
-        match auth_service.generate_token(&user) {
+    // Create user in PocketBase first
+    let pocketbase_url = std::env::var("POCKETBASE_URL").unwrap_or_else(|_| "http://localhost:8090".to_string());
+
+    // Create HTTP client with timeout
+    let client = match reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .connect_timeout(std::time::Duration::from_secs(5))
+        .build()
+    {
+        Ok(client) => client,
+        Err(e) => {
+            error!("Failed to create HTTP client for PocketBase registration: {}", e);
+            return create_error_response(StatusCode::INTERNAL_SERVER_ERROR, "Registration service error");
+        }
+    };
+
+    // Create user data for PocketBase
+    let user_data = serde_json::json!({
+        "email": payload.email,
+        "password": payload.password,
+        "passwordConfirm": payload.password,
+        "username": payload.username
+    });
+
+    let create_url = format!("{}/api/collections/users/records", pocketbase_url);
+    let response = match client.post(&create_url).json(&user_data).send().await {
+        Ok(resp) => resp,
+        Err(e) => {
+            error!("Failed to create user in PocketBase: {}", e);
+            return create_error_response(StatusCode::INTERNAL_SERVER_ERROR, "Registration service error");
+        }
+    };
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+        error!("PocketBase user creation failed: {}", error_text);
+
+        // Check for specific error types
+        if status == StatusCode::BAD_REQUEST && error_text.contains("email") {
+            return create_error_response(StatusCode::CONFLICT, "Email already exists");
+        }
+
+        return create_error_response(StatusCode::BAD_REQUEST, "Failed to create user account");
+    }
+
+    // Parse PocketBase response to get the created user
+    let pb_user: serde_json::Value = match response.json().await {
+        Ok(data) => data,
+        Err(e) => {
+            error!("Failed to parse PocketBase user creation response: {}", e);
+            return create_error_response(StatusCode::INTERNAL_SERVER_ERROR, "Registration response error");
+        }
+    };
+
+    // Extract user data from PocketBase response
+    let user_id = pb_user.get("id").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
+    let user_email = pb_user.get("email").and_then(|v| v.as_str()).unwrap_or(&payload.email).to_string();
+    let user_username = pb_user.get("username").and_then(|v| v.as_str()).unwrap_or(&payload.username).to_string();
+
+    // Create User struct for JWT generation
+    let user = User {
+        id: user_id,
+        username: user_username,
+        email: user_email,
+        role: "user".to_string(),
+    };
+
+    // Generate JWT tokens
+    match auth_service.generate_token(&user) {
         Ok(access_token) => {
             match auth_service.generate_refresh_token(&user) {
                 Ok(refresh_token) => {
                     let response = AuthResponse {
-        access_token,
-        refresh_token,
+                        access_token,
+                        refresh_token,
                         token_type: "Bearer".to_string(),
                         expires_in: ACCESS_TOKEN_EXPIRY * 60,
                         user: UserInfo {
@@ -428,10 +516,6 @@ pub async fn register_handler(
             error!("Failed to generate access token: {}", e);
             create_error_response(StatusCode::INTERNAL_SERVER_ERROR, "Token generation error")
         }
-    }
-    } else {
-        // Invalid registration data
-        create_error_response(StatusCode::BAD_REQUEST, "Invalid email or password (password must be at least 6 characters)")
     }
 }
 

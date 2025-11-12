@@ -24,7 +24,7 @@ async function mintTokensForTesting() {
 
     // Existing mint (from previous deployment)
     const gameTokenMint = new PublicKey('2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
-    const ownerAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS');
+    const ownerAccount = new PublicKey('5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN');
 
     console.log('📋 MINT SETUP:');
     console.log(`   🪙 Game Token Mint: ${gameTokenMint.toString()}`);

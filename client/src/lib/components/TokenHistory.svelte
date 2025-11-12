@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
-  import { authStore } from '$lib/stores/auth';
+  import { authStore, authActions } from '$lib/stores/auth';
 
   interface Transaction {
     id: string;
@@ -33,6 +33,11 @@
 
       if (response.ok) {
         transactions = await response.json();
+      } else if (response.status === 401) {
+        // Token is invalid, clear authentication
+        console.warn('Token is invalid, clearing authentication');
+        authActions.logout();
+        error = 'Authentication expired. Please log in again.';
       } else {
         error = 'Failed to load transaction history';
       }

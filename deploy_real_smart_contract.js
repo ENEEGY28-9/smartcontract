@@ -109,3 +109,12 @@ async function deployRealSmartContract() {
 
 deployRealSmartContract().catch(console.error);
 
+
+
+
+
+
+
+
+
+

@@ -203,16 +203,28 @@ try {
     Write-Host ""
     Write-Host "Cleaning up existing processes..." -ForegroundColor Yellow
 
+    # Kill processes by name
     $processesToStop = @("cargo", "node", "pocketbase")
     foreach ($processName in $processesToStop) {
-        $process = Get-Process -Name $processName -ErrorAction SilentlyContinue
-        if ($process) {
+        $processes = Get-Process -Name $processName -ErrorAction SilentlyContinue
+        foreach ($process in $processes) {
             Write-Host "  Stopping $processName (PID: $($process.Id))..." -ForegroundColor Gray
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
         }
     }
 
-    Start-Sleep -Seconds 2
+    # Kill cmd.exe processes running our services
+    $cmdProcesses = Get-Process -Name "cmd" -ErrorAction SilentlyContinue | Where-Object {
+        $_.CommandLine -like "*cargo run*" -or
+        $_.CommandLine -like "*npm run dev*" -or
+        $_.CommandLine -like "*pocketbase.exe serve*"
+    }
+    foreach ($process in $cmdProcesses) {
+        Write-Host "  Stopping cmd.exe service (PID: $($process.Id))..." -ForegroundColor Gray
+        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+    }
+
+    Start-Sleep -Seconds 3
 
     # Install client dependencies
     Write-Host ""

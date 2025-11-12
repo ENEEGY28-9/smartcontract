@@ -27,10 +27,18 @@ async function initializeProductionPDAs() {
         commitment: 'confirmed'
     });
 
-    // Load IDL and program
-    const idl = JSON.parse(fs.readFileSync('./target/idl/game_token.json'));
-    const programId = new PublicKey(process.env.PROGRAM_ID || idl.metadata.address);
-    const program = new anchor.Program(idl, programId, provider);
+    // Set program ID directly (from deployment)
+    const programId = new PublicKey(process.env.PROGRAM_ID || 'Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf');
+
+    // Try to load IDL, fallback to basic PDA operations if fails
+    let program = null;
+    try {
+        const idl = JSON.parse(fs.readFileSync('./target/idl/game_token.json'));
+        program = new anchor.Program(idl, programId, provider);
+        console.log('✅ IDL loaded successfully');
+    } catch (error) {
+        console.log('⚠️ IDL loading failed, proceeding with basic PDA operations:', error.message);
+    }
 
     console.log('📋 Program ID:', programId.toString());
     console.log('👤 Wallet:', wallet.publicKey.toString());
@@ -204,3 +212,9 @@ if (require.main === module) {
 }
 
 module.exports = { initializeProductionPDAs };
+
+
+
+
+
+

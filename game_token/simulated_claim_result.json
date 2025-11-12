@@ -1,0 +1,11 @@
+{
+  "claimAmount": 30,
+  "playerReceived": 30,
+  "gamePoolDecreased": 0,
+  "playerWallet": "AfQLRj5iiY3NkTEKZg61RpEv6p9y9yjYzxhLR9fuiLoD",
+  "playerATA": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+  "gamePoolTokenAccount": "HHHaKDSbruknbEFqwB3tfMQ5dAyatyavi15JHvFATssq",
+  "method": "Simulated Smart Contract Claim",
+  "timestamp": "2025-11-10T09:36:18.269Z",
+  "success": true
+}

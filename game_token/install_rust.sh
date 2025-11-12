@@ -11,3 +11,12 @@ echo "Rust version: $(rustc --version)"
 echo "Cargo version: $(cargo --version)"
 
 echo "Rust installation complete!"
+
+
+
+
+
+
+
+
+

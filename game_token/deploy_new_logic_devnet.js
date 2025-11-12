@@ -173,7 +173,7 @@ async function deployNewLogicToDevnet() {
 
     try {
         // Create owner token account if needed
-        const ownerTokenAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS'); // From old deployment
+        const ownerTokenAccount = new PublicKey('5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN'); // From old deployment
 
         const testTx = await program.methods
             .autoMintTokens(new anchor.BN(100)) // Test with 100 tokens
@@ -226,3 +226,12 @@ if (require.main === module) {
 }
 
 module.exports = { deployNewLogicToDevnet };
+
+
+
+
+
+
+
+
+

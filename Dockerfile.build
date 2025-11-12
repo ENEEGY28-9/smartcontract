@@ -11,3 +11,12 @@ RUN cd programs/game-token && anchor build
 # Extract the built .so file
 RUN cp programs/game-token/target/deploy/game_token.so /app/game_token.so
 
+
+
+
+
+
+
+
+
+

@@ -25,9 +25,9 @@ const fs = require('fs');
 const path = require('path');
 
 // Load wallet keypair
-const keypairPath = path.join(process.env.HOME || process.env.USERPROFILE, '.config', 'solana', 'id.json');
+const keypairPath = path.join(__dirname, '..', 'new_owner_private_key.json');
 const keypairData = JSON.parse(fs.readFileSync(keypairPath, 'utf8'));
-const payer = Keypair.fromSecretKey(new Uint8Array(keypairData));
+const payer = Keypair.fromSecretKey(new Uint8Array(keypairData.privateKey));
 
 // Configuration
 const MINT_INTERVAL = 60 * 1000; // 1 minute in milliseconds (changed from 1 hour)
@@ -43,26 +43,26 @@ async function autoMintTokens() {
   });
   anchor.setProvider(provider);
 
-  // Load deployed program
-  const programId = new PublicKey('Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTe');
-  const idl = JSON.parse(fs.readFileSync('./target/idl/game_token.json', 'utf8'));
+  // Load deployed program V2
+  const programId = new PublicKey('Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf');
+  const idl = JSON.parse(fs.readFileSync('./target/idl/game_token_v2.json', 'utf8'));
   const program = new anchor.Program(idl, programId, provider);
 
   // Use deployed addresses
   const gameTokenMint = new PublicKey('2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
-  const ownerAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS');
+  const ownerAccount = new PublicKey('5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN');
 
-  // Derive PDAs
+  // Derive V2 PDAs
   const [mintingAuthority] = PublicKey.findProgramAddressSync(
     [Buffer.from("minting_authority")],
     programId
   );
   const [gamePools] = PublicKey.findProgramAddressSync(
-    [Buffer.from("game_pools")],
+    [Buffer.from("game_pools_v2")],
     programId
   );
   const [gamePoolsTokenAccount] = PublicKey.findProgramAddressSync(
-    [Buffer.from("game_pools_token_account")],
+    [Buffer.from("game_pools_v2_token_account")],
     programId
   );
 

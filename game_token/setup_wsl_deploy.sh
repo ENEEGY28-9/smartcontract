@@ -56,3 +56,12 @@ echo "   2. Run: anchor build"
 echo "   3. Run: anchor deploy --provider.cluster devnet"
 echo "   4. Initialize PDAs"
 echo "   5. Test logic"
+
+
+
+
+
+
+
+
+

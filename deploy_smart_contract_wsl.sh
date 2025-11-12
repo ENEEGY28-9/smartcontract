@@ -100,3 +100,12 @@ fi
 echo "🎉 DEPLOYMENT COMPLETE!"
 echo "🌐 View your contract on: https://explorer.solana.com/address/$PROGRAM_ID?cluster=devnet"
 
+
+
+
+
+
+
+
+
+

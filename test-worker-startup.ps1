@@ -41,3 +41,12 @@ if (Test-Path $workerPath) {
 } else {
     Write-Host "ERROR: Worker directory does not exist at $workerPath" -ForegroundColor Red
 }
+
+
+
+
+
+
+
+
+

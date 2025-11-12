@@ -22,7 +22,7 @@ async function testNewLogicManually() {
 
     // Known addresses from previous deployment
     const gameTokenMint = new PublicKey('2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
-    const ownerAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS');
+    const ownerAccount = new PublicKey('5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN');
 
     console.log('📋 NEW LOGIC SPECIFICATIONS:');
     console.log('   🎲 Tokens per mint: 100');
@@ -40,7 +40,7 @@ async function testNewLogicManually() {
         console.log(`   👤 Owner: ${ownerBalanceBefore} tokens`);
 
         // Try to check game pool balance
-        const gamePoolAccount = new PublicKey('BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19');
+        const gamePoolAccount = new PublicKey('5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc');
         try {
             const gamePoolBalance = Number((await getAccount(connection, gamePoolAccount)).amount) / 1_000_000;
             console.log(`   🏦 Game Pool: ${gamePoolBalance} tokens`);
@@ -60,7 +60,7 @@ async function testNewLogicManually() {
         // Since we can't call smart contract directly due to IDL issues,
         // let's check if we can at least verify the program exists
         console.log('🔍 CHECKING PROGRAM STATUS:');
-        const programId = new PublicKey('Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTe');
+        const programId = new PublicKey('Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf');
 
         try {
             const programAccount = await connection.getAccountInfo(programId);
@@ -85,7 +85,7 @@ async function testNewLogicManually() {
         );
 
         const [gamePools] = PublicKey.findProgramAddressSync(
-            [Buffer.from("game_pools")],
+            [Buffer.from("game_pools_v2")],
             programId
         );
 

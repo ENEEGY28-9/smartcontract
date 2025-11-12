@@ -66,3 +66,12 @@ function bs58Encode(buffer) {
 
 testEd25519Derivation();
 
+
+
+
+
+
+
+
+
+

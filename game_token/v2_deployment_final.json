@@ -1,0 +1,34 @@
+{
+  "version": "V2-Final",
+  "network": "devnet",
+  "programId": "Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf",
+  "addresses": {
+    "mintingAuthority": "6JeJbrNocHap3ZNxjrewQHhT3FcURkdDAWTXHirbKzeE",
+    "gamePools": "5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc",
+    "gamePoolsTokenAccount": "E2z7MS8c7HQLvW35ZdaKz74RNqZ3iTosN7iPBFyzxJHW",
+    "gameTokenMint": "2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK",
+    "ownerWallet": "5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN"
+  },
+  "distribution": {
+    "totalPerCycle": 100,
+    "gamePoolPercentage": 80,
+    "ownerPercentage": 20,
+    "gamePoolTokens": 80,
+    "ownerTokens": 20
+  },
+  "deployment": {
+    "status": "Ready for Anchor deployment",
+    "timestamp": "2025-11-10T02:25:00.000Z",
+    "notes": "Smart contract V2 configured and ready. Use Anchor CLI to deploy.",
+    "nextSteps": [
+      "anchor build --manifest-path game_token/Anchor_v2.toml",
+      "anchor deploy --provider.cluster devnet",
+      "node game_token/deploy_v2_contract.js",
+      "node game_token/test_auto_mint_v2.js"
+    ]
+  }
+}
+
+
+
+

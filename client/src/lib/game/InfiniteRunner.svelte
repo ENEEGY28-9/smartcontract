@@ -9,6 +9,12 @@
   import { authStore, authActions } from '$lib/stores/auth';
   import { gameState, gameActions } from '$lib/stores/gameStore';
 
+  // Subscribe to auth store for conditional rendering
+  let isAuthenticated = false;
+  const unsubscribeAuth = authStore.subscribe(state => {
+    isAuthenticated = state.isAuthenticated;
+  });
+
   // Token components
   import TokenBalance from '$lib/components/TokenBalance.svelte';
   import TokenHistory from '$lib/components/TokenHistory.svelte';
@@ -29,6 +35,17 @@
   let isGameStarted = false;
   let score = 0;
   let fps = 0;
+
+  // Energy tracking simplified - just log changes
+  let lastKnownEnergyBalance = 0;
+  $: {
+    const currentBalance = $gameState.tokenBalance || 0;
+    if (lastKnownEnergyBalance !== 0 && currentBalance !== lastKnownEnergyBalance) {
+      const change = currentBalance - lastKnownEnergyBalance;
+      console.log(`📈 Energy balance changed: ${lastKnownEnergyBalance} → ${currentBalance} (${change > 0 ? '+' : ''}${change} point${Math.abs(change) > 1 ? 's' : ''})`);
+    }
+    lastKnownEnergyBalance = currentBalance;
+  }
   
   // Debug input state
   let debugInputState = {
@@ -40,6 +57,9 @@
     groundLevel: 2,
     hasPhysicsBody: false
   };
+
+  // Debug panel
+  let showDebugPanel = false;
 
   // Three.js components (will be initialized in onMount)
   let scene = null;
@@ -59,6 +79,7 @@
   // Debug state
   let canvasReady = false;
   let isBoostActive = false; // Track boost state for reactive UI
+  let debugCollision = false; // Debug collision distances
 
   // Ground plane for reference
   let groundMesh = null;
@@ -66,15 +87,9 @@
   // Tooltip observer
   let tooltipObserver = null;
 
-  // Collectible generation tracking
-  let lastGeneratedSegment = null;
+  // Collectible management now handled by CollectibleManager
 
-  // Track existing collectibles to avoid duplicates
-  let existingCollectiblePositions = new Set();
-
-  // Particle spawning system
-  let particleSpawnWebSocket = null;
-  let particleSpawnEnabled = true;
+  // Removed particle spawning system - simplified gameplay
 
   // Minimap data
   let minimapData = {
@@ -82,18 +97,16 @@
     collectibles: [] as Array<{ x: number; z: number; type: string }>
   };
 
-  // Token callbacks for collectibles
-  const tokenCallbacks = {
-    onTokenMint: async (position: [number, number], type: CollectibleType) => {
-      // Use TokenService for minting
-      return await TokenService.mintTokenOnCollect(position, type);
-    },
-
-    onShowRewardEffect: (newBalance: number) => {
-      // Show token reward effect using TokenService
-      TokenService.showTokenRewardEffect(newBalance);
+  // Simple callback for collectibles - just increase energy balance
+  const collectibleCallbacks = {
+    onCollect: (points: number) => {
+      // Simply increase energy balance locally
+      gameActions.addTokenEarned(points);
+      console.log(`⚡ Energy increased by ${points} point${points > 1 ? 's' : ''}!`);
     }
   };
+
+  // Removed pool balance monitoring - collectibles spawn automatically
 
 
 
@@ -130,11 +143,7 @@
         }
       }, 100);
 
-      // Connect token WebSocket for real-time updates
-      TokenService.connectWebSocket();
-
-      // Setup particle spawning WebSocket
-      setupParticleSpawningSystem();
+      // Removed token WebSocket and particle spawning - simplified gameplay
 
     } catch (error) {
       console.error('❌ Failed to initialize game:', error);
@@ -143,14 +152,8 @@
   });
 
   onDestroy(() => {
-    // Disconnect token WebSocket
-    TokenService.disconnectWebSocket();
-
-    // Disconnect particle spawning WebSocket
-    if (particleSpawnWebSocket) {
-      particleSpawnWebSocket.close();
-      particleSpawnWebSocket = null;
-    }
+    // Cleanup auth subscription
+    unsubscribeAuth();
 
     cleanup();
   });
@@ -463,11 +466,33 @@
         throw new Error('Cannot initialize camera controller: missing camera, player, or input manager');
       }
 
-      // Initialize collectible manager with token callbacks
+      // Initialize collectible manager with simple callbacks
       console.log('🔄 Initializing collectible manager...');
       if (physicsManager) {
-        collectibleManager = new CollectibleManager(physicsManager, {}, tokenCallbacks);
-        console.log('✅ Collectible manager initialized');
+        const collectibleConfig = {
+          spawnDistance: 30,      // Spawn 30 units trước player (xa hơn để player thấy rõ)
+          despawnDistance: 40,    // Despawn 40 units sau player
+          spawnInterval: 300,     // Spawn mỗi 300ms để không quá dày đặc
+          maxCollectibles: 15,    // Tối đa 15 collectibles cùng lúc
+          laneWidth: 2.8         // Lane width
+        };
+        try {
+          collectibleManager = new CollectibleManager(physicsManager, collectibleConfig, collectibleCallbacks);
+          console.log('✅ Collectible manager initialized with config:', collectibleConfig);
+
+          // Force spawn initial collectibles for immediate gameplay
+          console.log('🎯 Force spawning initial collectibles for gameplay...');
+          for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+              if (collectibleManager) {
+                (collectibleManager as any).trySpawnCollectible();
+              }
+            }, i * 150);
+          }
+        } catch (error) {
+          console.error('❌ Failed to initialize CollectibleManager:', error);
+          collectibleManager = null;
+        }
       } else {
         throw new Error('Cannot initialize collectible manager: missing physics manager');
       }
@@ -544,27 +569,9 @@
       // Create some basic environment (placeholder)
       createEnvironment();
 
-      // Generate initial collectibles using manager
-      console.log('🏗️ Setting up scene, generating initial collectibles...');
-      generateInitialCollectibles();
+      // Collectibles will be spawned and synced with scene during gameplay
 
-      console.log('🏗️ Scene setup complete');
-
-      // Add collectible manager meshes to scene
-      if (collectibleManager) {
-        const collectibleMeshes = collectibleManager.getMeshes();
-        collectibleMeshes.forEach(mesh => {
-          mesh.userData = { isCollectible: true };
-          scene.add(mesh);
-        });
-        console.log(`🎮 Added ${collectibleMeshes.length} collectible meshes to scene`);
-      }
-
-      // Log collectibles in scene
-      const collectiblesInScene = scene.children.filter(child =>
-        child.userData && child.userData.isCollectible
-      ).length;
-      console.log(`🎮 Total collectibles in scene after setup: ${collectiblesInScene}`);
+      console.log('🏗️ Scene setup complete - collectibles will be managed dynamically');
     } catch (error) {
       console.error('❌ Scene setup error:', error);
     }
@@ -590,141 +597,9 @@
     }
   }
 
-  /**
-   * Generate initial collectibles in front of player (similar to trees)
-   */
-  function generateInitialCollectibles() {
-    if (!physicsManager || !scene) return;
+  // Removed generateInitialCollectibles - now handled by CollectibleManager
 
-    try {
-      console.log('🎈 Generating initial collectibles...');
-
-      // Create collectibles at various positions in front of player, similar to tree placement
-      let collectiblesCreated = 0;
-
-      for (let i = 0; i < 10; i++) {
-        // Random lane position (-1, 0, 1) similar to tree x positions
-        const lane = Math.floor(Math.random() * 3) - 1;
-        const x = lane * 2.8; // Lane width
-
-        // Generate Z positions similar to trees (-20 to -120 range)
-        const z = -20 - Math.random() * 80; // -20 to -100 range
-
-        // Random Y position (slightly above ground, similar to trees at y=2)
-        const y = 1 + Math.random() * 0.5; // 1-1.5 units above ground
-
-        const position = new THREE.Vector3(x, y, z);
-        const positionKey = `${x.toFixed(1)},${y.toFixed(1)},${z.toFixed(1)}`;
-
-        // Skip if collectible already exists at this position
-        if (existingCollectiblePositions.has(positionKey)) {
-          console.log(`⏭️ Skipping duplicate collectible at (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`);
-          continue;
-        }
-
-        existingCollectiblePositions.add(positionKey);
-
-        // Random collectible type
-        const collectibleTypes = [CollectibleType.SMALL, CollectibleType.MEDIUM, CollectibleType.LARGE];
-        const randomType = collectibleTypes[Math.floor(Math.random() * collectibleTypes.length)];
-
-        try {
-          const collectible = new Collectible(physicsManager, {
-            type: randomType,
-            position
-          }, tokenCallbacks);
-
-          // Add collectible mesh directly to scene for now (simpler approach)
-          const mesh = collectible.getMesh();
-          if (mesh) {
-            mesh.userData = { isCollectible: true };
-            scene.add(mesh);
-            collectiblesCreated++;
-            console.log(`➕ Added initial ${randomType} collectible mesh to scene at (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`);
-          } else {
-            console.warn(`⚠️ Failed to get mesh for ${randomType} collectible at (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)})`);
-          }
-        } catch (error) {
-          console.error(`❌ Failed to create ${randomType} collectible at (${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)}):`, error);
-        }
-      }
-
-      console.log(`🎉 Finished generating initial collectibles: ${collectiblesCreated} created`);
-    } catch (error) {
-      console.error('❌ Failed to generate initial collectibles:', error);
-    }
-  }
-
-  /**
-   * Generate collectibles in front of player (similar to trees)
-   */
-  function generateCollectibles() {
-    if (!player || !physicsManager || !scene) return;
-
-    try {
-      const playerPosition = player.getPosition();
-      const currentZ = playerPosition.z;
-
-      // Generate collectibles every 25 units of player movement
-      const segmentSize = 25;
-      const currentSegment = Math.floor(currentZ / segmentSize) * segmentSize;
-
-      // Check if we've already generated collectibles for this segment
-      if (lastGeneratedSegment === currentSegment) {
-        return;
-      }
-
-      lastGeneratedSegment = currentSegment;
-
-      console.log(`🎯 Generating collectibles for segment at z=${currentSegment}`);
-
-      // Generate 2-4 collectibles per segment (similar to trees)
-      const numCollectibles = Math.floor(Math.random() * 3) + 2; // 2-4 collectibles
-
-      for (let i = 0; i < numCollectibles; i++) {
-        // Random lane position (-1, 0, 1) similar to tree x positions
-        const lane = Math.floor(Math.random() * 3) - 1;
-        const x = lane * 2.8; // Lane width
-
-        // Generate Z positions ahead of player (similar to trees)
-        const z = currentSegment - Math.random() * 20 - 5; // 5-25 units ahead of current segment
-
-        // Random Y position (slightly above ground, similar to trees at y=2)
-        const y = 1 + Math.random() * 0.5; // 1-1.5 units above ground
-
-        const position = new THREE.Vector3(x, y, z);
-        const positionKey = `${x.toFixed(1)},${y.toFixed(1)},${z.toFixed(1)}`;
-
-        // Skip if collectible already exists at this position
-        if (existingCollectiblePositions.has(positionKey)) {
-          continue;
-        }
-
-        existingCollectiblePositions.add(positionKey);
-
-        // Random collectible type
-        const collectibleTypes = [CollectibleType.SMALL, CollectibleType.MEDIUM, CollectibleType.LARGE];
-        const randomType = collectibleTypes[Math.floor(Math.random() * collectibleTypes.length)];
-
-        const collectible = new Collectible(physicsManager, {
-          type: randomType,
-          position
-        });
-
-        // Add collectible mesh directly to scene for now (simpler approach)
-        const mesh = collectible.getMesh();
-        if (mesh) {
-          mesh.userData = { isCollectible: true };
-          scene.add(mesh);
-          console.log(`➕ Added ${randomType} collectible mesh to scene at (${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)})`);
-        }
-      }
-
-      console.log(`✅ Generated ${numCollectibles} collectibles for segment at z=${currentSegment}`);
-    } catch (error) {
-      console.error('❌ Error generating collectibles:', error);
-    }
-  }
+  // Removed generateCollectibles - now handled by CollectibleManager
 
   /**
    * Start the game
@@ -803,8 +678,27 @@
     console.log('▶️ Game resumed');
   }
 
-  function exitToMainMenu() {
+  async function exitToMainMenu() {
     console.log('🏠 Exiting to main menu...');
+
+    // Sync earned energy to PocketBase before exiting
+    if ($gameState.sessionTokenEarned > 0) {
+      console.log(`💰 Syncing ${$gameState.sessionTokenEarned} earned energy point${$gameState.sessionTokenEarned > 1 ? 's' : ''} to PocketBase...`);
+      try {
+        const { pocketbaseService } = await import('$lib/services/pocketbaseService');
+        const updatedEnergy = await pocketbaseService.addEnergyPoints($gameState.sessionTokenEarned);
+        console.log('✅ Energy synced to PocketBase successfully!');
+
+        // Update local tokenBalance and reset session earned
+        gameState.update(state => ({
+          ...state,
+          tokenBalance: updatedEnergy.points,
+          sessionTokenEarned: 0
+        }));
+      } catch (error) {
+        console.error('❌ Failed to sync energy to PocketBase:', error);
+      }
+    }
 
     // Stop game loop
     if (gameLoop) {
@@ -823,8 +717,27 @@
   /**
    * Reset the game
    */
-  function resetGame() {
+  async function resetGame() {
     console.log('🔄 Resetting game...');
+
+    // Sync earned energy to PocketBase before resetting
+    if ($gameState.sessionTokenEarned > 0) {
+      console.log(`💰 Syncing ${$gameState.sessionTokenEarned} earned energy point${$gameState.sessionTokenEarned > 1 ? 's' : ''} to PocketBase...`);
+      try {
+        const { pocketbaseService } = await import('$lib/services/pocketbaseService');
+        const updatedEnergy = await pocketbaseService.addEnergyPoints($gameState.sessionTokenEarned);
+        console.log('✅ Energy synced to PocketBase successfully!');
+
+        // Update local tokenBalance and reset session earned
+        gameState.update(state => ({
+          ...state,
+          tokenBalance: updatedEnergy.points,
+          sessionTokenEarned: 0
+        }));
+      } catch (error) {
+        console.error('❌ Failed to sync energy to PocketBase:', error);
+      }
+    }
 
     // Stop game if running
     if (isGameRunning) {
@@ -838,17 +751,7 @@
     isGameStarted = false;
     score = 0;
 
-    // Reset generation tracking
-    lastGeneratedSegment = null;
-
-    // Clear existing collectible positions
-    existingCollectiblePositions.clear();
-
-    // Remove all collectibles from scene
-    scene.children = scene.children.filter(child => {
-      return !(child.userData && child.userData.isCollectible);
-    });
-    console.log('🗑️ Removed all collectibles from scene during reset');
+    // CollectibleManager will handle resetting collectibles
 
     // Reset player position (if player has reset method)
     if (player && typeof player.reset === 'function') {
@@ -972,6 +875,10 @@
    * Update game state
    */
   async function updateGameState(deltaTime) {
+    // Collectibles are spawned automatically by CollectibleManager
+
+    console.log(`🎮 Game update: deltaTime=${deltaTime.toFixed(3)}s, player exists=${!!player}`);
+
     if (!player) return;
 
     try {
@@ -979,13 +886,21 @@
       const playerPosition = player.getPosition();
       const distanceScore = Math.floor(Math.abs(playerPosition.z));
 
+      console.log(`📍 Player position: (${playerPosition.x.toFixed(1)}, ${playerPosition.y.toFixed(1)}, ${playerPosition.z.toFixed(1)})`);
+
       // Update collectible manager (spawning and collision detection)
+      console.log(`🎯 CollectibleManager status: ${collectibleManager ? 'AVAILABLE' : 'NOT AVAILABLE'}`);
       if (collectibleManager) {
         // Set player reference for collision detection
-        collectibleManager.setPlayer(player);
+        collectibleManager.setPlayer(player, debugCollision);
+        console.log('🎯 Collectible manager update starting...');
 
-        // Update collectibles (async due to token API calls)
-        const collectiblePoints = await collectibleManager.update(deltaTime);
+        // Update collectibles (energy updated via callbacks when collisions occur)
+        const collectiblePoints = collectibleManager.update(deltaTime);
+        console.log(`🎯 CollectibleManager earned ${collectiblePoints} point${collectiblePoints > 1 ? 's' : ''} this frame`);
+
+        // Sync collectible meshes with scene (add new ones, remove old ones)
+        syncCollectibleMeshes();
 
         // Update total score (distance + collectibles)
         score = distanceScore + collectiblePoints;
@@ -999,78 +914,50 @@
         // Update minimap data
         updateMinimapData(playerPosition);
       } else {
-        // Fallback to old logic if manager not available
-        // Generate new collectibles in front of player (less frequent for performance)
-        if (Math.abs(distanceScore % 10) < 0.1) { // Every 10 units of movement
-          console.log(`🎯 Distance: ${distanceScore}, player at z=${playerPosition.z}, generating collectibles...`);
-          generateCollectibles();
-        }
-
-        // Check collision with collectibles manually
-        let collectiblePoints = 0;
-        const collectedIndices: number[] = [];
-
-        if (scene) {
-          scene.children.forEach((child, index) => {
-            if (child.userData && child.userData.isCollectible) {
-              const collectibleMesh = child as THREE.Mesh;
-              const collectiblePos = collectibleMesh.position;
-
-              // Calculate distance between player and collectible
-              const distance = Math.sqrt(
-                Math.pow(playerPosition.x - collectiblePos.x, 2) +
-                Math.pow(playerPosition.z - collectiblePos.z, 2)
-              );
-
-              // Collect if within range (1.5 units)
-              if (distance < 1.5) {
-                console.log(`⚡ Collected energy at (${collectiblePos.x.toFixed(1)}, ${collectiblePos.z.toFixed(1)}), distance: ${distance.toFixed(2)}`);
-                collectedIndices.push(index);
-                collectiblePoints += 10; // 10 points per collectible
-
-                // Add visual feedback - temporary scale effect on collectible before removal
-                collectibleMesh.scale.set(0.1, 0.1, 0.1);
-                if (collectibleMesh.material && 'opacity' in collectibleMesh.material) {
-                  collectibleMesh.material.opacity = 0.1;
-                }
-              }
-            }
-          });
-
-          // Remove collected collectibles (in reverse order to maintain indices)
-          collectedIndices.reverse().forEach(index => {
-            const child = scene.children[index];
-            if (child && child.userData && child.userData.isCollectible) {
-              console.log('🗑️ Removing collected collectible from scene');
-              scene.remove(child);
-              // Dispose geometry and material to prevent memory leaks
-              if (child instanceof THREE.Mesh) {
-                child.geometry.dispose();
-                if (Array.isArray(child.material)) {
-                  child.material.forEach(mat => mat.dispose());
-                } else {
-                  child.material.dispose();
-                }
-              }
-            }
-          });
-        }
-
-        // Update total score (distance + collectibles)
-        score = distanceScore + collectiblePoints;
-
-        // Check for game over conditions (placeholder)
-        if (playerPosition.y < -10) {
-          // Game over logic would go here
-          console.log('💀 Player fell off the world!');
-        }
-
-        // Update minimap data
-        updateMinimapData(playerPosition);
+        console.error('❌ CollectibleManager not available - collectibles disabled');
       }
 
     } catch (error) {
       console.error('❌ Game state update error:', error);
+    }
+  }
+
+  /**
+   * Sync collectible meshes with scene
+   */
+  function syncCollectibleMeshes() {
+    if (!scene || !collectibleManager) return;
+
+    // Get current meshes from CollectibleManager
+    const currentMeshes = collectibleManager.getMeshes();
+
+    // Get meshes currently in scene
+    const sceneCollectibles = scene.children.filter(child =>
+      child.userData && child.userData.isCollectible
+    );
+
+    // Add new meshes to scene
+    let addedCount = 0;
+    currentMeshes.forEach(mesh => {
+      if (!scene.children.includes(mesh)) {
+        mesh.userData = { isCollectible: true };
+        scene.add(mesh);
+        addedCount++;
+      }
+    });
+
+    // Remove old meshes from scene
+    let removedCount = 0;
+    sceneCollectibles.forEach(mesh => {
+      if (!currentMeshes.includes(mesh)) {
+        scene.remove(mesh);
+        removedCount++;
+      }
+    });
+
+    // Log collectible status
+    if (addedCount > 0 || removedCount > 0 || currentMeshes.length > 0) {
+      console.log(`🔄 Collectible meshes: +${addedCount} added, -${removedCount} removed, total active: ${currentMeshes.length}`);
     }
   }
 
@@ -1173,193 +1060,7 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  /**
-   * Setup particle spawning system based on blockchain events
-   */
-  function setupParticleSpawningSystem() {
-    try {
-      console.log('⚡ Setting up particle spawning system...');
-
-      // Connect to particle spawning WebSocket
-      particleSpawnWebSocket = new WebSocket('ws://localhost:8080/particle-spawn');
-
-      particleSpawnWebSocket.onopen = () => {
-        console.log('🔗 Particle spawning WebSocket connected');
-        particleSpawnEnabled = true;
-      };
-
-      particleSpawnWebSocket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'particle_spawn') {
-            handleParticleSpawnEvent(data);
-          } else if (data.type === 'token_minted') {
-            handleTokenMintedEvent(data);
-          }
-        } catch (error) {
-          console.error('Failed to parse particle spawn message:', error);
-        }
-      };
-
-      particleSpawnWebSocket.onclose = () => {
-        console.log('🔌 Particle spawning WebSocket disconnected');
-        particleSpawnEnabled = false;
-        // Attempt to reconnect after 5 seconds
-        setTimeout(() => {
-          if (!particleSpawnWebSocket || particleSpawnWebSocket.readyState === WebSocket.CLOSED) {
-            setupParticleSpawningSystem();
-          }
-        }, 5000);
-      };
-
-      particleSpawnWebSocket.onerror = (error) => {
-        console.error('Particle spawning WebSocket error:', error);
-        particleSpawnEnabled = false;
-      };
-
-      console.log('✅ Particle spawning system setup complete');
-    } catch (error) {
-      console.error('❌ Failed to setup particle spawning system:', error);
-      particleSpawnEnabled = false;
-    }
-  }
-
-  /**
-   * Handle particle spawn event from blockchain
-   */
-  function handleParticleSpawnEvent(data) {
-    if (!particleSpawnEnabled || !scene || !physicsManager) {
-      console.warn('⚠️ Particle spawning disabled or systems not ready');
-      return;
-    }
-
-    try {
-      const { x, z, type, particleId } = data;
-      const position = new THREE.Vector3(x, 1.0, z); // Spawn at y=1.0 (above ground)
-      const positionKey = `${x.toFixed(1)},1.0,${z.toFixed(1)}`;
-
-      // Skip if particle already exists at this position
-      if (existingCollectiblePositions.has(positionKey)) {
-        console.log(`⏭️ Skipping duplicate particle at (${x.toFixed(1)}, ${z.toFixed(1)})`);
-        return;
-      }
-
-      existingCollectiblePositions.add(positionKey);
-
-      // Determine collectible type based on data.type
-      let collectibleType = CollectibleType.SMALL;
-      if (type === 'large' || type === 'MEDIUM') {
-        collectibleType = CollectibleType.MEDIUM;
-      } else if (type === 'huge' || type === 'LARGE') {
-        collectibleType = CollectibleType.LARGE;
-      }
-
-      // Create collectible (particle)
-      const collectible = new Collectible(physicsManager, {
-        type: collectibleType,
-        position
-      });
-
-      // Add particle mesh to scene with special blockchain-spawned styling
-      const mesh = collectible.getMesh();
-      if (mesh) {
-        // Add golden glow for blockchain-spawned particles
-        mesh.userData = {
-          isCollectible: true,
-          blockchainSpawned: true,
-          particleId: particleId,
-          spawnTime: Date.now()
-        };
-
-        // Add golden emissive material for blockchain particles
-        if (mesh.material && 'emissive' in mesh.material && 'emissiveIntensity' in mesh.material) {
-          mesh.material.emissive = new THREE.Color(0xffd700); // Gold color
-          mesh.material.emissiveIntensity = 0.3;
-        }
-
-        scene.add(mesh);
-        console.log(`⚡ Blockchain particle spawned at (${x.toFixed(1)}, ${z.toFixed(1)}), type: ${type}, id: ${particleId}`);
-      } else {
-        console.warn(`⚠️ Failed to create mesh for blockchain particle at (${x.toFixed(1)}, ${z.toFixed(1)})`);
-      }
-
-    } catch (error) {
-      console.error('❌ Failed to handle particle spawn event:', error);
-    }
-  }
-
-  /**
-   * Handle token minted event (when player collects a particle)
-   */
-  function handleTokenMintedEvent(data) {
-    if (!particleSpawnEnabled) return;
-
-    try {
-      const { player, game_amount, owner_amount, particle_location, session_tokens } = data;
-
-      console.log(`🎉 Token minted! Player: ${player}, Game: ${game_amount}, Owner: ${owner_amount}, Location: [${particle_location[0]}, ${particle_location[1]}]`);
-
-      // Update session tokens display
-      if (typeof session_tokens === 'number') {
-        // This will be handled by TokenService WebSocket
-        console.log(`📊 Session tokens updated: ${session_tokens}`);
-      }
-
-      // Show particle collection effect at the location
-      showParticleCollectionEffect(particle_location);
-
-    } catch (error) {
-      console.error('❌ Failed to handle token minted event:', error);
-    }
-  }
-
-  /**
-   * Show visual effect when particle is collected
-   */
-  function showParticleCollectionEffect(location) {
-    if (!scene) return;
-
-    try {
-      // Create a temporary particle effect at the collection location
-      const effectGeometry = new THREE.SphereGeometry(0.5, 8, 8);
-      const effectMaterial = new THREE.MeshBasicMaterial({
-        color: 0xffd700,
-        transparent: true,
-        opacity: 0.8
-      });
-
-      const effectMesh = new THREE.Mesh(effectGeometry, effectMaterial);
-      effectMesh.position.set(location[0], 1.5, location[1]);
-      effectMesh.userData = { isEffect: true, createdAt: Date.now() };
-
-      scene.add(effectMesh);
-
-      // Animate and remove effect after 1 second
-      let scale = 1.0;
-      const animateEffect = () => {
-        scale *= 0.9;
-        effectMesh.scale.setScalar(scale);
-        if ('opacity' in effectMaterial) {
-          effectMaterial.opacity *= 0.9;
-        }
-
-        if (scale > 0.1) {
-          requestAnimationFrame(animateEffect);
-        } else {
-          scene.remove(effectMesh);
-          effectGeometry.dispose();
-          effectMaterial.dispose();
-        }
-      };
-
-      animateEffect();
-
-      console.log(`✨ Particle collection effect shown at [${location[0]}, ${location[1]}]`);
-
-    } catch (error) {
-      console.error('❌ Failed to show particle collection effect:', error);
-    }
-  }
+  // Removed all particle spawning and blockchain-related functions - simplified gameplay
 
   /**
    * Cleanup resources
@@ -1437,8 +1138,44 @@
         // Manual collectible spawn for testing (disabled)
         console.log('🎮 Manual collectible spawn disabled - collectibles are now auto-generated');
         break;
+      case 'e':
+        // Debug energy balance
+        console.log('🔍 Energy balance debug:');
+        console.log(`  Game state tokenBalance: ${$gameState.tokenBalance || 0} point${($gameState.tokenBalance || 0) !== 1 ? 's' : ''}`);
+        console.log(`  Session earned: ${$gameState.sessionTokenEarned || 0} point${($gameState.sessionTokenEarned || 0) !== 1 ? 's' : ''}`);
+        console.log(`  Last known balance: ${lastKnownEnergyBalance} point${lastKnownEnergyBalance !== 1 ? 's' : ''}`);
+        break;
+      case 's':
+        // Force spawn collectibles for testing
+        console.log('🎯 Force spawning collectibles for testing...');
+        if (collectibleManager) {
+          // Force spawn by resetting spawn timer and calling spawn method
+          for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+              if (collectibleManager) {
+                (collectibleManager as any)._lastSpawnTime = 0; // Reset spawn timer
+                (collectibleManager as any).trySpawnCollectible();
+                console.log(`✅ Forced spawn attempt ${i + 1}`);
+              }
+            }, i * 200);
+          }
+        } else {
+          console.error('❌ CollectibleManager not available for force spawn');
+        }
+        break;
+      case 'd':
+        // Toggle collision debug mode
+        debugCollision = !debugCollision;
+        console.log(`🔍 Collision debug ${debugCollision ? 'ENABLED' : 'DISABLED'}`);
+        if (debugCollision) {
+          console.log('📏 Collision threshold: 2.5 units');
+          console.log('💡 Press D again to disable collision debug');
+        }
+        break;
     }
   }
+
+  // Removed updateEnergyBalance - energy is now updated locally via collectibleCallbacks
 </script>
 
 <svelte:window on:resize={handleResize} on:keydown={handleKeyPress} />
@@ -1481,11 +1218,19 @@
   <!-- HUD Overlay -->
   <div class="hud">
     <div class="hud-top">
-      <!-- Token Balance Component -->
-      <TokenBalance />
+      <!-- Token Balance Component - Only show when authenticated -->
+      {#if isAuthenticated}
+        <TokenBalance />
+      {:else}
+        <div class="auth-message">
+          <p>🔐 Đăng nhập để xem token balance</p>
+        </div>
+      {/if}
 
-      <!-- Token History Component -->
-      <TokenHistory />
+      <!-- Token History Component - Only show when authenticated -->
+      {#if isAuthenticated}
+        <TokenHistory />
+      {/if}
 
       <div class="score">Score: {score}</div>
       <div class="fps">FPS: {fps}</div>
@@ -1522,7 +1267,7 @@
           <p>• <strong>Click anywhere to BOOST (5 seconds, 4x speed!)</strong></p>
           <p>• <strong>Your pet companion follows you on your shoulder!</strong></p>
           <p>• <strong>Minimap shows your position and energy collectibles</strong></p>
-          <p>• <strong>Collect energy orbs for bonus points (+10 each!)</strong></p>
+          <p>• <strong>Collect energy orbs ahead for +1 point each!</strong></p>
           <p>• Character faces movement direction</p>
           <br>
           <p><em>Camera always follows player smoothly. Ultra-sensitive mouse rotation (full up/down/left/right control), ultra-fast zoom, perfect tracking!</em></p>
@@ -1542,10 +1287,68 @@
         <div class="control-hint">
           <span>P</span> - Pause/Resume |
           <span>R</span> - Reset |
+          <span>D</span> - Debug Collision |
           <span class="focus-indicator" class:focused={document.activeElement === canvas}>🎯 {document.activeElement === canvas ? 'Focused' : 'Click to Focus'}</span>
         </div>
       </div>
     </div>
+
+    <!-- Debug Panel for Authentication Status -->
+    {#if showDebugPanel}
+      <div class="debug-panel" style="position: absolute; top: 10px; left: 10px; z-index: 1000;">
+        <div class="debug-title">🔐 Auth Debug</div>
+        <div class="debug-item">
+          <span>Authenticated:</span>
+          <span class="active">{$authStore.isAuthenticated ? '✅ Yes' : '❌ No'}</span>
+        </div>
+        <div class="debug-item">
+          <span>Access Token:</span>
+          <span class="active">{!!$authStore.tokens?.access_token ? '✅ Yes' : '❌ No'}</span>
+        </div>
+        <div class="debug-item">
+          <span>User:</span>
+          <span class="active">{$authStore.user?.email || 'None'}</span>
+        </div>
+        <div class="debug-item">
+          <span>User ID:</span>
+          <span class="active">{$authStore.user?.id || 'None'}</span>
+        </div>
+      </div>
+    {/if}
+
+    <!-- Debug Toggle Button - HIDDEN -->
+    <!-- <button
+      style="position: absolute; top: 10px; right: 10px; z-index: 1000; padding: 5px 10px; background: rgba(0,0,0,0.8); color: white; border: 1px solid #4a90e2; border-radius: 5px; cursor: pointer; display: none;"
+      on:click={() => showDebugPanel = !showDebugPanel}
+    >
+      🔧 Debug
+    </button> -->
+
+    <!-- Test Spawn Collectibles Button - HIDDEN -->
+    <!-- <button
+      style="position: absolute; top: 40px; right: 10px; z-index: 1000; padding: 5px 10px; background: rgba(255,0,0,0.8); color: white; border: 1px solid #ff4444; border-radius: 5px; cursor: pointer; font-size: 12px; display: none;"
+      on:click={() => {
+        if (collectibleManager) {
+          console.log('🧪 Force spawning collectibles...');
+          // Force set pool tokens to allow spawning
+          collectibleManager.updatePoolBalance(100);
+          // Try to spawn immediately
+          for (let i = 0; i < 5; i++) {
+            setTimeout(() => {
+              if (collectibleManager) {
+                // Force spawn by manipulating internal state
+                collectibleManager['_lastSpawnTime'] = 0;
+                collectibleManager['trySpawnCollectible']();
+              }
+            }, i * 100);
+          }
+        } else {
+          console.error('❌ No collectible manager available');
+        }
+      }}
+    >
+      🧪 Spawn Test
+    </button> -->
   </div>
 </div>
 
@@ -1879,6 +1682,23 @@
       width: 3px;
       height: 3px;
     }
+  }
+
+  /* Auth message styling */
+  .auth-message {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #ff6b35;
+    border-radius: 8px;
+    padding: 10px 15px;
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .auth-message p {
+    margin: 0;
+    font-weight: bold;
   }
 
   /* Responsive design */

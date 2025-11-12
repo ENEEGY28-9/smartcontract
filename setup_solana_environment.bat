@@ -113,3 +113,12 @@ echo 4. Test real minting
 echo Press any key to continue...
 pause >nul
 
+
+
+
+
+
+
+
+
+

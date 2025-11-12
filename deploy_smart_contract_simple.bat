@@ -86,3 +86,12 @@ echo 🔗 Monitor: https://explorer.solana.com/?cluster=devnet
 
 pause
 
+
+
+
+
+
+
+
+
+

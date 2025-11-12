@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { authStore, authActions } from '$lib/stores/auth';
   import { pocketbaseService } from '$lib/services/pocketbaseService';
   import { POCKETBASE_URL } from '$lib/config/pocketbase-config';
 
@@ -33,8 +34,17 @@
   async function updateAuthState() {
     try {
       console.log('🔄 Updating auth state...');
-      isAuthenticated = pocketbaseService.isAuthenticated();
-      currentUser = pocketbaseService.getCurrentUser();
+      const authState = await new Promise(resolve => {
+        const unsubscribe = authStore.subscribe(state => resolve(state));
+        unsubscribe();
+      });
+
+      isAuthenticated = authState.isAuthenticated;
+      currentUser = authState.user ? {
+        id: authState.user.id,
+        email: authState.user.email,
+        name: authState.user.email // Use email as name for now
+      } : null;
 
       console.log('✅ Auth state updated:', {
         isAuthenticated,
@@ -131,33 +141,39 @@
 
     try {
       if (isLoginMode) {
-        await pocketbaseService.authenticate(email.trim(), password);
-        success = 'Đăng nhập thành công!';
-        error = '';
-        // Clear form after successful login
-        email = '';
-        password = '';
-        confirmPassword = '';
-        // Update authentication state immediately
-        updateAuthState();
-        // Dispatch event to notify components
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('pocketbase-auth-success'));
-        }
+        const result = await authActions.login(email.trim(), password);
+        if (result.success) {
+          success = 'Đăng nhập thành công!';
+          error = '';
+          // Clear form after successful login
+          email = '';
+          password = '';
+          confirmPassword = '';
+          // Update authentication state immediately
+          updateAuthState();
 
-        // Close modal after 1 second to show success message
-        successTimeout = setTimeout(() => {
-          console.log('✅ Đăng nhập thành công, đóng modal...');
+          // Close modal after 1 second to show success message
+          successTimeout = setTimeout(() => {
+            console.log('✅ Đăng nhập thành công, đóng modal...');
+            success = '';
+            showLoginModal = false;
+            showRegisterModal = false;
+          }, 1000);
+        } else {
+          error = result.error || 'Đăng nhập thất bại';
           success = '';
-          showLoginModal = false;
-          showRegisterModal = false;
-        }, 1000);
+        }
       } else {
-        await pocketbaseService.register(email.trim(), password, {
-          name: email.split('@')[0]
-        });
-        success = 'Đăng ký thành công! Đang tạo Energy...';
-        error = '';
+        const result = await authActions.register(email.split('@')[0], email.trim(), password);
+        if (result.success) {
+          success = 'Đăng ký thành công! Đang tạo Energy...';
+          error = '';
+        } else {
+          error = result.error || 'Đăng ký thất bại';
+          success = '';
+          isLoading = false;
+          return;
+        }
 
         // Auto-create energy for new user immediately after registration
         try {
@@ -283,7 +299,7 @@
             </div>
           </div>
           <div class="menu-divider"></div>
-          <button class="menu-item logout-item" on:click={async () => { await pocketbaseService.logout(); await updateAuthState(); showUserMenu = false; }}>
+          <button class="menu-item logout-item" on:click={async () => { authActions.logout(); await updateAuthState(); showUserMenu = false; if (typeof window !== 'undefined') { window.dispatchEvent(new CustomEvent('pocketbase-auth-logout')); } }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="menu-icon">
               <path d="M12 4.5V3.5C12 2.67157 11.3284 2 10.5 2H5.5C4.67157 2 4 2.67157 4 3.5V12.5C4 13.3284 4.67157 14 5.5 14H10.5C11.3284 14 12 13.3284 12 12.5V11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               <path d="M8 10L10 12L8 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>

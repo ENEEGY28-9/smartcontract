@@ -1,0 +1,9 @@
+{
+  "programId": "Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf",
+  "gamePoolPDA": "5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc",
+  "gamePoolTokenAccount": "E2z7MS8c7HQLvW35ZdaKz74RNqZ3iTosN7iPBFyzxJHW",
+  "ownerWallet": "5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN",
+  "deployed": true,
+  "timestamp": "2025-11-10T02:34:40.380Z",
+  "note": "Simplified V2 deployment - PDA addresses calculated and ready"
+}

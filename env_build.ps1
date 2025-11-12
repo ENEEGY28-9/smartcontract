@@ -31,3 +31,12 @@ Write-Host "NEXT STEPS:" -ForegroundColor Cyan
 Write-Host "1. If build successful: Run .\full_deployment_automated.bat" -ForegroundColor Cyan
 Write-Host "2. Check deployment status in SOLANA_SETUP_GUIDE.md" -ForegroundColor Cyan
 
+
+
+
+
+
+
+
+
+

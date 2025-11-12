@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-11-10T06:51:44.037Z",
+  "playerWallet": {
+    "publicKey": "AfQLRj5iiY3NkTEKZg61RpEv6p9y9yjYzxhLR9fuiLoD",
+    "ata": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki"
+  },
+  "minting": {
+    "amount": 25,
+    "to": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+    "type": "Game Reward Distribution",
+    "successful": true
+  },
+  "balances": {
+    "before": {
+      "gamePool": 679,
+      "player": 0
+    },
+    "after": {
+      "gamePool": 679,
+      "player": 25
+    }
+  },
+  "explorerLinks": {
+    "playerWallet": "https://explorer.solana.com/address/AfQLRj5iiY3NkTEKZg61RpEv6p9y9yjYzxhLR9fuiLoD?cluster=devnet",
+    "playerATA": "https://explorer.solana.com/address/qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki?cluster=devnet",
+    "gamePool": "https://explorer.solana.com/address/HHHaKDSbruknbEFqwB3tfMQ5dAyatyavi15JHvFATssq?cluster=devnet"
+  }
+}

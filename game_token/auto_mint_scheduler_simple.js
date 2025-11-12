@@ -31,10 +31,20 @@ const payer = Keypair.fromSecretKey(new Uint8Array(keypairData));
 const MINT_INTERVAL = 60 * 1000; // 1 minute in milliseconds
 const TOKENS_PER_MINT = 100; // 100 tokens each interval
 
-// Use the working addresses from devnet testing
-const gameTokenMint = new PublicKey('2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
-const gamePoolAccount = new PublicKey('BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19');
-const ownerAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS');
+// Load from production config
+let gameTokenMint, gamePoolAccount, ownerAccount;
+try {
+  const config = JSON.parse(fs.readFileSync('./production_config.json'));
+  gameTokenMint = new PublicKey(config.gameTokenMint);
+  gamePoolAccount = new PublicKey(config.gamePoolsTokenAccount);
+  ownerAccount = new PublicKey('4K9tg8tAFMGYCZkSJA3UhC5hizFfkAceoMn6L6gfNiW9'); // Owner token account
+} catch (error) {
+  console.error('❌ Cannot load production config, using fallback addresses');
+  // Fallback addresses
+  gameTokenMint = new PublicKey('ANzKnYDd7BpiPEykuHxrfAsiox19aWzLbZrmQbL8J8Qk');
+  gamePoolAccount = new PublicKey('HHHaKDSbruknbEFqwB3tfMQ5dAyatyavi15JHvFATssq');
+  ownerAccount = new PublicKey('4K9tg8tAFMGYCZkSJA3UhC5hizFfkAceoMn6L6gfNiW9');
+}
 
 async function autoMintTokens() {
   console.log('🚀 AUTO-MINT SCHEDULER - Direct SPL Token Minting\n');
@@ -156,8 +166,8 @@ async function startAutoMintScheduler() {
     console.log('🎯 Auto-mint scheduler is now RUNNING!');
     console.log('💡 Owner will receive 20 tokens every minute');
     console.log('📊 Check balances on devnet explorer to see real-time updates');
-    console.log('🔗 Game Pool: https://explorer.solana.com/address/BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19?cluster=devnet');
-    console.log('🔗 Owner: https://explorer.solana.com/address/8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS?cluster=devnet');
+    console.log('🔗 Game Pool: https://explorer.solana.com/address/' + gamePoolAccount.toString() + '?cluster=devnet');
+    console.log('🔗 Owner: https://explorer.solana.com/address/' + ownerAccount.toString() + '?cluster=devnet');
 
   } else {
     console.error('❌ Initial mint failed, scheduler not started');
@@ -170,3 +180,9 @@ if (require.main === module) {
 }
 
 module.exports = { autoMintTokens, startAutoMintScheduler };
+
+
+
+
+
+

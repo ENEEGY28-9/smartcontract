@@ -1,5 +1,6 @@
 import PocketBase, { ClientResponseError } from 'pocketbase';
 import { POCKETBASE_URL, COLLECTIONS, WALLET_TYPES, NETWORK_TYPES } from '$lib/config/pocketbase-config';
+import { authStore } from '$lib/stores/auth';
 
 export interface WalletData {
   id?: string;
@@ -97,6 +98,7 @@ export interface ShopItemCreateData {
 
 class PocketBaseService {
   private pb: PocketBase;
+  private energyRequests = new Map<string, Promise<EnergyData>>(); // Deduplication for energy requests
 
   constructor() {
     this.pb = new PocketBase(POCKETBASE_URL);
@@ -279,12 +281,67 @@ class PocketBaseService {
     try {
       console.log('🔑 Attempting authentication for:', email);
       const authData = await this.pb.collection('users').authWithPassword(email, password);
-      console.log('✅ Authentication successful');
+      console.log('✅ PocketBase authentication successful');
       console.log('📋 Auth data received:', {
         token: authData.token ? 'present' : 'missing',
         user: authData.record ? authData.record.email : 'no record',
         recordId: authData.record?.id
       });
+
+      // Now authenticate with the gateway to get JWT tokens for API access
+      console.log('🔐 Authenticating with gateway...');
+      try {
+        const gatewayResponse = await fetch('/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: email,
+            password: password
+          }),
+        });
+
+        if (gatewayResponse.ok) {
+          const gatewayAuth = await gatewayResponse.json();
+          console.log('✅ Gateway authentication successful');
+
+          // Store gateway tokens in localStorage for the auth store
+          const authTokens = {
+            access_token: gatewayAuth.access_token,
+            refresh_token: gatewayAuth.refresh_token,
+            expires_in: gatewayAuth.expires_in,
+            expires_at: Date.now() + (gatewayAuth.expires_in * 1000),
+          };
+
+          const authUser = {
+            id: gatewayAuth.user.id,
+            email: gatewayAuth.user.email,
+            solanaWalletAddress: undefined,
+            tokenBalance: 0,
+          };
+
+          // Update auth store with gateway tokens
+          authStore.set({
+            user: authUser,
+            tokens: authTokens,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('auth_tokens', JSON.stringify(authTokens));
+            localStorage.setItem('auth_user', JSON.stringify(authUser));
+            console.log('💾 Gateway auth tokens stored in localStorage and auth store updated');
+          }
+        } else {
+          console.warn('⚠️ Gateway authentication failed, but PocketBase login succeeded');
+          console.warn('Gateway response:', gatewayResponse.status, gatewayResponse.statusText);
+        }
+      } catch (gatewayError) {
+        console.warn('⚠️ Failed to authenticate with gateway:', gatewayError);
+        console.warn('Continuing with PocketBase authentication only');
+      }
 
       // Dispatch event to notify components about auth state change
       if (typeof window !== 'undefined') {
@@ -335,6 +392,61 @@ class PocketBaseService {
           user: authData.record ? authData.record.email : 'no record',
           recordId: authData.record?.id
         });
+
+        // Now authenticate with the gateway to get JWT tokens for API access
+        console.log('🔐 Authenticating with gateway after registration...');
+        try {
+          const gatewayResponse = await fetch('/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username: email,
+              password: password
+            }),
+          });
+
+          if (gatewayResponse.ok) {
+            const gatewayAuth = await gatewayResponse.json();
+            console.log('✅ Gateway authentication successful after registration');
+
+            // Store gateway tokens in localStorage for the auth store
+            const authTokens = {
+              access_token: gatewayAuth.access_token,
+              refresh_token: gatewayAuth.refresh_token,
+              expires_in: gatewayAuth.expires_in,
+              expires_at: Date.now() + (gatewayAuth.expires_in * 1000),
+            };
+
+            const authUser = {
+              id: gatewayAuth.user.id,
+              email: gatewayAuth.user.email,
+              solanaWalletAddress: undefined,
+              tokenBalance: 0,
+            };
+
+            // Update auth store with gateway tokens
+            authStore.set({
+              user: authUser,
+              tokens: authTokens,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('auth_tokens', JSON.stringify(authTokens));
+              localStorage.setItem('auth_user', JSON.stringify(authUser));
+              console.log('💾 Gateway auth tokens stored in localStorage and auth store updated after registration');
+            }
+          } else {
+            console.warn('⚠️ Gateway authentication failed after registration, but PocketBase registration succeeded');
+            console.warn('Gateway response:', gatewayResponse.status, gatewayResponse.statusText);
+          }
+        } catch (gatewayError) {
+          console.warn('⚠️ Failed to authenticate with gateway after registration:', gatewayError);
+          console.warn('Continuing with PocketBase registration only');
+        }
 
         // Dispatch event to notify components about auth state change
         if (typeof window !== 'undefined') {
@@ -507,33 +619,82 @@ class PocketBaseService {
   // Create wallet
   async createWallet(walletData: WalletCreateData, userId?: string): Promise<WalletData> {
     try {
+      const user = userId || this.pb.authStore.model?.id;
+      if (!user) {
+        throw new Error('No user ID available for wallet creation');
+      }
+
       const data = {
         ...walletData,
-        user_id: userId || this.pb.authStore.model?.id,
+        user_id: user,
         is_connected: false,
         balance_last_updated: new Date().toISOString()
       };
 
+      console.log('📝 Creating wallet in PocketBase:', data);
+
+      // Always attempt to create in PocketBase, even if auth might not be fully synced
+      // The PocketBase client should handle authentication internally
       const record = await this.pb.collection(COLLECTIONS.WALLETS).create(data);
+      console.log('✅ Wallet created successfully in PocketBase:', record.id);
       return record as WalletData;
     } catch (error) {
-      console.error('Error creating wallet:', error);
+      console.error('❌ Error creating wallet in PocketBase:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.status,
+        data: error.data
+      });
+
+      // Re-throw all errors to let the caller handle authentication issues properly
       throw error;
     }
   }
 
   // Get wallet by address
-  async getWalletByAddress(address: string, network: string): Promise<WalletData | null> {
+  async getWalletByAddress(address: string, network: string, userId?: string): Promise<WalletData | null> {
     try {
+      // If userId provided, check wallet ownership
+      const userFilter = userId ? ` && user_id = "${userId}"` : '';
       const records = await this.pb.collection(COLLECTIONS.WALLETS)
         .getList(1, 1, {
-          filter: `address = "${address}" && network = "${network}"`
+          filter: `address = "${address}" && network = "${network}"${userFilter}`
         });
 
       return records.items.length > 0 ? records.items[0] as WalletData : null;
     } catch (error) {
       console.error('Error getting wallet:', error);
       return null;
+    }
+  }
+
+  // Check if address exists globally (for security)
+  async addressExistsGlobally(address: string, network: string): Promise<boolean> {
+    try {
+      const records = await this.pb.collection(COLLECTIONS.WALLETS)
+        .getList(1, 1, {
+          filter: `address = "${address}" && network = "${network}"`
+        });
+
+      return records.items.length > 0;
+    } catch (error) {
+      console.error('Error checking global address existence:', error);
+      return false;
+    }
+  }
+
+  // Check if user already has a wallet for this network
+  async userHasWalletForNetwork(userId: string, network: string): Promise<boolean> {
+    try {
+      const records = await this.pb.collection(COLLECTIONS.WALLETS)
+        .getList(1, 1, {
+          filter: `user_id = "${userId}" && network = "${network}"`
+        });
+
+      return records.items.length > 0;
+    } catch (error) {
+      console.error('Error checking user wallet for network:', error);
+      return false;
     }
   }
 
@@ -718,8 +879,71 @@ class PocketBaseService {
         throw new Error('No user ID available');
       }
 
-      console.log('🔍 Checking energy record for user:', user);
+      // DEBUG: Log current auth state
+      console.log('🔐 ENERGY SERVICE AUTH DEBUG:', {
+        requestedUserId: userId,
+        authStoreUserId: this.pb.authStore.model?.id,
+        authStoreEmail: this.pb.authStore.model?.email,
+        finalUserId: user,
+        isAuthValid: this.pb.authStore.isValid,
+        tokenPresent: !!this.pb.authStore.token
+      });
 
+      // If using gateway auth and PocketBase auth is not available, return default energy
+      if (userId && !this.pb.authStore.model) {
+        console.log('🔄 Using gateway auth without PocketBase sync - returning default energy');
+        return {
+          id: 'gateway-energy',
+          user_id: userId,
+          points: 0,
+          created: new Date().toISOString(),
+          updated: new Date().toISOString()
+        } as EnergyData;
+      }
+
+      // Check if there's already a pending request for this user
+      const existingRequest = this.energyRequests.get(user);
+      if (existingRequest) {
+        console.log('🔄 Returning existing energy request for user:', user);
+        return existingRequest;
+      }
+
+      console.log('🔍 Checking energy record for user:', user, `(email: ${this.pb.authStore.model?.email})`);
+
+      // Create new request and store it
+      const requestPromise = this._getOrCreateUserEnergyInternal(user);
+      this.energyRequests.set(user, requestPromise);
+
+      try {
+        const result = await requestPromise;
+        return result;
+      } finally {
+        // Clean up the request from the map
+        this.energyRequests.delete(user);
+      }
+    } catch (error) {
+      // Clean up on error too
+      const user = userId || this.pb.authStore.model?.id;
+      if (user) {
+        this.energyRequests.delete(user);
+      }
+
+      // Return default energy data on error to keep the app functional
+      console.log('⚠️ Energy service failed, returning default energy data');
+      return {
+        id: 'fallback-energy',
+        user_id: userId || 'unknown',
+        points: 0,
+        created: new Date().toISOString(),
+        updated: new Date().toISOString()
+      } as EnergyData;
+    }
+  }
+
+  // Internal method for the actual logic
+  private async _getOrCreateUserEnergyInternal(user: string): Promise<EnergyData> {
+
+    try {
       // Try to get existing energy record
       const existingRecords = await this.pb.collection(COLLECTIONS.ENERGY)
         .getList(1, 1, {
@@ -815,14 +1039,13 @@ class PocketBaseService {
       console.log('📋 Energy record:', energyRecord);
 
       console.log('📝 Updating energy record with ID:', energyRecord.id!, 'to points:', points);
-      
+
       // Ensure points is explicitly set as a number to avoid validation issues
       const updateData: any = {
         points: Number(points),
-        user_id: energyRecord.user_id,
-        last_updated: new Date().toISOString()
+        user_id: energyRecord.user_id
       };
-      
+
       console.log('📊 Update data:', updateData);
       console.log('📊 Update data types:', {
         points: typeof updateData.points,

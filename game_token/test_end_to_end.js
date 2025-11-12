@@ -41,25 +41,25 @@ async function testEndToEndFlow() {
   });
   anchor.setProvider(provider);
 
-  const programId = new PublicKey('Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTe');
-  const idl = JSON.parse(fs.readFileSync('./target/idl/game_token.json', 'utf8'));
+  const programId = new PublicKey('Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf');
+  const idl = JSON.parse(fs.readFileSync('./target/idl/game_token_v2.json', 'utf8'));
   const program = new anchor.Program(idl, programId, provider);
 
   // Deployed addresses
   const gameTokenMint = new PublicKey('2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
-  const ownerAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS');
+  const ownerAccount = new PublicKey('5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN');
 
-  // Derive PDAs
+  // Derive V2 PDAs
   const [mintingAuthority] = PublicKey.findProgramAddressSync(
     [Buffer.from("minting_authority")],
     programId
   );
   const [gamePools] = PublicKey.findProgramAddressSync(
-    [Buffer.from("game_pools")],
+    [Buffer.from("game_pools_v2")],
     programId
   );
   const [gamePoolsTokenAccount] = PublicKey.findProgramAddressSync(
-    [Buffer.from("game_pools_token_account")],
+    [Buffer.from("game_pools_v2_token_account")],
     programId
   );
 
@@ -265,3 +265,8 @@ async function testEndToEndFlow() {
 
 // Run the test
 testEndToEndFlow().catch(console.error);
+
+
+
+
+

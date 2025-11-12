@@ -59,3 +59,12 @@ test_real_minting.bat
 
 **🚀 READY FOR MANUAL DEPLOYMENT COMPLETION**
 
+
+
+
+
+
+
+
+
+

@@ -267,3 +267,12 @@ log "Running final verification..."
 solana config get
 solana balance
 pm2 list
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,12 @@
+{
+  "address": "4UkWvx2Y59XSuhaCfeYDS56RM1WcsSdgjJ7yzLEbMyNf",
+  "privateKey": "4833c5ff486d8565c57032406391616ffe25b14e802a90a57667fd6405d97c1833aef244ea73b7cf650a0e6aaf8ba44f6e5765e7ab9e524af8932c274312aa68",
+  "publicKey": "4UkWvx2Y59XSuhaCfeYDS56RM1WcsSdgjJ7yzLEbMyNf",
+  "created": "2025-11-07T09:00:11.992Z",
+  "network": "devnet",
+  "gamePool": "5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc",
+  "gameTokenMint": "2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK",
+  "simulatedBalance": 2,
+  "simulationNote": "This balance is simulated for testing E-to-SOL claims",
+  "lastUpdated": "2025-11-07T09:45:16.924Z"
+}

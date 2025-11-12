@@ -157,3 +157,12 @@ spl-token balance [GAME_POOL_TOKEN_ACCOUNT]
 
 ## 🎯 Final Goal:
 **Devnet hoàn toàn sync với logic mới: 100 tokens/phút, 80/20 distribution, Owner nhận 20 tokens mỗi phút!** 🚀💎
+
+
+
+
+
+
+
+
+

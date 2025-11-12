@@ -163,8 +163,8 @@ export class TokenService {
       this.networkConfig = {
         rpcUrl: 'https://api.devnet.solana.com',
         gameTokenMint: '2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK',
-        gamePoolAccount: 'BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19',
-        ownerAccount: '8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS',
+        gamePoolAccount: '5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc',
+        ownerAccount: '5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN',
         isProduction: false,
         deploymentInfoPath: '/game_token/devnet_deployment_updated.json'
       };
@@ -269,71 +269,67 @@ export class TokenService {
   }
 
   /**
-   * Player earns tokens from auto-filled game pool (LOGIC ĐÚNG)
-   * Game pool được auto-mint scheduler fill định kỳ, player chỉ nhận thưởng từ pool có sẵn
-   * KHÔNG PHỤ THUỘC vào việc mint trực tiếp khi ăn particle
+   * Player collects energy particles in game (THU THẬP NĂNG LƯỢNG)
+   * Khi ăn particle → tăng energies trong PocketBase, không phải token balance
    */
   static async mintTokenOnCollect(
     particleLocation: [number, number],
     particleType: CollectibleType
   ): Promise<TokenMintResult> {
-    try {
-      // LOGIC ĐÚNG: Player chỉ nhận thưởng từ game pool đã được auto-mint
-      // Game pool được fill bởi auto-mint scheduler KHÔNG PHỤ THUỘC player activity
-      // Owner đã nhận 20% ngay từ auto-mint, player chỉ lấy từ 80% còn lại
+    console.log('🎯 mintTokenOnCollect called:', { particleLocation, particleType });
 
+    try {
       const accessToken = authStore.tokens?.access_token;
-      if (!accessToken) {
+      const isAuthenticated = authStore.isAuthenticated;
+
+      console.log('🔐 Auth status:', {
+        hasAccessToken: !!accessToken,
+        isAuthenticated,
+        user: authStore.user?.email
+      });
+
+      if (!accessToken || !isAuthenticated) {
+        console.error('❌ Not authenticated - cannot collect energy');
         return {
           success: false,
           error: 'Not authenticated'
         };
       }
 
-      // LOGIC ĐÚNG: Gọi API để transfer từ game pool (đã được auto-mint fill) cho player
-      const response = await fetch(`${this.BASE_URL}/api/token/earn-from-pool`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
+      // LOGIC MỚI: Khi ăn particle → tăng energies trong PocketBase
+      // Import PocketBase service dynamically to avoid circular dependency
+      const { pocketbaseService } = await import('$lib/services/pocketbaseService');
+
+      try {
+        console.log('📡 Calling pocketbaseService.addEnergyPoints(1)...');
+        // Thêm 1 energy point vào PocketBase khi ăn particle
+        const energyResult = await pocketbaseService.addEnergyPoints(1);
+
+        console.log('✅ Energy collection successful:', {
           particle_location: particleLocation,
           particle_type: particleType,
-          amount: 1, // Mỗi hạt = 1 token từ pool
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Update game store with new balance
-        if (data.new_balance !== undefined) {
-          gameActions.updateTokenBalance(data.new_balance);
-          gameActions.addTokenEarned(1);
-        }
-
-        console.log('🎯 Earned token from game pool:', {
-          particle_location: particleLocation,
-          new_balance: data.new_balance,
-          remaining_pool: data.remaining_pool
+          new_energy_balance: energyResult.points
         });
+
+        // Update local energy display in wallet
+        // Note: This will be reflected in wallet UI through PocketBase subscription
 
         return {
           success: true,
-          new_balance: data.new_balance,
-          tx_signature: data.tx_signature,
-          remaining_pool: data.remaining_pool,
+          new_balance: energyResult.points, // Return energy balance
+          tx_signature: `energy_collect_${Date.now()}`, // Mock signature for UI
         };
-      } else {
-        console.error('Token earning failed:', data);
+
+      } catch (energyError) {
+        console.error('❌ Failed to add energy points:', energyError);
         return {
           success: false,
-          error: data.error || 'Earning failed'
+          error: 'Failed to collect energy'
         };
       }
+
     } catch (error) {
-      console.error('Token earning error:', error);
+      console.error('❌ Energy collection error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Network error'
@@ -445,7 +441,7 @@ export class TokenService {
   }
 
   /**
-   * Show token reward effect (called by Collectible)
+   * Show energy reward effect (called by Collectible)
    */
   static showTokenRewardEffect(newBalance: number): void {
     // Create floating notification
@@ -453,9 +449,9 @@ export class TokenService {
     notification.className = 'token-reward-notification';
     notification.innerHTML = `
       <div class="reward-content">
-        <span class="token-icon">🪙</span>
-        <span class="reward-text">+1 TOKEN</span>
-        <span class="balance-text">Balance: ${newBalance.toLocaleString()}</span>
+        <span class="token-icon">⚡</span>
+        <span class="reward-text">+1 ENERGY</span>
+        <span class="balance-text">Energy: ${newBalance.toLocaleString()}</span>
       </div>
     `;
 
@@ -634,6 +630,95 @@ export class TokenService {
   }
 
   /**
+   * Claim energies to user wallet
+   */
+  static async claimEnergiesToWallet(
+    amount: number,
+    userWallet: string
+  ): Promise<{ success: boolean; tx_signature?: string; claimed_amount?: number; remaining_energies?: number; error?: string }> {
+    try {
+      const accessToken = authStore.tokens?.access_token;
+      if (!accessToken) {
+        return { success: false, error: 'Not authenticated' };
+      }
+
+      // Validate inputs
+      if (amount <= 0) {
+        return { success: false, error: 'Amount must be greater than 0' };
+      }
+
+      if (!userWallet || userWallet.trim().length === 0) {
+        return { success: false, error: 'User wallet address is required' };
+      }
+
+      console.log('🔄 Claiming energies to wallet:', { amount, userWallet });
+
+      const response = await fetch(`${this.BASE_URL}/api/energies/claim-to-wallet`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          amount: amount,
+          user_wallet: userWallet.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        console.log('✅ Successfully claimed energies:', data);
+        return {
+          success: true,
+          tx_signature: data.tx_signature,
+          claimed_amount: data.claimed_amount,
+          remaining_energies: data.remaining_energies,
+        };
+      } else {
+        console.error('❌ Claim energies failed:', data);
+        return {
+          success: false,
+          error: data.error || 'Claim failed'
+        };
+      }
+    } catch (error) {
+      console.error('❌ Claim energies error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error'
+      };
+    }
+  }
+
+  /**
+   * Get user energies balance
+   */
+  static async getEnergiesBalance(): Promise<{ success: boolean; energies?: number; error?: string }> {
+    try {
+      const accessToken = authStore.tokens?.access_token;
+      if (!accessToken) {
+        return { success: false, error: 'Not authenticated' };
+      }
+
+      // For now, this would need a new API endpoint
+      // TODO: Create /api/energies/balance endpoint
+
+      // Mock response for now
+      return {
+        success: true,
+        energies: 1000, // Mock balance
+      };
+    } catch (error) {
+      console.error('❌ Get energies balance error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Network error'
+      };
+    }
+  }
+
+  /**
    * Get supported bridge chains (placeholder)
    */
   static getSupportedBridgeChains(): Array<{
@@ -706,4 +791,4 @@ if (typeof document !== 'undefined') {
     }
   `;
   document.head.appendChild(style);
-}
+  }

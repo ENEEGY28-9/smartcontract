@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Authentication Direct</title>
+</head>
+<body>
+    <h1>Test Authentication Direct</h1>
+    <div id="status">Loading...</div>
+    <button onclick="checkAuth()">Check Auth</button>
+    <button onclick="login()">Login as admin@eneegy.com</button>
+    <button onclick="logout()">Logout</button>
+
+    <script type="module">
+        // Import PocketBase
+        import PocketBase from 'https://unpkg.com/pocketbase@0.21.4/dist/pocketbase.es.mjs';
+
+        const pb = new PocketBase('http://localhost:8090');
+        const statusDiv = document.getElementById('status');
+
+        function updateStatus(message) {
+            statusDiv.innerHTML += '<br>' + message;
+            console.log(message);
+        }
+
+        window.checkAuth = function() {
+            updateStatus('🔍 Checking auth state...');
+            updateStatus('isValid: ' + pb.authStore.isValid);
+            updateStatus('hasToken: ' + !!pb.authStore.token);
+            updateStatus('hasModel: ' + !!pb.authStore.model);
+            updateStatus('modelEmail: ' + (pb.authStore.model?.email || 'none'));
+        };
+
+        window.login = async function() {
+            try {
+                updateStatus('🔐 Attempting login...');
+                await pb.collection('users').authWithPassword('admin@eneegy.com', '12345678');
+                updateStatus('✅ Login successful!');
+                checkAuth();
+            } catch (error) {
+                updateStatus('❌ Login failed: ' + error.message);
+            }
+        };
+
+        window.logout = function() {
+            updateStatus('🚪 Logging out...');
+            pb.authStore.clear();
+            checkAuth();
+        };
+
+        // Initial check
+        setTimeout(checkAuth, 1000);
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+

@@ -1,0 +1,11 @@
+{
+  "programId": "Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf",
+  "mintingAuthority": "6JeJbrNocHap3ZNxjrewQHhT3FcURkdDAWTXHirbKzeE",
+  "gamePools": "5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc",
+  "gamePoolsTokenAccount": "HHHaKDSbruknbEFqwB3tfMQ5dAyatyavi15JHvFATssq",
+  "gameTokenMint": "ANzKnYDd7BpiPEykuHxrfAsiox19aWzLbZrmQbL8J8Qk",
+  "wallet": "4RMvAaGuBUeRSEYBRhkmBQnxUFtJa9PxWyR5YEVEfeeY",
+  "cluster": "devnet",
+  "initialized": "2025-11-10T06:25:24.950Z",
+  "status": "Basic PDA and Token Accounts initialized"
+}

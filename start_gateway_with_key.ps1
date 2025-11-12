@@ -6,3 +6,12 @@ Write-Host "Key length: $($env:ENCRYPTION_KEY.Length) characters"
 cd "C:\Users\Fit\Downloads\eneegy-main\gateway"
 cargo run --release
 
+
+
+
+
+
+
+
+
+

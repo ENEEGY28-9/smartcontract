@@ -51,3 +51,12 @@ if (validCount === walletAddresses.length) {
     console.log('\n⚠️  SOME WALLETS ARE INVALID - INVESTIGATION NEEDED');
 }
 
+
+
+
+
+
+
+
+
+

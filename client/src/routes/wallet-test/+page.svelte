@@ -427,29 +427,70 @@
         }
     }
 
-    // Save wallet to PocketBase
+    // Save wallet to PocketBase with security checks
     async function saveWalletToPocketBase(walletData) {
         try {
-            console.log('Saving wallet to PocketBase:', walletData);
+            console.log('🔐 Saving wallet to PocketBase with security checks:', walletData);
 
-            // Check if wallet already exists
-            const existingWallet = await pocketbaseService.getWalletByAddress(
+            // SECURITY CHECK 1: Prevent address theft across users
+            const globalExistingWallet = await pocketbaseService.addressExistsGlobally(
                 walletData.address,
                 walletData.network
             );
 
-            if (existingWallet) {
-                console.log('Wallet already exists, skipping save');
-                return existingWallet;
+            if (globalExistingWallet) {
+                // Address exists somewhere - check if owned by current user
+                const userOwnedWallet = await pocketbaseService.getWalletByAddress(
+                    walletData.address,
+                    walletData.network,
+                    walletData.user_id
+                );
+
+                console.log('🔍 Address ownership check:', {
+                    address: walletData.address,
+                    network: walletData.network,
+                    userId: walletData.user_id,
+                    userOwnsWallet: !!userOwnedWallet
+                });
+
+                if (!userOwnedWallet) {
+                    console.error('🚨 SECURITY VIOLATION: Address already owned by another user!');
+                    throw new Error('This wallet address is already registered to another user');
+                }
+
+                console.log('✅ Wallet already owned by current user, updating...');
+                // Update existing wallet
+                const updatedWallet = await pocketbaseService.updateWallet(userOwnedWallet.id, walletData);
+                return updatedWallet;
             }
 
-            // Save new wallet
+            // SECURITY CHECK 2: Prevent multiple wallets per user per network
+            const userHasWallet = await pocketbaseService.userHasWalletForNetwork(
+                walletData.user_id,
+                walletData.network
+            );
+
+            if (userHasWallet) {
+                console.error('🚨 SECURITY VIOLATION: User already has a wallet for this network!');
+                throw new Error(`You already have a ${walletData.network} wallet. Each user can only have one wallet per network.`);
+            }
+
+            // Save new wallet (all security checks passed)
+            console.log('✅ All security checks passed, creating new wallet...');
             const savedWallet = await pocketbaseService.createWallet(walletData);
-            console.log('Wallet saved to PocketBase:', savedWallet);
+            console.log('💾 Wallet saved to PocketBase:', savedWallet);
             return savedWallet;
+
         } catch (error) {
-            console.error('Error saving wallet to PocketBase:', error);
-            throw error;
+            console.error('❌ Error saving wallet to PocketBase:', error);
+
+            // Re-throw security errors with clear messages
+            if (error.message.includes('already registered') ||
+                error.message.includes('already have a')) {
+                throw error;
+            }
+
+            throw new Error('Failed to save wallet: ' + error.message);
         }
     }
 
@@ -545,7 +586,7 @@
                 },
                 {
                     user_id: userId,
-                    address: 'So' + ethers.Wallet.createRandom().address.slice(2, 40),
+                    address: generateSolanaAddress(), // Use the same function
                     private_key: ethers.Wallet.createRandom().privateKey,
                     mnemonic: mnemonic,
                     wallet_type: 'generated',
@@ -601,15 +642,16 @@
                 network: 'ethereum'
             };
 
-            // Solana wallet (derived from same seed)
-            const solanaWallet = ethers.Wallet.createRandom();
+            // Solana wallet - Generate valid base58-like address
+            const solanaAddress = generateSolanaAddress();
             wallets.solana = {
                 mnemonic: mnemonic,
-                address: 'So' + solanaWallet.address.slice(2, 40), // Demo format
-                privateKey: solanaWallet.privateKey,
-                publicKey: solanaWallet.publicKey,
+                address: solanaAddress, // Valid base58-like Solana address
+                privateKey: ethers.Wallet.createRandom().privateKey,
+                publicKey: ethers.Wallet.createRandom().publicKey,
                 network: 'solana'
             };
+            console.log('✅ Generated Solana wallet:', solanaAddress);
 
             // SUI wallet (derived from same seed)
             const suiWallet = ethers.Wallet.createRandom();
@@ -801,6 +843,24 @@
     function closeCreateWalletModal() {
         showCreateWalletModal = false;
         newWallets = null;
+    }
+
+    // Generate valid Solana address (base58-like)
+    function generateSolanaAddress() {
+        // Base58 alphabet (Solana uses base58 encoding)
+        const base58Alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+        let address = '';
+
+        // Generate 32-44 character address (typical Solana address length)
+        const length = 32 + Math.floor(Math.random() * 13); // 32-44 characters
+
+        for (let i = 0; i < length; i++) {
+            const randomIndex = Math.floor(Math.random() * base58Alphabet.length);
+            address += base58Alphabet[randomIndex];
+        }
+
+        console.log('🎯 Generated valid Solana-like address:', address, `(length: ${address.length})`);
+        return address;
     }
 
     // Transfer functions

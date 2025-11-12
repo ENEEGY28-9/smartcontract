@@ -1,0 +1,8 @@
+{
+  "publicKey": "8WU639hdEB5HWu83nvC5q9cj3zRaxRLDGtRGaJpMk95U",
+  "privateKey": "YOUR_ACTUAL_PRIVATE_KEY_HERE",
+  "note": "Real game pool owner private key - found by user",
+  "gamePool": "5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc",
+  "created": "2025-11-10T02:15:00.000Z",
+  "purpose": "Transfer tokens from old game pool to new owner"
+}

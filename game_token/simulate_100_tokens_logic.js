@@ -26,8 +26,8 @@ async function simulate100TokensLogic() {
 
     // Token accounts (từ deployment cũ)
     const gameTokenMint = new PublicKey('2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK');
-    const ownerAccount = new PublicKey('8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS');
-    const gamePoolAccount = new PublicKey('BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19');
+    const ownerAccount = new PublicKey('5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN');
+    const gamePoolAccount = new PublicKey('5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc');
 
     // NEW LOGIC: 100 tokens per minute, 80/20 distribution
     const TOKENS_TO_MINT = 100;

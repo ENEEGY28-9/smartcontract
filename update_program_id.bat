@@ -25,3 +25,12 @@ echo 3. Verify transactions on Solana Explorer
 
 pause
 
+
+
+
+
+
+
+
+
+

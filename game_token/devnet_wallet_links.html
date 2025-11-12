@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Devnet Wallet Explorer Links</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .wallet-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border-left: 5px solid #4CAF50;
+        }
+        .wallet-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+        .links {
+            margin-top: 15px;
+        }
+        .link-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .link-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .explorer-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border-left: 5px solid #FF9800;
+        }
+        .balance-info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .balance-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .balance-value {
+            font-weight: bold;
+            color: #FFD700;
+        }
+        .copy-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .copy-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 SOLANA DEVNET WALLET EXPLORER</h1>
+
+        <div class="explorer-section">
+            <h2>🌐 Solana Explorer Links (Devnet)</h2>
+            <p>Sử dụng các link dưới đây để kiểm tra ví và token accounts trên Solana Devnet:</p>
+
+            <div class="links">
+                <a href="https://explorer.solana.com/?cluster=devnet" target="_blank" class="link-button">
+                    🏠 Solana Explorer Devnet
+                </a>
+                <a href="https://solscan.io/?cluster=devnet" target="_blank" class="link-button">
+                    🔍 Solscan Devnet
+                </a>
+                <a href="https://solana.fm/?cluster=devnet" target="_blank" class="link-button">
+                    📊 Solana FM Devnet
+                </a>
+            </div>
+        </div>
+
+        <div class="wallet-section">
+            <div class="wallet-title">💰 Main Deployment Wallet</div>
+            <div class="wallet-address">
+                4RMvAaGuBUeRSEYBRhkmBQnxUFtJa9PxWyR5YEVEfeeY
+                <button class="copy-btn" onclick="copyToClipboard('4RMvAaGuBUeRSEYBRhkmBQnxUFtJa9PxWyR5YEVEfeeY')">Copy</button>
+            </div>
+            <div class="balance-info">
+                <div class="balance-item">
+                    <span>SOL Balance:</span>
+                    <span class="balance-value">3.9548 SOL</span>
+                </div>
+                <div class="balance-item">
+                    <span>Game Tokens:</span>
+                    <span class="balance-value">29.00 tokens</span>
+                </div>
+            </div>
+            <div class="links">
+                <a href="https://explorer.solana.com/address/4RMvAaGuBUeRSEYBRhkmBQnxUFtJa9PxWyR5YEVEfeeY?cluster=devnet" target="_blank" class="link-button">
+                    🔍 Explorer
+                </a>
+                <a href="https://solscan.io/account/4RMvAaGuBUeRSEYBRhkmBQnxUFtJa9PxWyR5YEVEfeeY?cluster=devnet" target="_blank" class="link-button">
+                    📊 Solscan
+                </a>
+            </div>
+        </div>
+
+        <div class="wallet-section">
+            <div class="wallet-title">🎮 Game Pool Owner Wallet</div>
+            <div class="wallet-address">
+                A1Tk1KLSkH4dbeS1mKv9CrUKVRuErHGBg6oH9XUD2sLB
+                <button class="copy-btn" onclick="copyToClipboard('A1Tk1KLSkH4dbeS1mKv9CrUKVRuErHGBg6oH9XUD2sLB')">Copy</button>
+            </div>
+            <div class="balance-info">
+                <div class="balance-item">
+                    <span>SOL Balance:</span>
+                    <span class="balance-value">0.4944 SOL ⚠️ LOW</span>
+                </div>
+                <div class="balance-item">
+                    <span>Game Tokens:</span>
+                    <span class="balance-value">0.00 tokens</span>
+                </div>
+            </div>
+            <div class="links">
+                <a href="https://explorer.solana.com/address/A1Tk1KLSkH4dbeS1mKv9CrUKVRuErHGBg6oH9XUD2sLB?cluster=devnet" target="_blank" class="link-button">
+                    🔍 Explorer
+                </a>
+                <a href="https://solscan.io/account/A1Tk1KLSkH4dbeS1mKv9CrUKVRuErHGBg6oH9XUD2sLB?cluster=devnet" target="_blank" class="link-button">
+                    📊 Solscan
+                </a>
+            </div>
+        </div>
+
+        <div class="wallet-section">
+            <div class="wallet-title">🧪 Devnet Test Wallet</div>
+            <div class="wallet-address">
+                4UkWvx2Y59XSuhaCfeYDS56RM1WcsSdgjJ7yzLEbMyNf
+                <button class="copy-btn" onclick="copyToClipboard('4UkWvx2Y59XSuhaCfeYDS56RM1WcsSdgjJ7yzLEbMyNf')">Copy</button>
+            </div>
+            <div class="balance-info">
+                <div class="balance-item">
+                    <span>SOL Balance:</span>
+                    <span class="balance-value">0.0000 SOL ❌ EMPTY</span>
+                </div>
+                <div class="balance-item">
+                    <span>Game Tokens:</span>
+                    <span class="balance-value">0.00 tokens</span>
+                </div>
+            </div>
+            <div class="links">
+                <a href="https://explorer.solana.com/address/4UkWvx2Y59XSuhaCfeYDS56RM1WcsSdgjJ7yzLEbMyNf?cluster=devnet" target="_blank" class="link-button">
+                    🔍 Explorer
+                </a>
+                <a href="https://solscan.io/account/4UkWvx2Y59XSuhaCfeYDS56RM1WcsSdgjJ7yzLEbMyNf?cluster=devnet" target="_blank" class="link-button">
+                    📊 Solscan
+                </a>
+            </div>
+        </div>
+
+        <div class="wallet-section">
+            <div class="wallet-title">🔄 New Owner Wallet</div>
+            <div class="wallet-address">
+                5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN
+                <button class="copy-btn" onclick="copyToClipboard('5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN')">Copy</button>
+            </div>
+            <div class="balance-info">
+                <div class="balance-item">
+                    <span>SOL Balance:</span>
+                    <span class="balance-value">0.0000 SOL ❌ EMPTY</span>
+                </div>
+                <div class="balance-item">
+                    <span>Game Tokens:</span>
+                    <span class="balance-value">0.00 tokens</span>
+                </div>
+            </div>
+            <div class="links">
+                <a href="https://explorer.solana.com/address/5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN?cluster=devnet" target="_blank" class="link-button">
+                    🔍 Explorer
+                </a>
+                <a href="https://solscan.io/account/5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN?cluster=devnet" target="_blank" class="link-button">
+                    📊 Solscan
+                </a>
+            </div>
+        </div>
+
+        <div class="wallet-section">
+            <div class="wallet-title">🎯 Smart Contract & Token Accounts</div>
+
+            <div style="margin: 15px 0;">
+                <strong>📋 Program ID:</strong>
+                <div class="wallet-address">
+                    Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf
+                    <button class="copy-btn" onclick="copyToClipboard('Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf')">Copy</button>
+                </div>
+                <div class="links" style="margin-top: 5px;">
+                    <a href="https://explorer.solana.com/address/Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf?cluster=devnet" target="_blank" class="link-button">
+                        🔍 View Contract
+                    </a>
+                </div>
+            </div>
+
+            <div style="margin: 15px 0;">
+                <strong>🪙 Game Token Mint:</strong>
+                <div class="wallet-address">
+                    ANzKnYDd7BpiPEykuHxrfAsiox19aWzLbZrmQbL8J8Qk
+                    <button class="copy-btn" onclick="copyToClipboard('ANzKnYDd7BpiPEykuHxrfAsiox19aWzLbZrmQbL8J8Qk')">Copy</button>
+                </div>
+                <div class="links" style="margin-top: 5px;">
+                    <a href="https://explorer.solana.com/address/ANzKnYDd7BpiPEykuHxrfAsiox19aWzLbZrmQbL8J8Qk?cluster=devnet" target="_blank" class="link-button">
+                        🔍 View Token Mint
+                    </a>
+                </div>
+            </div>
+
+            <div style="margin: 15px 0;">
+                <strong>🏦 Game Pools Token Account:</strong>
+                <div class="wallet-address">
+                    HHHaKDSbruknbEFqwB3tfMQ5dAyatyavi15JHvFATssq
+                    <button class="copy-btn" onclick="copyToClipboard('HHHaKDSbruknbEFqwB3tfMQ5dAyatyavi15JHvFATssq')">Copy</button>
+                </div>
+                <div class="balance-info" style="margin-top: 5px;">
+                    <div class="balance-item">
+                        <span>Game Tokens:</span>
+                        <span class="balance-value">119.00 tokens</span>
+                    </div>
+                </div>
+                <div class="links" style="margin-top: 5px;">
+                    <a href="https://explorer.solana.com/address/HHHaKDSbruknbEFqwB3tfMQ5dAyatyavi15JHvFATssq?cluster=devnet" target="_blank" class="link-button">
+                        🔍 View Token Account
+                    </a>
+                </div>
+            </div>
+
+            <div style="margin: 15px 0;">
+                <strong>👤 Owner Token Account:</strong>
+                <div class="wallet-address">
+                    4K9tg8tAFMGYCZkSJA3UhC5hizFfkAceoMn6L6gfNiW9
+                    <button class="copy-btn" onclick="copyToClipboard('4K9tg8tAFMGYCZkSJA3UhC5hizFfkAceoMn6L6gfNiW9')">Copy</button>
+                </div>
+                <div class="balance-info" style="margin-top: 5px;">
+                    <div class="balance-item">
+                        <span>Game Tokens:</span>
+                        <span class="balance-value">29.00 tokens</span>
+                    </div>
+                </div>
+                <div class="links" style="margin-top: 5px;">
+                    <a href="https://explorer.solana.com/address/4K9tg8tAFMGYCZkSJA3UhC5hizFfkAceoMn6L6gfNiW9?cluster=devnet" target="_blank" class="link-button">
+                        🔍 View Token Account
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="explorer-section">
+            <h2>📊 Tổng kết Balance</h2>
+            <div class="balance-info">
+                <div class="balance-item">
+                    <span>Tổng SOL:</span>
+                    <span class="balance-value">4.4492 SOL</span>
+                </div>
+                <div class="balance-item">
+                    <span>Tổng Game Tokens:</span>
+                    <span class="balance-value">148.00 tokens</span>
+                </div>
+                <div class="balance-item">
+                    <span>Token Distribution:</span>
+                    <span class="balance-value">80.4% / 19.6%</span>
+                </div>
+                <div class="balance-item">
+                    <span>System Status:</span>
+                    <span class="balance-value">✅ PRODUCTION READY</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Đã sao chép: ' + text);
+            }, function(err) {
+                console.error('Không thể sao chép: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+

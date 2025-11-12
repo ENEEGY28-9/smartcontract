@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 import { PhysicsManager } from './PhysicsManager';
 import { Player } from '../entities/Player';
-import { Collectible, CollectibleType, CollectibleCallbacks } from '../entities/Collectible';
-import { Vector3 } from '../utils/Constants';
+import { Collectible, CollectibleType } from '../entities/Collectible';
 
 export interface CollectibleSpawnConfig {
   spawnDistance?: number;      // Khoảng cách phía trước player để spawn
@@ -12,17 +11,21 @@ export interface CollectibleSpawnConfig {
   laneWidth?: number;          // Chiều rộng lane để spawn ngẫu nhiên
 }
 
+export interface CollectibleCallbacks {
+  onCollect?: (points: number) => void; // Callback đơn giản khi thu thập
+}
+
 export class CollectibleManager {
   private physicsManager: PhysicsManager;
   private player: Player | null = null;
+  private debugCollision = false;
 
   private config: Required<CollectibleSpawnConfig>;
-  private callbacks: CollectibleCallbacks;
+  private callbacks: CollectibleCallbacks | null = null;
   private collectibles: Collectible[] = [];
   private pool: Collectible[] = []; // Object pool for reuse
 
   private lastSpawnTime = 0;
-  private nextSpawnZ = -20; // Vị trí Z để spawn collectible tiếp theo
 
   // Spawn probabilities for different types
   private readonly SPAWN_PROBABILITIES = {
@@ -31,33 +34,34 @@ export class CollectibleManager {
     [CollectibleType.LARGE]: 0.1    // 10%
   };
 
-  // Track collected collectibles for score
-  private collectedCount = 0;
-  private totalPoints = 0;
-
   constructor(
     physicsManager: PhysicsManager,
     config: CollectibleSpawnConfig = {},
-    callbacks: CollectibleCallbacks = {}
+    callbacks: CollectibleCallbacks | null = null
   ) {
     this.physicsManager = physicsManager;
     this.callbacks = callbacks;
 
+    console.log('🔧 CollectibleManager constructor config:', config);
+
     this.config = {
       spawnDistance: 15,      // Spawn 15 units trước player để dễ thấy hơn
       despawnDistance: 5,     // Despawn 5 units sau player
-      spawnInterval: 1000,    // Spawn mỗi 1 giây để test nhanh hơn
-      maxCollectibles: 8,     // Tối đa 8 collectibles cùng lúc
+      spawnInterval: 200,     // Spawn mỗi 200ms để có nhiều particles hơn
+      maxCollectibles: 20,    // Tối đa 20 collectibles cùng lúc
       laneWidth: 2.8,         // Lane width từ constants
       ...config
     };
+
+    console.log('✅ Final CollectibleManager config:', this.config);
   }
 
   /**
    * Set player reference for collision detection
    */
-  public setPlayer(player: Player): void {
+  public setPlayer(player: Player, debugCollision: boolean = false): void {
     this.player = player;
+    this.debugCollision = debugCollision;
   }
 
   /**
@@ -81,12 +85,23 @@ export class CollectibleManager {
    * Generate random position for collectible
    */
   private generateSpawnPosition(): THREE.Vector3 {
+    if (!this.player) {
+      console.warn('⚠️ No player for spawn position, using default');
+      return new THREE.Vector3(0, 1, -20);
+    }
+
+    const playerPosition = this.player.getPosition();
     const laneCount = 3; // -1, 0, 1
     const randomLane = Math.floor(Math.random() * laneCount) - 1; // -1, 0, 1
 
     const x = randomLane * this.config.laneWidth;
     const y = 1; // Height above ground
-    const z = this.nextSpawnZ;
+
+    // Spawn collectibles AHEAD of player (towards negative Z direction)
+    // Player moves towards negative Z, so spawn at player Z minus spawn distance
+    const z = playerPosition.z - this.config.spawnDistance;
+
+    console.log(`🎯 Spawning collectible at lane ${randomLane} (x=${x.toFixed(1)}), z=${z.toFixed(1)} (player z=${playerPosition.z.toFixed(1)})`);
 
     return new THREE.Vector3(x, y, z);
   }
@@ -107,7 +122,7 @@ export class CollectibleManager {
       type,
       position,
       points: this.getPointsForType(type)
-    }, this.callbacks);
+    });
 
     return collectible;
   }
@@ -116,16 +131,8 @@ export class CollectibleManager {
    * Get points for collectible type
    */
   private getPointsForType(type: CollectibleType): number {
-    switch (type) {
-      case CollectibleType.SMALL:
-        return 10;
-      case CollectibleType.MEDIUM:
-        return 25;
-      case CollectibleType.LARGE:
-        return 50;
-      default:
-        return 10;
-    }
+    // All collectibles now give 1 point each
+    return 1;
   }
 
   /**
@@ -133,14 +140,21 @@ export class CollectibleManager {
    */
   private shouldSpawnCollectible(): boolean {
     const now = Date.now();
-    if (now - this.lastSpawnTime < this.config.spawnInterval) {
+    const timeSinceLastSpawn = now - this.lastSpawnTime;
+
+    console.log(`🔄 Checking spawn conditions: timeSinceLast=${timeSinceLastSpawn}ms (interval=${this.config.spawnInterval}ms), currentCollectibles=${this.collectibles.length} (max=${this.config.maxCollectibles})`);
+
+    if (timeSinceLastSpawn < this.config.spawnInterval) {
+      console.log('⏳ Spawn interval not reached');
       return false;
     }
 
     if (this.collectibles.length >= this.config.maxCollectibles) {
+      console.log('📦 Max collectibles reached');
       return false;
     }
 
+    console.log('✅ Should spawn collectible');
     return true;
   }
 
@@ -150,30 +164,63 @@ export class CollectibleManager {
   private trySpawnCollectible(): void {
     if (!this.shouldSpawnCollectible()) return;
 
-    const position = this.generateSpawnPosition();
-    const type = this.getRandomCollectibleType();
+    // Try to spawn in different lanes to ensure even distribution
+    const maxAttempts = 3;
+    let spawned = false;
 
-    const collectible = this.createCollectible(position, type);
-    this.collectibles.push(collectible);
+    for (let attempt = 0; attempt < maxAttempts && !spawned; attempt++) {
+      const position = this.generateSpawnPosition();
+      const type = this.getRandomCollectibleType();
 
-    this.lastSpawnTime = Date.now();
-    this.nextSpawnZ -= 8; // Spawn collectible tiếp theo cách 8 units để dày hơn
+      // Check if position is too close to existing collectibles
+      const minDistance = 8.0; // Minimum distance between collectibles
+      const tooClose = this.collectibles.some(existing => {
+        const distance = existing.getPosition().distanceTo(position);
+        return distance < minDistance;
+      });
 
-    console.log(`🎈 Spawned ${type} collectible at (${position.x}, ${position.y}, ${position.z})`);
+      if (!tooClose) {
+        const collectible = this.createCollectible(position, type);
+        this.collectibles.push(collectible);
+        this.lastSpawnTime = Date.now();
+
+        console.log(`🎈 Spawned ${type} collectible at (${position.x.toFixed(1)}, ${position.y.toFixed(1)}, ${position.z.toFixed(1)})`);
+        console.log(`📊 After spawn: collectibles array length = ${this.collectibles.length}`);
+        spawned = true;
+      }
+    }
+
+    if (!spawned) {
+      console.log('⚠️ Could not find suitable spawn position after max attempts');
+    }
   }
 
   /**
    * Check collision between player and collectibles
    */
-  private async checkCollisions(): Promise<number> {
-    if (!this.player) return 0;
+  private checkCollisions(): number {
+    if (!this.player) {
+      console.log('⚠️ No player set for collision detection');
+      return 0;
+    }
 
     const playerPosition = this.player.getPosition();
     const playerPhysicsBody = this.player.getPhysicsBody();
 
-    if (!playerPhysicsBody) return 0;
+    console.log(`🎮 Player status: position=(${playerPosition.x.toFixed(1)}, ${playerPosition.y.toFixed(1)}, ${playerPosition.z.toFixed(1)}), hasPhysicsBody=${!!playerPhysicsBody}`);
+
+    if (!playerPhysicsBody) {
+      console.log('⚠️ Player has no physics body');
+      return 0;
+    }
 
     let pointsEarned = 0;
+    console.log(`🔍 Checking collisions for ${this.collectibles.length} collectibles at player pos: ${playerPosition.x.toFixed(1)}, ${playerPosition.z.toFixed(1)}`);
+
+    if (this.collectibles.length === 0) {
+      console.warn('⚠️ No collectibles to check for collision!');
+      return 0;
+    }
 
     // Check each collectible for collision
     for (let i = this.collectibles.length - 1; i >= 0; i--) {
@@ -182,19 +229,32 @@ export class CollectibleManager {
 
       // Simple distance-based collision detection
       const distance = playerPosition.distanceTo(collectiblePosition as THREE.Vector3);
-      const collisionDistance = 1.5; // Distance threshold for collection
+      const collisionDistance = 2.5; // Distance threshold for collection (reduced for precision)
+
+      // Debug log when debug mode is enabled or when close (within 4 units)
+      if (this.debugCollision || distance < 4.0) {
+        console.log(`📍 Collectible ${i} (${collectible.getType()}): player_pos(${playerPosition.x.toFixed(1)}, ${playerPosition.z.toFixed(1)}), collectible_pos(${collectiblePosition.x.toFixed(1)}, ${collectiblePosition.z.toFixed(1)}), distance=${distance.toFixed(2)}, threshold=${collisionDistance}, collected=${collectible.isAlreadyCollected()}`);
+      }
 
       if (distance < collisionDistance && !collectible.isAlreadyCollected()) {
+        console.log('🎯 COLLISION DETECTED! Collecting collectible...');
+
         // Collect the collectible
-        await collectible.collect();
-        pointsEarned += collectible.getPoints();
+        collectible.collect();
+        const points = collectible.getPoints();
+        pointsEarned += points;
 
-        console.log(`💎 Collected ${collectible.getType()} collectible! +${collectible.getPoints()} points`);
+        console.log(`💎 Collected ${collectible.getType()} collectible! +${points} point${points > 1 ? 's' : ''}`);
 
-        // Remove from active collectibles after a delay to show animation
+        // Call callback to update energy balance
+        if (this.callbacks?.onCollect) {
+          this.callbacks.onCollect(points);
+        }
+
+        // Remove from active collectibles after animation completes
         setTimeout(() => {
           this.removeCollectible(i);
-        }, 1000);
+        }, 1000); // Match with animation duration
       }
     }
 
@@ -221,11 +281,13 @@ export class CollectibleManager {
   /**
    * Update all collectibles and check for spawning
    */
-  public async update(deltaTime: number): Promise<number> {
+  public update(deltaTime: number): number {
     if (!this.player) return 0;
 
     // Try to spawn new collectible
     this.trySpawnCollectible();
+
+    console.log(`🔄 Updating ${this.collectibles.length} collectibles`);
 
     // Update all collectibles
     for (let i = this.collectibles.length - 1; i >= 0; i--) {
@@ -238,14 +300,17 @@ export class CollectibleManager {
       const collectiblePosition = collectible.getPosition();
       const playerPosition = this.player.getPosition();
 
-      if (collectiblePosition.z < playerPosition.z - this.config.despawnDistance) {
+      const despawnThreshold = playerPosition.z - this.config.despawnDistance;
+      console.log(`🔍 Collectible ${i}: pos(${collectiblePosition.x.toFixed(1)}, ${collectiblePosition.z.toFixed(1)}), player(${playerPosition.x.toFixed(1)}, ${playerPosition.z.toFixed(1)}), threshold=${despawnThreshold.toFixed(1)}, shouldDespawn=${collectiblePosition.z < despawnThreshold}`);
+
+      if (collectiblePosition.z < despawnThreshold) {
         this.removeCollectible(i);
-        console.log(`🗑️ Despawned collectible at z=${collectiblePosition.z}`);
+        console.log(`🗑️ Despawned collectible at z=${collectiblePosition.z}, threshold=${despawnThreshold}`);
       }
     }
 
     // Check for collisions and return points earned
-    return await this.checkCollisions();
+    return this.checkCollisions();
   }
 
   /**
@@ -255,25 +320,6 @@ export class CollectibleManager {
     return this.collectibles
       .map(collectible => collectible.getMesh())
       .filter((mesh): mesh is THREE.Mesh => mesh !== null);
-  }
-
-  /**
-   * Get statistics for debugging
-   */
-  public getStats(): {
-    active: number;
-    pooled: number;
-    collected: number;
-    totalPoints: number;
-    nextSpawnZ: number;
-  } {
-    return {
-      active: this.collectibles.length,
-      pooled: this.pool.length,
-      collected: this.collectedCount,
-      totalPoints: this.totalPoints,
-      nextSpawnZ: this.nextSpawnZ
-    };
   }
 
   /**
@@ -287,9 +333,6 @@ export class CollectibleManager {
 
     this.collectibles = [];
     this.lastSpawnTime = 0;
-    this.nextSpawnZ = -20;
-    this.collectedCount = 0;
-    this.totalPoints = 0;
 
     console.log('🔄 CollectibleManager reset');
   }

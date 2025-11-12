@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenInterface, TokenAccount, TransferChecked, MintTo};
 use anchor_spl::associated_token::AssociatedToken;
 
-declare_id!("Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTe");
+declare_id!("Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf");
 
 #[program]
 pub mod game_token {
@@ -183,6 +183,55 @@ pub mod game_token {
 
     // pub fn earn_tokens(...) -> DISABLED
 
+    // Player claim tokens from treasury (User-specified amount)
+    pub fn player_claim_tokens(
+        ctx: Context<PlayerClaimTokens>,
+        amount: u64
+    ) -> Result<()> {
+        let game_pools_bump = ctx.accounts.game_pools.bump;
+        let current_time = Clock::get()?.unix_timestamp;
+
+        // Check if treasury has enough tokens
+        require!(ctx.accounts.game_pools.active_pool >= amount, GameTokenError::InsufficientPool);
+
+        // Transfer từ treasury (game_pools_token_account) cho player
+        // Player tự trả phí transaction
+        anchor_spl::token_interface::transfer_checked(
+            CpiContext::new_with_signer(
+                ctx.accounts.token_program.to_account_info(),
+                TransferChecked {
+                    from: ctx.accounts.game_pools_token_account.to_account_info(),
+                    to: ctx.accounts.player_token_account.to_account_info(),
+                    authority: ctx.accounts.game_pools.to_account_info(),
+                    mint: ctx.accounts.game_token_mint.to_account_info(),
+                },
+                &[&[
+                    b"game_pools",
+                    &[game_pools_bump]
+                ]]
+            ),
+            amount,
+            6, // decimals
+        )?;
+
+        // Update tracking
+        let game_pools = &mut ctx.accounts.game_pools;
+        let player_stats = &mut ctx.accounts.player_stats;
+        game_pools.active_pool -= amount;
+        player_stats.total_claimed += amount;
+
+        // Emit claim event
+        emit!(PlayerClaimedEvent {
+            player: ctx.accounts.player.key(),
+            amount,
+            remaining_pool: game_pools.active_pool,
+            timestamp: current_time,
+        });
+
+        msg!("Player {} claimed {} tokens from treasury", ctx.accounts.player.key(), amount);
+        Ok(())
+    }
+
     // Emergency pause (owner only)
     pub fn emergency_pause(ctx: Context<EmergencyControl>) -> Result<()> {
         let authority = &mut ctx.accounts.authority;
@@ -219,6 +268,7 @@ pub struct PlayerMintStats {
     pub last_mint_minute: i64,
     pub mints_this_minute: u8,
     pub total_earned: u64,
+    pub total_claimed: u64,
     pub bump: u8,
 }
 
@@ -245,6 +295,14 @@ pub struct AutoMintEvent {
 
 #[event]
 pub struct PlayerEarnedEvent {
+    pub player: Pubkey,
+    pub amount: u64,
+    pub remaining_pool: u64,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct PlayerClaimedEvent {
     pub player: Pubkey,
     pub amount: u64,
     pub remaining_pool: u64,
@@ -399,6 +457,44 @@ pub struct PlayerEarnFromPool<'info> {
 
     #[account(
         init,
+        payer = player,
+        space = 8 + PlayerMintStats::INIT_SPACE,
+        seeds = [b"player_stats", player.key().as_ref()],
+        bump
+    )]
+    pub player_stats: Account<'info, PlayerMintStats>,
+
+    #[account(mut)]
+    pub player_token_account: InterfaceAccount<'info, TokenAccount>,
+
+    pub game_token_mint: InterfaceAccount<'info, Mint>,
+
+    #[account(mut)]
+    pub player: Signer<'info>,
+
+    pub token_program: Interface<'info, TokenInterface>,
+    pub clock: Sysvar<'info, Clock>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct PlayerClaimTokens<'info> {
+    #[account(
+        mut,
+        seeds = [b"game_pools"],
+        bump = game_pools.bump
+    )]
+    pub game_pools: Account<'info, GameTokenPools>,
+
+    #[account(
+        mut,
+        seeds = [b"game_pools_token_account"],
+        bump
+    )]
+    pub game_pools_token_account: InterfaceAccount<'info, TokenAccount>,
+
+    #[account(
+        init_if_needed,
         payer = player,
         space = 8 + PlayerMintStats::INIT_SPACE,
         seeds = [b"player_stats", player.key().as_ref()],

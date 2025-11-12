@@ -88,3 +88,12 @@ if ($workerProcess) {
 } else {
     Write-Host "Worker test failed" -ForegroundColor Red
 }
+
+
+
+
+
+
+
+
+

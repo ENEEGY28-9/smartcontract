@@ -1,0 +1,13 @@
+{
+  "programId": "Do9Bq3c7rSSU4YW32F3mCZekQZo5jdyaBuayqmNGAeTf",
+  "simulatedProgramAccount": "HNZfic7pP9Tg3tE41e4eRwMbijFT6J42xaZGJALNGZiX",
+  "status": "Simulated Deployment",
+  "network": "devnet",
+  "timestamp": "2025-11-10T09:45:35.245Z",
+  "note": "Real deployment requires Rust toolchain and Solana CLI",
+  "limitations": [
+    "Cannot execute real smart contract instructions",
+    "Only simulates token transfers",
+    "No on-chain program logic verification"
+  ]
+}

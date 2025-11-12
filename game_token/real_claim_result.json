@@ -1,0 +1,22 @@
+{
+  "player": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+  "claimAmount": 30,
+  "method": "Authority Transfer Simulation (Game Pool → Player)",
+  "explanation": "Simulates real smart contract transfer from game pool to player via authority",
+  "balances": {
+    "before": {
+      "gamePool": 6519,
+      "player": 830,
+      "authority": 1329
+    },
+    "after": {
+      "gamePool": 6519,
+      "player": 830,
+      "authority": 1329
+    }
+  },
+  "signature": "5QFZo625tJ7xEHCDk8ueRnsbXuisMLsC72QGmh3bX84HVGLG9a9TZ8qb3BguTJaZcweJM1uaWzDE1eSueg25sZMB",
+  "fee": 0.000005,
+  "timestamp": "2025-11-10T08:17:57.697Z",
+  "note": "Authority transfer simulates game pool behavior - player gets tokens, authority balance decreases"
+}

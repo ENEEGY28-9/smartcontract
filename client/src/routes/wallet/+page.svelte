@@ -1,10 +1,13 @@
 <script lang="ts">
     import { ethers } from 'ethers';
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import { Zap, DollarSign, RotateCcw, Lock, Unlock, Globe, Wallet, Download, Upload, Repeat, Plus } from 'lucide-svelte';
     import { pocketbaseService, type WalletData, type EnergyData } from '$lib/services/pocketbaseService';
+    import { authStore, authActions } from '$lib/stores/auth';
     import { POCKETBASE_URL } from '$lib/config/pocketbase-config';
     import PocketBaseAuth from '$lib/components/PocketBaseAuth.svelte';
+    import { TokenService } from '$lib/services/tokenService';
+    import { generateRealSolanaWallet, validateSolanaAddress, canReceiveFromGamePool, requestDevnetAirdrop, checkTransactionStatus, checkFaucetHealth, getWalletBalance } from '$lib/utils/solanaWallet';
 
     let message = 'Wallet Test - Fixed!';
     let selectedNetwork = 'ethereum';
@@ -82,6 +85,20 @@
     let canConvertEnergy = false; // Admin control for conversion
     let energyConversionRate = 0.001; // 1 E = 0.001 ETH/SOL/BTC
 
+    // Claim energies modal state
+    let showClaimModal = false;
+    let claimData = {
+        amount: '',
+        userWallet: '',
+        networkFee: 'medium',
+        estimatedGas: '0.000005', // SOL base fee
+        totalCost: '0.000005'
+    };
+    let claimError = '';
+    let isClaiming = false;
+    let claimResult = null;
+    let isGeneratingWallet = false;
+
     // Wallet object type
     interface GeneratedWallet {
         mnemonic: string;
@@ -113,6 +130,11 @@
     let userEnergy: EnergyData | null = null;
     let isLoadingEnergy = false;
     let showWalletHistory = false;
+    let isRequestingAirdrop = false;
+    let lastTransactionSignature = '';
+    let isCheckingTransaction = false;
+    let walletBalance = 0;
+    let isCheckingBalance = false;
 
     // Load wallets from PocketBase - improved to prevent race conditions
     let walletLoadingPromise = null;
@@ -121,13 +143,49 @@
     async function loadUserEnergy() {
         try {
             isLoadingEnergy = true;
-            console.log('⚡ Loading user energy from database...');
 
-            userEnergy = await pocketbaseService.getOrCreateUserEnergy();
+            // DEBUG: Log current auth state before loading energy
+            const authState = await new Promise<import('$lib/stores/auth').AuthState>(resolve => {
+                const unsubscribe = authStore.subscribe(state => resolve(state));
+                unsubscribe();
+            });
+            console.log('⚡ LOADING ENERGY - AUTH DEBUG:', {
+                isAuthenticated: pocketbaseService.isAuthenticated(),
+                currentUser: pocketbaseService.getCurrentUser(),
+                gatewayAuthState: authState.isAuthenticated ? 'authenticated' : 'not authenticated'
+            });
+
+            // Try to get user from different sources
+            let userId = null;
+            let userEmail = null;
+
+            // First try PocketBase auth
+            const pocketbaseUser = pocketbaseService.getCurrentUser();
+            if (pocketbaseUser?.id) {
+                userId = pocketbaseUser.id;
+                userEmail = pocketbaseUser.email;
+            } else if (authState.isAuthenticated && currentUser?.id) {
+                // Fallback to gateway auth user
+                userId = currentUser.id;
+                userEmail = currentUser.email;
+                console.log('🔄 Using gateway auth user for energy loading:', userEmail);
+            }
+
+            if (!userId) {
+                console.log('⚠️ No authenticated user found, using local energy fallback');
+                userEnergy = null;
+                energyPoints = 0; // Reset to 0 when no user
+                return; // Don't throw error, just use local fallback
+            }
+
+            console.log('⚡ Loading user energy from database for user:', userEmail);
+
+            userEnergy = await pocketbaseService.getOrCreateUserEnergy(userId);
             console.log('✅ User energy loaded:', {
                 points: userEnergy.points,
-                lastUpdated: userEnergy.last_updated,
-                created: userEnergy.created
+                updated: userEnergy.updated,
+                created: userEnergy.created,
+                userId: userEnergy.user_id
             });
 
             // Sync local energyPoints with database
@@ -138,8 +196,9 @@
             console.error('❌ Error loading user energy:', error);
             // Fallback to local energy if database fails
             userEnergy = null;
-            console.log('⚠️ Using local energy fallback');
-            throw error; // Re-throw to propagate error to caller
+            energyPoints = 0; // Reset to 0 on error
+            console.log('⚠️ Using local energy fallback due to error');
+            // Don't re-throw error - allow the app to continue with local energy
         } finally {
             isLoadingEnergy = false;
         }
@@ -151,34 +210,123 @@
     // Auto-hide success messages
     let successTimeout = null;
 
-    // Reactive authentication state
-    let isAuthenticated = false;
+    // Reactive authentication state - now using auth store directly
     let currentUser = null;
+
+    // Reactive wallet display state
+    let showWallet = false;
+
+    // Force clear authentication on page load (for testing)
+    function forceClearAuth() {
+        console.log('🧹 Force clearing authentication state...');
+        pocketbaseService.logout();
+        currentUser = null;
+        walletInfo = {
+            detected: false,
+            connected: false,
+            address: '',
+            type: '',
+            balance: '0.0000',
+            symbol: 'ETH'
+        };
+        userWallets = [];
+        userEnergy = null;
+        energyPoints = 0;
+        console.log('✅ Auth state cleared');
+    }
+
+    // Test login function (for debugging)
+    async function testLogin() {
+        console.log('🧪 Testing login with admin@eneegy.com...');
+        try {
+            // Try gateway login first
+            console.log('🔐 Trying gateway login...');
+            const result = await authActions.login('admin@eneegy.com', '12345678');
+            console.log('Gateway login result:', result);
+
+            if (result.success) {
+                console.log('✅ Gateway login successful, updating auth state...');
+                await updateAuthState();
+            } else {
+                console.log('❌ Gateway login failed, trying PocketBase authentication...');
+                // Try PocketBase authentication as fallback
+                try {
+                    await pocketbaseService.authenticate('admin@eneegy.com', '12345678');
+                    console.log('✅ PocketBase login successful');
+                    await updateAuthState();
+                } catch (pbError) {
+                    console.error('❌ Both login methods failed:', {
+                        gateway: result.error,
+                        pocketbase: pbError.message
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('❌ Test login error:', error);
+        }
+    }
 
     // Update authentication state
     async function updateAuthState() {
         try {
             console.log('🔄 Updating auth state...');
-            isAuthenticated = pocketbaseService.isAuthenticated();
-            currentUser = pocketbaseService.getCurrentUser();
+
+            // First check auth store (gateway auth system)
+            const authState = await new Promise<import('$lib/stores/auth').AuthState>(resolve => {
+                const unsubscribe = authStore.subscribe(state => resolve(state));
+                unsubscribe();
+            });
+
+            if (authState.isAuthenticated && authState.user) {
+                console.log('✅ User authenticated via gateway auth system');
+                currentUser = authState.user;
+            } else {
+                // Fallback to PocketBase auth for backward compatibility
+                console.log('🔍 Checking PocketBase auth as fallback...');
+                currentUser = pocketbaseService.getCurrentUser();
+            }
 
             console.log('✅ Auth state updated:', {
-                isAuthenticated,
-                userEmail: currentUser?.email || 'no user'
+                isAuthenticated: authState.isAuthenticated,
+                userEmail: currentUser?.email || 'no user',
+                source: authState.isAuthenticated ? 'gateway' : 'pocketbase',
+                finalState: authState.isAuthenticated ? 'LOGGED_IN' : 'NOT_LOGGED_IN'
             });
 
             // Auto-load wallets and energy when authenticated
-            if (isAuthenticated && currentUser) {
+            if (authState.isAuthenticated && currentUser) {
                 console.log('📦 Loading user wallets...');
-                await loadUserWallets();
+                await loadUserWallets(currentUser?.id);
 
                 console.log('⚡ Loading user energy...');
                 await loadUserEnergy();
+            } else if (authState.isAuthenticated && !currentUser) {
+                // Handle case where gateway auth succeeded but no currentUser (PocketBase not synced)
+                console.log('⚠️ Gateway auth successful but no currentUser available');
+                // Try to load energy with null userId to trigger fallback
+                try {
+                    await loadUserEnergy();
+                } catch (energyError) {
+                    console.log('⚠️ Energy loading failed, using local fallback');
+                }
             }
         } catch (error) {
             console.error('❌ Error updating auth state:', error);
-            isAuthenticated = false;
             currentUser = null;
+
+            // Clear wallet info when auth state update fails
+            walletInfo = {
+                detected: false,
+                connected: false,
+                address: '',
+                type: '',
+                balance: '0.0000',
+                symbol: 'ETH'
+            };
+            userWallets = [];
+            userEnergy = null;
+            energyPoints = 0;
+            showWallet = false;
         }
     }
 
@@ -194,6 +342,7 @@
                 balance: '0.0000',
                 symbol: selectedNetwork === 'ethereum' ? 'ETH' : selectedNetwork === 'solana' ? 'SOL' : 'BTC'
             };
+            showWallet = false;
             return;
         }
 
@@ -242,6 +391,7 @@
                 balance: balanceValue.toString(),
                 symbol: selectedNetwork === 'ethereum' ? 'ETH' : selectedNetwork === 'solana' ? 'SOL' : 'BTC'
             };
+            showWallet = true;
             console.log('✅ Updated walletInfo.balance:', walletInfo.balance, 'type:', typeof walletInfo.balance);
         } else {
             console.log('⚠️ No wallet found for network:', selectedNetwork, '- resetting to 0.0000');
@@ -254,6 +404,7 @@
                 balance: '0.0000',
                 symbol: selectedNetwork === 'ethereum' ? 'ETH' : selectedNetwork === 'solana' ? 'SOL' : 'BTC'
             };
+            showWallet = false;
         }
     }
 
@@ -332,23 +483,30 @@
                     console.log('🎯 Auto-creating wallets and energy for newly registered user...');
 
                     // Small delay to ensure authentication is complete
-                    await new Promise(resolve => setTimeout(resolve, 200));
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // Get current user ID after registration
+                    const currentUser = pocketbaseService.getCurrentUser();
+                    if (!currentUser?.id) {
+                        throw new Error('User authentication failed after registration');
+                    }
+
+                    console.log('👤 New user authenticated:', currentUser.email, '(ID:', currentUser.id, ')');
 
                     // Create wallets first (pass current user ID)
-                    const currentUserId = pocketbaseService.getCurrentUser()?.id;
-                    const walletsCreated = await autoCreateWalletsForUser(currentUserId);
+                    const walletsCreated = await autoCreateWalletsForUser(currentUser.id);
                     console.log('📦 Wallets creation result:', walletsCreated);
 
-                    // Then create energy record
-                    console.log('⚡ Creating energy record...');
-                    await pocketbaseService.getOrCreateUserEnergy();
-                    console.log('✅ Energy record created for new user');
+                    // Then create energy record with explicit user ID
+                    console.log('⚡ Creating energy record for user:', currentUser.id);
+                    const newEnergy = await pocketbaseService.getOrCreateUserEnergy(currentUser.id);
+                    console.log('✅ Energy record created:', newEnergy.points, 'points for new user');
 
                     success = 'Registration successful! Wallets and Energy created automatically.';
                 } catch (setupError) {
                     console.error('⚠️ Failed to auto-create wallets/energy:', setupError);
                     console.error('Setup error details:', setupError.message);
-                    success = 'Registration successful! You can now log in.';
+                    success = 'Registration successful! Wallets and Energy will be created on first login.';
                 }
 
                 // Clear form and switch to login mode
@@ -387,11 +545,15 @@
         confirmPassword = '';
     }
 
-    async function loadUserWallets() {
+    async function loadUserWallets(userId?: string) {
         // Skip if PocketBase is not available
         try {
-            // Check authentication through reactive variable
-            if (!isAuthenticated) {
+            // Check authentication through auth store
+            const authState = await new Promise<import('$lib/stores/auth').AuthState>(resolve => {
+                const unsubscribe = authStore.subscribe(state => resolve(state));
+                unsubscribe();
+            });
+            if (!authState.isAuthenticated) {
                 console.log('User not authenticated, skipping wallet loading');
                 return;
             }
@@ -410,7 +572,7 @@
         walletHistoryError = '';
 
         try {
-            walletLoadingPromise = pocketbaseService.getUserWallets();
+            walletLoadingPromise = pocketbaseService.getUserWallets(userId);
             userWallets = await walletLoadingPromise;
             console.log('📦 Loaded wallets from PocketBase:', userWallets);
             console.log('🔍 Total wallets count:', userWallets.length);
@@ -446,7 +608,7 @@
     }
 
     // Save wallet to PocketBase
-    async function saveWalletToPocketBase(walletData) {
+    async function saveWalletToPocketBase(walletData, userId) {
         try {
             console.log('Saving wallet to PocketBase:', walletData);
 
@@ -462,7 +624,7 @@
             }
 
             // Save new wallet
-            const savedWallet = await pocketbaseService.createWallet(walletData);
+            const savedWallet = await pocketbaseService.createWallet(walletData, userId);
             console.log('Wallet saved to PocketBase:', savedWallet);
             return savedWallet;
         } catch (error) {
@@ -585,7 +747,7 @@
 
             // Save all wallets to PocketBase
             for (const walletData of walletsToCreate) {
-                await saveWalletToPocketBase(walletData);
+                await saveWalletToPocketBase(walletData, userId);
                 console.log(`✅ Created ${walletData.network} wallet: ${walletData.address}`);
             }
 
@@ -598,6 +760,19 @@
     }
 
     async function createNewWallet() {
+        // Mark as creating
+        isCreatingWallet = true;
+        // Kiểm tra authentication trước khi tạo ví
+        const authState = await new Promise<import('$lib/stores/auth').AuthState>(resolve => {
+            const unsubscribe = authStore.subscribe(state => resolve(state));
+            unsubscribe();
+        });
+        if (!authState.isAuthenticated || !currentUser?.id) {
+            alert('Vui lòng đăng nhập trước khi tạo ví!');
+            console.error('❌ Cannot create wallet: User not authenticated');
+            return;
+        }
+
         isCreatingWallet = true;
         try {
             // Create a random wallet using ethers v6
@@ -619,13 +794,13 @@
                 network: 'ethereum'
             };
 
-            // Solana wallet (derived from same seed)
-            const solanaWallet = ethers.Wallet.createRandom();
+            // Solana wallet - REAL Ed25519 keypair
+            const realSolanaWallet = await generateRealSolanaWallet();
             wallets.solana = {
                 mnemonic: mnemonic,
-                address: 'So' + solanaWallet.address.slice(2, 40), // Demo format
-                privateKey: solanaWallet.privateKey,
-                publicKey: solanaWallet.publicKey,
+                address: realSolanaWallet.address, // Real Solana address
+                privateKey: realSolanaWallet.privateKey, // Real private key
+                publicKey: realSolanaWallet.publicKey, // Real public key
                 network: 'solana'
             };
 
@@ -658,7 +833,7 @@
                     network: network,
                     balance: 0,
                     is_connected: false
-                });
+                }, currentUser?.id);
             }
 
             // Dispatch event to refresh wallet summary
@@ -676,11 +851,12 @@
                 balance: '0.0000',
                 symbol: selectedNetwork === 'solana' ? 'SOL' : selectedNetwork === 'ethereum' ? 'ETH' : 'SUI'
             };
+            showWallet = true;
 
             customAddress = currentWallet.address;
 
             // Reload user wallets to sync with database
-            await loadUserWallets();
+            await loadUserWallets(currentUser?.id);
 
         } catch (error) {
             console.error('Error creating wallet:', error);
@@ -762,11 +938,21 @@
 
             // Clear user data immediately
             currentUser = null;
-            isAuthenticated = false;
             userWallets = [];
             userEnergy = null;
             energyPoints = 0; // Reset local energy points
             currentTab = 'wallet'; // Reset to wallet tab
+
+                // Clear wallet info to hide wallet display
+            walletInfo = {
+                detected: false,
+                connected: false,
+                address: '',
+                type: '',
+                balance: '0.0000',
+                symbol: 'ETH'
+            };
+            showWallet = false;
 
             console.log('✅ Logout completed, auth state cleared');
 
@@ -778,9 +964,21 @@
             console.error('❌ Logout error:', error);
             // Even if logout fails, clear local state
             currentUser = null;
-            isAuthenticated = false;
             userWallets = [];
+            userEnergy = null;
+            energyPoints = 0;
             currentTab = 'wallet';
+
+            // Clear wallet info even on logout error
+            walletInfo = {
+                detected: false,
+                connected: false,
+                address: '',
+                type: '',
+                balance: '0.0000',
+                symbol: 'ETH'
+            };
+            showWallet = false;
         }
     }
 
@@ -795,6 +993,336 @@
             });
         } else {
             fallbackCopyTextToClipboard(text);
+        }
+    }
+
+    // Claim energies functions
+    async function openClaimModal() {
+        // Try to connect Phantom wallet automatically
+        if (typeof window !== 'undefined' && window.solana && !window.solana.isConnected) {
+            try {
+                console.log('🔗 Auto-connecting Phantom wallet for claim...');
+                await window.solana.connect();
+                const address = window.solana.publicKey.toString();
+                console.log('✅ Auto-connected Phantom wallet:', address);
+                claimData.userWallet = address;
+            } catch (err) {
+                console.log('⚠️ Auto-connect failed, user will need to enter address manually');
+            }
+        } else if (typeof window !== 'undefined' && window.solana && window.solana.isConnected) {
+            // Already connected
+            const address = window.solana.publicKey.toString();
+            claimData.userWallet = address;
+        } else {
+            // Fallback: Use saved wallet address if available
+            const userWallet = userWallets.find(w => w.network === 'solana' && w.is_connected);
+            if (userWallet) {
+                claimData.userWallet = userWallet.address;
+            }
+        }
+
+        // Auto-fill max energy amount
+        claimData.amount = energyPoints.toString();
+
+        updateClaimCalculations();
+        showClaimModal = true;
+        claimError = '';
+        claimResult = null;
+    }
+
+    function closeClaimModal() {
+        showClaimModal = false;
+        claimData.amount = '';
+        claimData.userWallet = '';
+        claimError = '';
+        claimResult = null;
+    }
+
+    function updateClaimCalculations() {
+        // Update total cost based on network fee
+        const baseFee = 0.000005; // SOL base fee
+        const priorityFee = claimData.networkFee === 'low' ? 0.000001 :
+                           claimData.networkFee === 'high' ? 0.00001 : 0.000005;
+        claimData.estimatedGas = (baseFee + priorityFee).toFixed(6);
+        claimData.totalCost = claimData.estimatedGas;
+    }
+
+    async function claimEnergies() {
+        if (!claimData.amount || !claimData.userWallet) {
+            claimError = 'Please fill in all fields';
+            return;
+        }
+
+        // Validate Solana wallet address format
+        if (!validateSolanaAddress(claimData.userWallet)) {
+            claimError = 'Invalid Solana wallet address format';
+            return;
+        }
+
+        // Check if wallet can receive from game pool
+        const walletCheck = await canReceiveFromGamePool(claimData.userWallet);
+        if (!walletCheck.valid) {
+            claimError = walletCheck.reason || 'Wallet cannot receive tokens';
+            return;
+        }
+
+        const amount = parseInt(claimData.amount);
+        if (amount <= 0) {
+            claimError = 'Amount must be greater than 0';
+            return;
+        }
+
+        if (amount > energyPoints) {
+            claimError = `Insufficient energies. You have ${energyPoints} E but requested ${amount} E`;
+            return;
+        }
+
+        isClaiming = true;
+        claimError = '';
+
+        try {
+            console.log('🔄 Claiming energies to wallet:', { amount, wallet: claimData.userWallet });
+
+            const result = await TokenService.claimEnergiesToWallet(amount, claimData.userWallet);
+
+            if (result.success) {
+                claimResult = {
+                    success: true,
+                    tx_signature: result.tx_signature,
+                    claimed_amount: result.claimed_amount,
+                    remaining_energies: result.remaining_energies
+                };
+
+                // Update local energy balance
+                energyPoints = result.remaining_energies || 0;
+
+                // Reload energy from database
+                await loadUserEnergy();
+
+                console.log('✅ Successfully claimed energies:', result);
+
+                // Auto-close modal after 3 seconds
+                setTimeout(() => {
+                    closeClaimModal();
+                }, 3000);
+
+            } else {
+                claimError = result.error || 'Claim failed';
+            }
+        } catch (error) {
+            console.error('❌ Claim energies error:', error);
+            claimError = error instanceof Error ? error.message : 'Network error';
+        } finally {
+            isClaiming = false;
+        }
+    }
+
+    // Generate a new Solana wallet specifically for claiming
+    async function generateNewWalletForClaim() {
+        try {
+            isGeneratingWallet = true;
+            claimError = ''; // Clear any previous errors
+
+            console.log('🎯 Generating REAL Solana Devnet wallet for claiming...');
+
+            // Generate REAL Solana Devnet wallet with Web3.js
+            const newWallet = await generateRealSolanaWallet();
+
+            // Set the wallet address in the form
+            claimData.userWallet = newWallet.address;
+
+            // Show success message with Devnet info
+            console.log('✅ Generated REAL Solana Devnet wallet:', {
+                address: newWallet.address,
+                cluster: 'devnet',
+                canInteractWith: 'https://explorer.solana.com/address/BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19?cluster=devnet'
+            });
+
+            // Show detailed notification with Devnet information
+            const walletInfo = `
+🎉 REAL Solana Devnet Wallet Generated!
+
+📍 Address: ${newWallet.address}
+🌐 Network: Solana Devnet
+🔗 Explorer: https://explorer.solana.com/address/${newWallet.address}?cluster=devnet
+
+⚠️ CRITICAL SECURITY WARNING:
+🔑 Private Key: ${newWallet.privateKey}
+
+💰 To use this wallet:
+1. Fund it with SOL from https://faucet.solana.com/
+2. Use private key to import into wallet apps
+3. Can interact with token: BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19
+
+⚠️ NEVER share your private key with anyone!
+⚠️ Store it securely - lost keys cannot be recovered!
+
+Click OK to copy private key to clipboard.
+            `;
+
+            // Copy private key to clipboard and show alert
+            await navigator.clipboard.writeText(newWallet.privateKey);
+            alert(walletInfo + '\n\n✅ Private key copied to clipboard!');
+
+        } catch (error) {
+            console.error('❌ Failed to generate wallet:', error);
+            claimError = 'Failed to generate new wallet';
+        } finally {
+            isGeneratingWallet = false;
+        }
+    }
+
+    async function requestAirdropDirectly() {
+        if (!claimData.userWallet) {
+            alert('❌ No wallet address available. Generate a wallet first!');
+            return;
+        }
+
+        try {
+            isRequestingAirdrop = true;
+            console.log(`🪂 Requesting 1 SOL airdrop for: ${claimData.userWallet}`);
+
+            // Check faucet health first
+            console.log('🔍 Checking faucet health...');
+            const isHealthy = await checkFaucetHealth();
+
+            if (!isHealthy) {
+                console.log('🚨 Faucet is rate-limited, skipping direct airdrop...');
+                alert(`⏳ Devnet faucet is rate-limited!\n\n🔄 Opening web faucet automatically...\n\n📋 Your wallet address will be pre-filled.`);
+                setTimeout(() => {
+                    openFaucetWithWallet('official');
+                }, 500);
+                return;
+            }
+
+            const signature = await requestDevnetAirdrop(claimData.userWallet, 1);
+
+            // Store signature for checking
+            lastTransactionSignature = signature;
+
+            console.log('✅ Airdrop successful! Transaction:', signature);
+
+            alert(`🎉 Airdrop successful!\n\n📋 Transaction Signature:\n${signature}\n\n💰 1 SOL has been sent to your wallet.\n\n🔍 Check on Explorer:\nhttps://explorer.solana.com/tx/${signature}?cluster=devnet\n\n💡 Note: May take 10-30 seconds to appear on explorer.`);
+
+            // Refresh balance after airdrop
+            setTimeout(() => {
+                // Could add balance refresh logic here if needed
+            }, 2000);
+
+        } catch (error) {
+            console.error('❌ Airdrop failed:', error);
+
+            const errorMessage = error.message || error;
+
+            // Handle rate limiting - skip retries and go straight to web faucet
+            if (errorMessage.includes('RATE_LIMITED') ||
+                errorMessage.includes('rate-limited') ||
+                errorMessage.includes('Too Many Requests') ||
+                errorMessage.includes('429')) {
+                console.log('🚨 Rate limited detected, opening web faucet...');
+
+                alert(`⏳ Devnet faucet is rate-limited!\n\n🔄 Opening web faucet automatically...\n\n📋 Your wallet address will be pre-filled.`);
+
+                setTimeout(() => {
+                    openFaucetWithWallet('official');
+                }, 500);
+                return; // Don't proceed to finally block yet
+            }
+
+            // Handle other types of errors
+            alert(`❌ Airdrop failed: ${errorMessage}\n\n💡 Try using the web faucets above.`);
+        } finally {
+            isRequestingAirdrop = false;
+        }
+    }
+
+    // Enhanced faucet opening with wallet pre-fill
+    function openFaucetWithWallet(faucetType = 'official') {
+        const walletAddress = claimData.userWallet;
+        if (!walletAddress) {
+            alert('❌ No wallet address available!');
+            return;
+        }
+
+        let faucetUrl = '';
+
+        switch (faucetType) {
+            case 'official':
+                faucetUrl = 'https://faucet.solana.com/';
+                break;
+            case 'quicknode':
+                faucetUrl = 'https://faucet.quicknode.com/solana';
+                break;
+            case 'solanaTracker':
+                faucetUrl = 'https://www.solanatracker.io/faucet';
+                break;
+            default:
+                faucetUrl = 'https://faucet.solana.com/';
+        }
+
+        console.log(`🔗 Opening ${faucetType} faucet for wallet: ${walletAddress}`);
+
+        // Open faucet in new tab
+        window.open(faucetUrl, '_blank', 'noopener,noreferrer');
+
+        // Show copy instruction
+        setTimeout(() => {
+            navigator.clipboard.writeText(walletAddress).then(() => {
+                alert(`✅ Faucet opened!\n\n📋 Wallet address copied to clipboard:\n${walletAddress}\n\n💰 Paste the address and request 1-2 SOL\n\n🔍 Check balance after funding:\nhttps://explorer.solana.com/address/${walletAddress}?cluster=devnet`);
+            }).catch(() => {
+                alert(`✅ Faucet opened!\n\n📋 Copy this wallet address:\n${walletAddress}\n\n💰 Paste the address and request 1-2 SOL\n\n🔍 Check balance after funding:\nhttps://explorer.solana.com/address/${walletAddress}?cluster=devnet`);
+            });
+        }, 1000);
+    }
+
+    async function checkLastTransaction() {
+        if (!lastTransactionSignature) {
+            alert('❌ No transaction signature available. Please request an airdrop first.');
+            return;
+        }
+
+        try {
+            isCheckingTransaction = true;
+            console.log('🔍 Checking transaction status:', lastTransactionSignature);
+
+            const transaction = await checkTransactionStatus(lastTransactionSignature);
+
+            if (transaction) {
+                alert(`✅ Transaction Confirmed!\n\n📋 Signature: ${lastTransactionSignature}\n\n📅 Slot: ${transaction.slot}\n\n⏱️ Status: Confirmed\n\n💰 Amount: 1 SOL\n\n🔍 View: https://explorer.solana.com/tx/${lastTransactionSignature}?cluster=devnet`);
+            } else {
+                alert(`⏳ Transaction Pending\n\n📋 Signature: ${lastTransactionSignature}\n\n💡 Status: Still processing (may take 10-30 seconds)\n\n🔍 Check manually: https://explorer.solana.com/tx/${lastTransactionSignature}?cluster=devnet`);
+            }
+
+        } catch (error) {
+            console.error('❌ Failed to check transaction:', error);
+            alert(`❌ Transaction Check Failed: ${error.message || error}\n\nTry checking manually on the explorer.`);
+        } finally {
+            isCheckingTransaction = false;
+        }
+    }
+
+    async function checkWalletBalance() {
+        if (!claimData.userWallet) {
+            alert('❌ No wallet address available. Generate a wallet first!');
+            return;
+        }
+
+        try {
+            isCheckingBalance = true;
+            console.log('💰 Checking balance for:', claimData.userWallet);
+
+            const balance = await getWalletBalance(claimData.userWallet);
+            walletBalance = balance;
+
+            console.log(`✅ Balance updated: ${balance} SOL`);
+
+            alert(`💰 Wallet Balance:\n\n📍 Address: ${claimData.userWallet}\n💰 SOL Balance: ${balance} SOL\n\n🌐 Network: Solana Devnet\n\n${balance > 0 ? '🎉 Ready for transactions!' : '💡 Request SOL from faucet if balance is 0'}`);
+
+        } catch (error) {
+            console.error('❌ Failed to check balance:', error.message || error);
+            alert(`❌ Failed to check balance: ${error.message || error}\n\nTry again or check manually on explorer.`);
+        } finally {
+            isCheckingBalance = false;
         }
     }
 
@@ -838,6 +1366,18 @@
         showTransferModal = true;
     }
 
+    function openGamePoolTransferModal() {
+        transferData = {
+            recipientAddress: 'BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19', // Game Pool address
+            amount: '',
+            networkFee: 'medium',
+            estimatedGas: calculateGasFee('medium'),
+            totalCost: '0.000021'
+        };
+        transferError = '';
+        showTransferModal = true;
+    }
+
     function closeTransferModal() {
         showTransferModal = false;
         transferData = {
@@ -869,6 +1409,7 @@
         transferData.estimatedGas = gasFee.toString();
         transferData.totalCost = total.toFixed(6);
     }
+
 
     async function executeTransfer() {
         transferError = '';
@@ -902,32 +1443,86 @@
         isTransferring = true;
 
         try {
-            // Simulate transfer process
-            console.log('🔄 Executing transfer:', {
-                from: walletInfo.address,
-                to: transferData.recipientAddress,
-                amount: transferAmount,
-                network: selectedNetwork,
-                gasFee: transferData.estimatedGas
-            });
+            // Special case: Real transfer to Game Pool
+            const gamePoolAddress = 'BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19';
+            if (transferData.recipientAddress === gamePoolAddress && selectedNetwork === 'solana') {
+                console.log('🎮 Executing real transfer to Game Pool:', {
+                    from: walletInfo.address,
+                    to: gamePoolAddress,
+                    amount: transferAmount
+                });
 
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 3000));
+                // Get Solana wallet
+                const solanaWallet = userWallets.find(w => w.network === 'solana' && w.wallet_type === 'generated');
+                if (!solanaWallet || !solanaWallet.private_key) {
+                    transferError = 'No Solana wallet found or missing private key for real transfer';
+                    return;
+                }
 
-            // Update local balance (simulation)
-            const newBalance = (availableBalance - totalCost).toFixed(4);
-            walletInfo.balance = newBalance;
+                // Convert private key string to Uint8Array for Solana
+                let secretKeyArray;
+                try {
+                    // If it's stored as comma-separated string, convert back to array
+                    if (solanaWallet.private_key.includes(',')) {
+                        secretKeyArray = new Uint8Array(solanaWallet.private_key.split(',').map(Number));
+                    } else {
+                        // If it's base64 or other format, handle accordingly
+                        secretKeyArray = new Uint8Array(JSON.parse(`[${solanaWallet.private_key}]`));
+                    }
+                } catch (e) {
+                    transferError = 'Invalid private key format';
+                    return;
+                }
 
-            // Update database balance
-            const dbWallet = userWallets.find(wallet => wallet.network === selectedNetwork);
-            if (dbWallet) {
-                await pocketbaseService.updateWalletBalance(dbWallet.id, parseFloat(newBalance));
-                await loadUserWallets(); // Refresh data
+                // Import WalletService and perform real transfer
+                const { WalletService } = await import('$lib/services/walletService');
+                const result = await WalletService.transferTokensToGamePool(
+                    solanaWallet.address,
+                    secretKeyArray,
+                    transferAmount
+                );
+
+                if (result.success) {
+                    // Update local balance
+                    const newBalance = (availableBalance - transferAmount).toFixed(4);
+                    walletInfo.balance = newBalance;
+
+                    // Update database balance
+                    await pocketbaseService.updateWalletBalance(solanaWallet.id, parseFloat(newBalance));
+                    await loadUserWallets(currentUser?.id); // Refresh data
+
+                    alert(`✅ Real transfer to Game Pool successful!\nSent ${transferAmount} Game Tokens\nTransaction: ${result.signature}`);
+                    closeTransferModal();
+                } else {
+                    transferError = result.error || 'Real transfer to Game Pool failed';
+                }
+            } else {
+                // Simulate transfer for other cases
+                console.log('🔄 Executing simulated transfer:', {
+                    from: walletInfo.address,
+                    to: transferData.recipientAddress,
+                    amount: transferAmount,
+                    network: selectedNetwork,
+                    gasFee: transferData.estimatedGas
+                });
+
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // Update local balance (simulation)
+                const newBalance = (availableBalance - totalCost).toFixed(4);
+                walletInfo.balance = newBalance;
+
+                // Update database balance
+                const dbWallet = userWallets.find(wallet => wallet.network === selectedNetwork);
+                if (dbWallet) {
+                    await pocketbaseService.updateWalletBalance(dbWallet.id, parseFloat(newBalance));
+                    await loadUserWallets(currentUser?.id); // Refresh data
+                }
+
+                alert(`✅ Transfer successful!\nSent ${transferAmount} ${walletInfo.symbol} to ${transferData.recipientAddress.slice(0, 10)}...`);
+                closeTransferModal();
             }
-
-            alert(`✅ Transfer successful!\nSent ${transferAmount} ${walletInfo.symbol} to ${transferData.recipientAddress.slice(0, 10)}...`);
-
-            closeTransferModal();
 
         } catch (error) {
             console.error('Transfer failed:', error);
@@ -1080,6 +1675,10 @@
 
         try {
             console.log('🔄 Converting energy to crypto...');
+            const authState = await new Promise<import('$lib/stores/auth').AuthState>(resolve => {
+                const unsubscribe = authStore.subscribe(state => resolve(state));
+                unsubscribe();
+            });
             console.log('📊 Current state:', {
                 selectedNetwork,
                 energyPoints,
@@ -1087,7 +1686,7 @@
                 cryptoAmount,
                 walletInfo_symbol: walletInfo.symbol,
                 userWallets_count: userWallets.length,
-                isAuthenticated
+                isAuthenticated: authState.isAuthenticated
             });
 
             // Simulate conversion processing time
@@ -1095,16 +1694,16 @@
 
             // Update wallet balance in database
             const dbWallet = userWallets.find(wallet => wallet.network === selectedNetwork);
-            if (dbWallet) {
+            if (dbWallet && dbWallet.id) {
                 try {
-                    const currentBalance = parseFloat(dbWallet.balance) || 0;
+                    const currentBalance = parseFloat(dbWallet.balance?.toString() || '0') || 0;
                     const newBalance = Number(currentBalance + cryptoAmount);
 
                     await pocketbaseService.updateWalletBalance(dbWallet.id, newBalance);
                     console.log('✅ Updated wallet balance in database');
 
                     // Reload wallets to sync UI
-                    await loadUserWallets();
+                    await loadUserWallets(currentUser?.id);
                     console.log('✅ Reloaded wallets after balance update');
                 } catch (walletError) {
                     console.error('❌ Failed to update wallet balance:', walletError);
@@ -1172,15 +1771,15 @@
 
             // Update wallet balance in database (subtract)
             const dbWallet = userWallets.find(wallet => wallet.network === selectedNetwork);
-            if (dbWallet) {
-                const currentBalance = parseFloat(dbWallet.balance) || 0;
+            if (dbWallet && dbWallet.id) {
+                const currentBalance = parseFloat(dbWallet.balance?.toString() || '0') || 0;
                 const newBalance = Number(Math.max(0, currentBalance - cryptoAmount));
 
                 await pocketbaseService.updateWalletBalance(dbWallet.id, newBalance);
                 console.log('✅ Updated wallet balance in database');
 
                 // Reload wallets to sync UI
-                await loadUserWallets();
+                await loadUserWallets(currentUser?.id);
             }
 
             // Add energy points to database
@@ -1264,8 +1863,14 @@
     // Initialize authentication state and listen for auth changes
     onMount(() => {
         console.log('🚀 Initializing STEPN Wallet...');
-        updateAuthState().then(() => {
-            console.log('✅ Auth state initialized:', { isAuthenticated, currentUser: currentUser?.email });
+
+        // Check authentication state
+        updateAuthState().then(async () => {
+            const authState = await new Promise<import('$lib/stores/auth').AuthState>(resolve => {
+                const unsubscribe = authStore.subscribe(state => resolve(state));
+                unsubscribe();
+            });
+            console.log('✅ Auth state initialized:', { isAuthenticated: authState.isAuthenticated, currentUser: currentUser?.email });
             // Fix tab alignment after auth state is initialized
             setTimeout(fixTabAlignment, 100);
         });
@@ -1275,6 +1880,28 @@
             window.addEventListener('pocketbase-auth-success', updateAuthState);
             window.addEventListener('pocketbase-auth-logout', updateAuthState);
         }
+
+        // Listen for auth store changes (for logout from other components)
+        const unsubscribe = authStore.subscribe((authState) => {
+            console.log('🔄 Auth store changed in wallet page:', authState.isAuthenticated);
+            if (!authState.isAuthenticated) {
+                // User logged out, clear wallet display immediately
+                console.log('🚪 User logged out via auth store, clearing wallet display');
+                currentUser = null;
+                walletInfo = {
+                    detected: false,
+                    connected: false,
+                    address: '',
+                    type: '',
+                    balance: '0.0000',
+                    symbol: 'ETH'
+                };
+                userWallets = [];
+                userEnergy = null;
+                energyPoints = 0;
+                showWallet = false;
+            }
+        });
 
         // Change favicon to wallet emoji
         const link = document.createElement('link');
@@ -1289,6 +1916,8 @@
                 window.removeEventListener('pocketbase-auth-success', updateAuthState);
                 window.removeEventListener('pocketbase-auth-logout', updateAuthState);
             }
+            // Cleanup auth store subscription
+            unsubscribe();
         };
     });
 </script>
@@ -1449,6 +2078,13 @@
         opacity: 0.8;
     }
 
+    /* Authentication styles */
+    .auth-required {
+        background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 100%);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
         .page-content {
@@ -1499,7 +2135,7 @@
     <main class="page-content">
 
                 <!-- Tab Navigation -->
-                {#if isAuthenticated}
+                {#if $authStore.isAuthenticated}
                     <div>
                         <div style="display: flex; gap: 0; max-width: 480px; margin: 0 auto; background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px 16px 0 0; overflow: hidden;">
                             <button
@@ -1521,17 +2157,32 @@
                 {/if}
 
                 <!-- Main Content -->
-                <div class="wallet-container" style="max-width: 480px; margin: 0 auto;">
+                <!-- DEBUG: Authentication state -->
+                <div style="position: fixed; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; z-index: 9999;">
+                    Auth: {$authStore.isAuthenticated ? '✅ TRUE' : '❌ FALSE'} | User: {$authStore.user?.email || 'none'}
+                    <button style="margin-left: 10px; background: #446bff; color: white; border: none; border-radius: 3px; padding: 2px 5px; font-size: 10px; cursor: pointer;" on:click={updateAuthState}>
+                        Refresh
+                    </button>
+                    <button style="margin-left: 5px; background: #ff4444; color: white; border: none; border-radius: 3px; padding: 2px 5px; font-size: 10px; cursor: pointer;" on:click={forceClearAuth}>
+                        Clear
+                    </button>
+                    <button style="margin-left: 5px; background: #44ff44; color: white; border: none; border-radius: 3px; padding: 2px 5px; font-size: 10px; cursor: pointer;" on:click={testLogin}>
+                        Test Login
+                    </button>
+                </div>
+
+                {#if $authStore.isAuthenticated}
+                    <div class="wallet-container" style="max-width: 480px; margin: 0 auto;">
 
 
         <!-- Loading State -->
-        {#if typeof isAuthenticated === 'undefined'}
+        {#if typeof $authStore.isAuthenticated === 'undefined'}
             <div style="text-align: center; padding: 4rem;">
                 <div style="width: 48px; height: 48px; border: 4px solid #446bff; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
                 <h2 style="color: #f6f8ff; margin: 0 0 0.5rem 0;">Loading STEPN Wallet...</h2>
                 <p style="color: #888; margin: 0;">Initializing authentication state</p>
             </div>
-        {:else if isAuthenticated && currentTab === 'game'}
+        {:else if $authStore.isAuthenticated && currentTab === 'game'}
             <!-- Energy Dashboard -->
             <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; color: #ffffff;">
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
@@ -1573,7 +2224,7 @@
                 </div>
 
                 <!-- Convert Buttons -->
-                <div style="display: flex; gap: 1rem; justify-content: center;">
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1rem;">
                     <!-- Convert Energy to Crypto -->
                     <button
                         style="background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%); border: none; border-radius: 16px; padding: 1.5rem 2rem; color: #000000; cursor: pointer; font-weight: 700; font-size: 1rem; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1); transition: all 0.2s; opacity: {canConvertEnergy && energyPoints > 0 ? 1 : 0.6}; flex: 1;"
@@ -1590,6 +2241,17 @@
                         on:click={() => convertCryptoToEnergy()}>
                         <div style="font-size: 1.2rem; margin-bottom: 0.25rem;"><DollarSign class="emoji-icon" />→<Zap class="emoji-icon" /></div>
                         <div style="font-size: 0.8rem;">{walletInfo.symbol} to E</div>
+                    </button>
+                </div>
+
+                <!-- Claim Energies Button -->
+                <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
+                    <button
+                        style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); border: none; border-radius: 16px; padding: 1rem 3rem; color: white; cursor: pointer; font-weight: 700; font-size: 1rem; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); transition: all 0.2s; opacity: {energyPoints > 0 ? 1 : 0.6};"
+                        disabled={energyPoints <= 0}
+                        on:click={() => openClaimModal()}>
+                        <div style="font-size: 1.2rem; margin-bottom: 0.25rem;"><Zap class="emoji-icon" />→<Wallet class="emoji-icon" /></div>
+                        <div style="font-size: 0.8rem;">Claim E to Wallet</div>
                     </button>
                 </div>
                     {#if !canConvertEnergy}
@@ -1654,7 +2316,7 @@
                     </div>
                 </div>
 
-        {:else if isAuthenticated && currentTab === 'wallet'}
+        {:else if $authStore.isAuthenticated && currentTab === 'wallet'}
                 {#if !isCreatingWallet}
                         <!-- Network Selector Tabs -->
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.5rem;">
@@ -1712,7 +2374,7 @@
             </div>
 
                 <!-- Balance Display -->
-                {#if walletInfo.address}
+                {#if showWallet}
                 <div style="background: rgba(255, 255, 255, 0.02); border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid rgba(255, 255, 255, 0.08); position: relative; z-index: 50; box-shadow: 0 4px 20px rgba(0,0,0,0.8);">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -1747,7 +2409,7 @@
                                 {#if walletInfo.type === 'generated' || walletInfo.type === 'Generated Wallet'}
                                     <button
                                         style="background: linear-gradient(135deg, #2ecc71, #27ae60); border: none; border-radius: 12px; padding: 0.25rem 0.5rem; color: white; cursor: pointer; font-size: 0.7rem; font-weight: 600; transition: all 0.2s;"
-                                        on:click={() => loadUserWallets()}
+                                        on:click={() => loadUserWallets(currentUser?.id)}
                                         title="Refresh wallet data">
                                         <RotateCcw class="emoji-icon" />
                                     </button>
@@ -1799,7 +2461,7 @@
                     </div>
 
                     <!-- Wallet Address & Keys -->
-                    {#if walletInfo.address}
+                    {#if showWallet}
                         <div style="background: rgba(255, 255, 255, 0.02); border-radius: 12px; padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.08);">
                             <div style="margin-bottom: 0.5rem;">
                                 <span style="color: #b0b0b0; font-size: 0.8rem; font-weight: 600;">Address</span>
@@ -1808,7 +2470,7 @@
                                 {walletInfo.address}
                             </p>
                         </div>
-                    {:else}
+                    {:else if $authStore.isAuthenticated && !walletInfo.address}
                         <!-- No Wallet Message -->
                         <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 2rem; text-align: center;">
                             <div style="width: 64px; height: 64px; background: linear-gradient(135deg,
@@ -1823,19 +2485,32 @@
                                 Bạn chưa có ví {selectedNetwork === 'ethereum' ? 'Ethereum' : selectedNetwork === 'solana' ? 'Solana' : 'Bitcoin'}. Hãy tạo ví mới để bắt đầu!
                             </p>
                             <button
-                                style="background: linear-gradient(135deg, {selectedNetwork === 'ethereum' ? '#446bff, #6b73ff' : selectedNetwork === 'solana' ? '#9945ff, #7b68ee' : '#f7931a, #ff9500'}); border: none; border-radius: 12px; padding: 0.875rem 2.5rem; color: white; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: inline-flex; align-items: center; gap: 0.5rem;"
-                                on:click={createNewWallet}
-                                on:mouseenter={(e) => e.target.style.transform = 'translateY(-1px)'}
-                                on:mouseleave={(e) => e.target.style.transform = 'translateY(0)'}>
+                                class="create-wallet-btn"
+                                on:click={createNewWallet}>
                                 <Plus class="plus-icon" />
                                 Tạo ví mới
                             </button>
+                        </div>
+                    {:else}
+                        <!-- Not Authenticated Message -->
+                        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 2rem; text-align: center;">
+                            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #ff6b6b, #ee5a52); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <circle cx="12" cy="16" r="1"></circle>
+                                    <path d="m7 11 5-5 5 5"></path>
+                                </svg>
+                            </div>
+                            <h4 style="color: #ffffff; margin: 0 0 0.5rem 0; font-size: 1.2rem; font-weight: 600;">Yêu cầu đăng nhập</h4>
+                            <p style="color: #b0b0b0; margin: 0 0 2rem 0; font-size: 0.9rem; line-height: 1.5;">
+                                Bạn cần đăng nhập để tạo và quản lý ví của mình.
+                            </p>
                         </div>
                     {/if}
                 </div>
 
                     <!-- Action Buttons Grid -->
-                    {#if walletInfo.address}
+                    {#if showWallet}
                     <div class="action-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
                         <!-- Receive Button -->
                         <button class="action-button" style="background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%); border: none; border-radius: 16px; padding: 1.5rem; color: #000000; cursor: pointer; font-weight: 700; font-size: 1rem; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1); transition: all 0.2s;"
@@ -1858,6 +2533,15 @@
                             <div style="font-size: 1.5rem; margin-bottom: 0.5rem;"><Upload class="emoji-icon" /></div>
                             Transfer
                         </button>
+
+                        <!-- Game Pool Transfer Button (Solana only) -->
+                        {#if selectedNetwork === 'solana'}
+                        <button class="action-button" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); border: none; border-radius: 16px; padding: 1.5rem; color: #ffffff; cursor: pointer; font-weight: 700; font-size: 1rem; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); transition: all 0.2s;"
+                        on:click={() => openGamePoolTransferModal()}>
+                            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;"><Zap class="emoji-icon" /></div>
+                            To Game Pool
+                        </button>
+                        {/if}
 
                         <!-- Swap Button -->
                         <button class="action-button" style="background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%); border: none; border-radius: 16px; padding: 1.5rem; color: #000000; cursor: pointer; font-weight: 700; font-size: 1rem; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1); transition: all 0.2s;"
@@ -1899,6 +2583,322 @@
         {/if}
         <!-- End Wallet Tab -->
     </div>
+
+    <!-- Claim Energies Modal -->
+    {#if showClaimModal}
+        <div class="modal-overlay" role="dialog" aria-modal="true" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px);" on:click={() => closeClaimModal()}>
+            <div class="claim-modal" style="background: linear-gradient(135deg, #1a1f2e 0%, #0f1629 100%); border: 1px solid #253157; border-radius: 20px; padding: 2rem; max-width: 480px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5);" on:click|stopPropagation>
+
+                <!-- Modal Header -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #ff6b6b, #ee5a24); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.5rem;"><span class="emoji-icon">⚡</span></div>
+                        <div>
+                            <h2 style="color: #ff6b6b; margin: 0 0 0.25rem 0; font-size: 1.5rem;">Claim Energies</h2>
+                            <p style="color: #888; margin: 0; font-size: 0.9rem;">Convert E to SOL tokens</p>
+                        </div>
+                    </div>
+                    <button style="background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.3); color: #ff4757; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 1.2rem; transition: all 0.2s;" on:click={() => closeClaimModal()}>
+                        ✕
+                    </button>
+                </div>
+
+                {#if claimResult && claimResult.success}
+                    <!-- Success Result -->
+                    <div style="background: rgba(39, 174, 96, 0.1); border: 1px solid rgba(39, 174, 96, 0.3); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                        <h3 style="color: #27ae60; margin: 0 0 0.5rem 0; font-size: 1.3rem;">Claim Successful!</h3>
+                        <p style="color: #f6f8ff; margin: 0 0 1rem 0;">
+                            Successfully claimed <strong>{claimResult.claimed_amount} E</strong> to your wallet
+                        </p>
+                        <p style="color: #4ade80; margin: 0 0 1rem 0; font-size: 0.9rem;">
+                            You received <strong>{(claimResult.claimed_amount * 0.001).toFixed(6)} SOL</strong>
+                        </p>
+                        {#if claimResult.tx_signature}
+                            <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem;">
+                                <div style="color: #b0b0b0; font-size: 0.8rem; margin-bottom: 0.25rem;">Transaction Signature:</div>
+                                <div style="font-family: 'Courier New', monospace; font-size: 0.7rem; color: #f6f8ff; word-break: break-all;">
+                                    {claimResult.tx_signature}
+                                </div>
+                            </div>
+                        {/if}
+                        <p style="color: #b0b0b0; font-size: 0.8rem;">
+                            Remaining energies: <strong>{claimResult.remaining_energies} E</strong>
+                        </p>
+                    </div>
+                {:else}
+                    <!-- Claim Form -->
+                    {#if claimError}
+                        <div style="background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                            <p style="color: #e74c3c; margin: 0; font-size: 0.9rem;">❌ {claimError}</p>
+                        </div>
+                    {/if}
+
+                    <!-- Amount Input -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="claim-amount" style="color: #f6f8ff; font-size: 0.9rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">Amount to Claim</label>
+                        <div style="position: relative;">
+                            <input
+                                id="claim-amount"
+                                type="number"
+                                bind:value={claimData.amount}
+                                placeholder="0"
+                                step="1"
+                                min="1"
+                                max={energyPoints}
+                                style="width: 100%; padding: 0.75rem 4rem 0.75rem 0.75rem; border: 1px solid #253157; border-radius: 8px; background: #0a0e1a; color: #f6f8ff; font-size: 0.9rem;"
+                                on:input={updateClaimCalculations}
+                            />
+                            <span style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); color: #888; font-weight: 600;">E</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span style="color: #888; font-size: 0.8rem;">Available: {energyPoints} E</span>
+                            <button style="background: transparent; border: none; color: #446bff; cursor: pointer; font-size: 0.8rem; text-decoration: underline;" on:click={() => { claimData.amount = energyPoints.toString(); updateClaimCalculations(); }}>
+                                Use Max
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Wallet Address Input -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="claim-wallet" style="color: #f6f8ff; font-size: 0.9rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">Solana Wallet Address</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                            <input
+                                id="claim-wallet"
+                                type="text"
+                                bind:value={claimData.userWallet}
+                                placeholder="Enter your Solana wallet address..."
+                                style="flex: 1; padding: 0.75rem; border: 1px solid #253157; border-radius: 8px; background: #0a0e1a; color: #f6f8ff; font-size: 0.9rem; font-family: 'Courier New', monospace;"
+                            />
+                            <button
+                                type="button"
+                                on:click={generateNewWalletForClaim}
+                                disabled={isGeneratingWallet}
+                                style="padding: 0.75rem 1rem; border: 1px solid #446bff; border-radius: 8px; background: #446bff; color: white; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.2s; white-space: nowrap; {isGeneratingWallet ? 'opacity: 0.6; cursor: not-allowed;' : ''}"
+                            >
+                                {#if isGeneratingWallet}
+                                    <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div style="width: 12px; height: 12px; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                        Generating...
+                                    </span>
+                                {:else}
+                                    🎯 New Wallet
+                                {/if}
+                            </button>
+                        </div>
+                        <p style="color: #888; font-size: 0.7rem; margin: 0.5rem 0 0 0;">
+                            💡 Enter your Solana wallet address or generate a new one to receive tokens
+                        </p>
+
+                        <!-- Devnet Wallet Info Section -->
+                        {#if claimData.userWallet && validateSolanaAddress(claimData.userWallet)}
+                            <div style="background: rgba(68, 107, 255, 0.1); border: 1px solid rgba(68, 107, 255, 0.3); border-radius: 12px; padding: 1rem; margin-top: 1rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <span style="color: #f6f8ff; font-size: 0.9rem; font-weight: 600;">🌐 Solana Devnet Wallet</span>
+                                    <span style="color: #4ade80; font-size: 0.7rem; background: rgba(74, 222, 128, 0.2); padding: 0.2rem 0.5rem; border-radius: 4px;">REAL WALLET</span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="color: #b0b0b0; font-size: 0.8rem;">Address:</span>
+                                    <a
+                                        href={`https://explorer.solana.com/address/${claimData.userWallet}?cluster=devnet`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style="color: #60a5fa; font-size: 0.7rem; text-decoration: underline;"
+                                    >
+                                        {claimData.userWallet.substring(0, 8)}...{claimData.userWallet.substring(claimData.userWallet.length - 8)}
+                                    </a>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="color: #b0b0b0; font-size: 0.8rem;">Network:</span>
+                                    <span style="color: #f6f8ff; font-size: 0.8rem; font-weight: 500;">Solana Devnet</span>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: #b0b0b0; font-size: 0.8rem;">Can interact with:</span>
+                                    <a
+                                        href="https://explorer.solana.com/address/BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19?cluster=devnet"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style="color: #fbbf24; font-size: 0.7rem; text-decoration: underline;"
+                                    >
+                                        Game Token Contract
+                                    </a>
+                                </div>
+
+                                <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(68, 107, 255, 0.3);">
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem; flex: 1;">
+                                            <button
+                                                class="wallet-action-btn wallet-action-btn-green"
+                                                on:click={() => openFaucetWithWallet('official')}
+                                                type="button"
+                                            >
+                                                🪂 Official Faucet
+                                            </button>
+                                            <button
+                                                class="wallet-action-btn wallet-action-btn-green"
+                                                on:click={() => openFaucetWithWallet('quicknode')}
+                                                type="button"
+                                                style="font-size: 0.65rem; padding: 0.4rem;"
+                                            >
+                                                🔄 QuickNode Faucet
+                                            </button>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem; flex: 1;">
+                                            <button
+                                                class="wallet-action-btn wallet-action-btn-blue"
+                                                on:click={async () => await requestAirdropDirectly()}
+                                                disabled={isRequestingAirdrop}
+                                            >
+                                                {isRequestingAirdrop ? '⏳ Requesting...' : '💰 Request 1 SOL'}
+                                            </button>
+                                            <p style="color: #a0a0a0; font-size: 0.6rem; margin: 0.25rem 0 0 0; text-align: center;">
+                                                💡 Auto-fallback to web faucet on rate limit
+                                            </p>
+                                            <button
+                                                class="wallet-action-btn wallet-action-btn-blue"
+                                                on:click={() => openFaucetWithWallet('official')}
+                                                style="font-size: 0.6rem; padding: 0.35rem; margin-top: 0.25rem;"
+                                                type="button"
+                                            >
+                                                🚀 Skip & Go to Faucet
+                                            </button>
+                                            <button
+                                                class="wallet-action-btn wallet-action-btn-green"
+                                                on:click={async () => await checkWalletBalance()}
+                                                disabled={isCheckingBalance}
+                                                style="font-size: 0.6rem; padding: 0.35rem;"
+                                                type="button"
+                                            >
+                                                {isCheckingBalance ? '⏳ Checking...' : `💰 Balance: ${walletBalance.toFixed(4)} SOL`}
+                                            </button>
+                                            <button
+                                                class="wallet-action-btn wallet-action-btn-blue"
+                                                on:click={async () => await checkLastTransaction()}
+                                                disabled={isCheckingTransaction || !lastTransactionSignature}
+                                                style="font-size: 0.65rem; padding: 0.4rem;"
+                                            >
+                                                {isCheckingTransaction ? '⏳ Checking...' : '🔍 Check Transaction'}
+                                            </button>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; gap: 0.25rem; flex: 1;">
+                                            <a
+                                                href={`https://explorer.solana.com/address/${claimData.userWallet}?cluster=devnet`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="wallet-action-btn wallet-action-btn-blue"
+                                                style="font-size: 0.65rem; padding: 0.4rem;"
+                                            >
+                                                🔍 View on Explorer
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p style="color: #fbbf24; font-size: 0.6rem; margin: 0.5rem 0 0 0; text-align: center;">
+                                    ⚠️ This is a REAL blockchain wallet. Fund it with SOL to use for transactions.<br>
+                                    💡 <strong>Smart airdrop: Auto-retry on rate limit, fallback to web faucets!</strong>
+                                </p>
+                            </div>
+                        {/if}
+                    </div>
+
+                    <!-- Network Fee Selection -->
+                    <div style="margin-bottom: 2rem;">
+                        <label style="color: #f6f8ff; font-size: 0.9rem; font-weight: 600; display: block; margin-bottom: 0.5rem;">Network Fee</label>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                            <button
+                                class="fee-button"
+                                class:active={claimData.networkFee === 'low'}
+                                on:click={() => { claimData.networkFee = 'low'; updateClaimCalculations(); }}
+                                style="padding: 0.75rem; border: 1px solid {claimData.networkFee === 'low' ? '#27ae60' : '#253157'}; border-radius: 8px; background: {claimData.networkFee === 'low' ? 'rgba(39, 174, 96, 0.1)' : '#0a0e1a'}; color: #f6f8ff; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;">
+                                <div style="font-weight: 600; margin-bottom: 0.25rem;">🐌 Low</div>
+                                <div style="font-size: 0.7rem; color: #888;">{calculateGasFee('low').toFixed(6)} SOL</div>
+                            </button>
+
+                            <button
+                                class="fee-button"
+                                class:active={claimData.networkFee === 'medium'}
+                                on:click={() => { claimData.networkFee = 'medium'; updateClaimCalculations(); }}
+                                style="padding: 0.75rem; border: 1px solid {claimData.networkFee === 'medium' ? '#f39c12' : '#253157'}; border-radius: 8px; background: {claimData.networkFee === 'medium' ? 'rgba(243, 156, 18, 0.1)' : '#0a0e1a'}; color: #f6f8ff; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;">
+                                <div style="font-weight: 600; margin-bottom: 0.25rem;">⚡ Standard</div>
+                                <div style="font-size: 0.7rem; color: #888;">{calculateGasFee('medium').toFixed(6)} SOL</div>
+                            </button>
+
+                            <button
+                                class="fee-button"
+                                class:active={claimData.networkFee === 'high'}
+                                on:click={() => { claimData.networkFee = 'high'; updateClaimCalculations(); }}
+                                style="padding: 0.75rem; border: 1px solid {claimData.networkFee === 'high' ? '#e74c3c' : '#253157'}; border-radius: 8px; background: {claimData.networkFee === 'high' ? 'rgba(231, 76, 60, 0.1)' : '#0a0e1a'}; color: #f6f8ff; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;">
+                                <div style="font-weight: 600; margin-bottom: 0.25rem;">🚀 High</div>
+                                <div style="font-size: 0.7rem; color: #888;">{calculateGasFee('high').toFixed(6)} SOL</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Summary -->
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid #253157; border-radius: 12px; padding: 1rem; margin-bottom: 2rem;">
+                        <h3 style="color: #f6f8ff; margin: 0 0 1rem 0; font-size: 1rem;">Transaction Summary</h3>
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: #888; font-size: 0.9rem;">Claiming</span>
+                            <span style="color: #f6f8ff; font-size: 0.9rem;">{claimData.amount || '0'} E</span>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: #888; font-size: 0.9rem;">You will receive</span>
+                            <span style="color: #4ade80; font-size: 0.9rem;">{(claimData.amount || 0) * 0.001} SOL</span>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span style="color: #888; font-size: 0.9rem;">Network Fee</span>
+                            <span style="color: #f6f8ff; font-size: 0.9rem;">{claimData.estimatedGas} SOL</span>
+                        </div>
+
+                        <hr style="border: none; border-top: 1px solid #253157; margin: 1rem 0;">
+
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #f6f8ff; font-size: 0.9rem; font-weight: 600;">Total Cost</span>
+                            <span style="color: #ff6b6b; font-size: 0.9rem; font-weight: 600;">{claimData.totalCost} SOL</span>
+                        </div>
+                    </div>
+
+                    <!-- Warning -->
+                    <div style="background: rgba(243, 156, 18, 0.1); border: 1px solid rgba(243, 156, 18, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 2rem;">
+                        <p style="color: #f39c12; margin: 0; font-size: 0.85rem; line-height: 1.4;">
+                            ⚠️ <strong>Important:</strong> You will pay the network fee in SOL. Make sure your wallet has enough SOL to cover the transaction cost.
+                        </p>
+                    </div>
+                {/if}
+
+                <!-- Modal Actions -->
+                {#if !claimResult || !claimResult.success}
+                    <div style="display: flex; gap: 1rem;">
+                        <button
+                            style="flex: 1; background: rgba(255, 255, 255, 0.1); border: 1px solid #253157; color: #f6f8ff; padding: 0.875rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s;"
+                            on:click={() => closeClaimModal()}>
+                            Cancel
+                        </button>
+                        <button
+                            style="flex: 1; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); border: none; color: white; padding: 0.875rem; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; opacity: {isClaiming ? 0.6 : 1};"
+                            disabled={isClaiming}
+                            on:click={() => claimEnergies()}>
+                            {#if isClaiming}
+                                <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div style="width: 16px; height: 16px; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                    Claiming...
+                                </span>
+                            {:else}
+                                Claim Energies
+                            {/if}
+                        </button>
+                    </div>
+                {/if}
+            </div>
+        </div>
+    {/if}
 
     <!-- Transfer Modal -->
     {#if showTransferModal}
@@ -2324,5 +3324,55 @@
         </div>
     {/if}
 
+    {:else}
+        <!-- Simple Authentication Message -->
+        <div style="max-width: 480px; margin: 0 auto; text-align: center; padding: 6rem 2rem;">
+            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #446bff, #6b73ff); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 2rem; margin: 0 auto 2rem;">
+                <Lock class="emoji-icon" />
+            </div>
+            <h2 style="color: #f6f8ff; margin: 0 0 1.5rem 0; font-size: 1.8rem; font-weight: 700;">
+                Hãy đăng nhập để xem ví
+            </h2>
+            <p style="color: #a0a0a0; margin: 0 0 1rem 0; font-size: 1rem; line-height: 1.6;">
+                Bạn cần đăng nhập hoặc đăng ký tài khoản để truy cập ví.
+            </p>
+            
+        </div>
+    {/if}
+
     </main>
+
+    <style>
+        .wallet-action-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .wallet-action-btn-green {
+            background: rgba(74, 222, 128, 0.2);
+            border-color: rgba(74, 222, 128, 0.5);
+            color: #4ade80;
+        }
+
+        .wallet-action-btn-green:hover {
+            background: rgba(74, 222, 128, 0.3);
+        }
+
+        .wallet-action-btn-blue {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: rgba(96, 165, 250, 0.5);
+            color: #60a5fa;
+        }
+
+        .wallet-action-btn-blue:hover {
+            background: rgba(96, 165, 250, 0.3);
+        }
+    </style>
 </div>

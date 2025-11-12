@@ -53,7 +53,7 @@ async function testOwnerWalletMonitoring() {
   console.log('\n3️⃣ KIỂM TRA OWNER WALLET MONITORING');
 
   try {
-    const ownerAddress = '8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS';
+    const ownerAddress = '5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN';
 
     // Check if owner address is configured in TokenService
     const tokenService = readFileSync('client/src/lib/services/tokenService.ts', 'utf8');

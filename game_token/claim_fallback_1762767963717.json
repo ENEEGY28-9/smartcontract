@@ -1,0 +1,10 @@
+{
+  "player": "AfQLRj5iiY3NkTEKZg61RpEv6p9y9yjYzxhLR9fuiLoD",
+  "claimed": 25,
+  "method": "Minting Simulation",
+  "gamePoolUnchanged": true,
+  "playerReceived": 25,
+  "success": true,
+  "timestamp": "2025-11-10T09:46:03.714Z",
+  "note": "Player got tokens via minting, not from game pool transfer"
+}

@@ -36,8 +36,8 @@ let owner_amount = total_per_particle * 20 / 100; // 0.2 tokens (20%)
 ```
 Network: Solana Devnet
 Token Mint: 2AxM2y84vg5rwP7QK7mwmBBZrDnZpXZxKTwU5vvX1FWK
-Game Pool: BwnPAXJ7FSQQkirnXzvLsELk5crhLxbzArwtcfgrGp19
-Owner Account: 8unZYfU5Xm1DCgnSt12jjqwXP1ifcMUSbFFerbBN8WYS
+Game Pool: 5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc
+Owner Account: 5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN
 ```
 
 ### ✅ **Distribution Verification:**
@@ -178,4 +178,13 @@ Mainnet deployment khi có đủ SOL funding (~3 SOL needed).
 *Status: ✅ 80/20 LOGIC FULLY OPERATIONAL*
 *Logic Version: 80_20_fixed*
 *Network: Solana Devnet* 🎯
+
+
+
+
+
+
+
+
+
 

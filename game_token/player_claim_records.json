@@ -1,0 +1,110 @@
+[
+  {
+    "player": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+    "claimAmount": 25,
+    "balances": {
+      "before": {
+        "gamePool": 6519,
+        "player": 640
+      },
+      "after": {
+        "gamePool": 6519,
+        "player": 665
+      }
+    },
+    "signature": "5SJjhrnh8bNvFCBQBCkjy4PKzoJYvTBe9KoaXMmwW3X8pJ3LQHsrsmaPNmkiGj6TZ1Wwcbj1o2Kv5Lor2MhBzga7",
+    "fee": 0.000005,
+    "timestamp": "2025-11-10T08:15:50.717Z",
+    "method": "Smart Contract Claim Simulation"
+  },
+  {
+    "player": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+    "claimAmount": 10,
+    "balances": {
+      "before": {
+        "gamePool": 6519,
+        "player": 665
+      },
+      "after": {
+        "gamePool": 6519,
+        "player": 675
+      }
+    },
+    "signature": "3axdoJhXCrNSF3vGyEHpwGcMMAiwCjByd7okiGBZktvBfqtSSoMnQeoJ4rvZ5RhxZHoBCRiT4T8wmJjTPZFfJX1D",
+    "fee": 0.000005,
+    "timestamp": "2025-11-10T08:16:11.440Z",
+    "method": "Smart Contract Claim Simulation"
+  },
+  {
+    "player": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+    "claimAmount": 50,
+    "balances": {
+      "before": {
+        "gamePool": 6519,
+        "player": 675
+      },
+      "after": {
+        "gamePool": 6519,
+        "player": 725
+      }
+    },
+    "signature": "Si1HALGteUxqLDMDxfP44gYfhPjpxmRcwsWs3RMzG1ECSsgweQrEufSauxT8gzF6ZpFCeAY7aNjXzU3Fj1gyed2",
+    "fee": 0.000005,
+    "timestamp": "2025-11-10T08:16:15.551Z",
+    "method": "Smart Contract Claim Simulation"
+  },
+  {
+    "player": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+    "claimAmount": 100,
+    "balances": {
+      "before": {
+        "gamePool": 6519,
+        "player": 725
+      },
+      "after": {
+        "gamePool": 6519,
+        "player": 825
+      }
+    },
+    "signature": "2wFK2YeVxdrxXzWV31SWxkMEYtBtSCan5HmaZeLWn9XZaXvpKNA5pxyVRc4V1sm6gBVRqraWReh3sazGKyfgt8J5",
+    "fee": 0.000005,
+    "timestamp": "2025-11-10T08:16:18.991Z",
+    "method": "Smart Contract Claim Simulation"
+  },
+  {
+    "player": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+    "claimAmount": 5,
+    "balances": {
+      "before": {
+        "gamePool": 6519,
+        "player": 825
+      },
+      "after": {
+        "gamePool": 6519,
+        "player": 830
+      }
+    },
+    "signature": "6uqQ6MWMfbd6CuFyQRvTYEjBunBezWfbXGNftuYzhVg6znSEpNVtR56SKzDHpx3XnoJU5axoJJeA5x5YwuAncuz",
+    "fee": 0.000005,
+    "timestamp": "2025-11-10T08:16:22.227Z",
+    "method": "Smart Contract Claim Simulation"
+  },
+  {
+    "player": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+    "claimAmount": 30,
+    "balances": {
+      "before": {
+        "gamePool": 6519,
+        "player": 860
+      },
+      "after": {
+        "gamePool": 6519,
+        "player": 890
+      }
+    },
+    "signature": "4ZgQAAjQff6EFRZoSU7GJ7oqCNydvRVsRV7eXVCo1V4Vp82wUNffSsHtyavDuiyD7xbESzDsmKbHvzKPyZtFUuN6",
+    "fee": 0.000005,
+    "timestamp": "2025-11-10T08:32:19.764Z",
+    "method": "Smart Contract Claim Simulation"
+  }
+]

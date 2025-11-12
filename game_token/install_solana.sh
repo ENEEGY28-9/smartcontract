@@ -21,3 +21,12 @@ echo "Solana version: $(solana --version)"
 echo "Current config: $(solana config get)"
 
 echo "Solana CLI installation complete!"
+
+
+
+
+
+
+
+
+

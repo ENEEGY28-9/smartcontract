@@ -140,3 +140,12 @@ Bridge system được thiết kế để dễ dàng mở rộng và bảo trì.
 
 *Bridge System - Cross-chain token transfers made simple* 🌉
 
+
+
+
+
+
+
+
+
+

@@ -60,3 +60,12 @@ async function testGameReadiness() {
 // Run test
 testGameReadiness().catch(console.error);
 
+
+
+
+
+
+
+
+
+

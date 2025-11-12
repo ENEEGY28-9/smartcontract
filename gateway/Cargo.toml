@@ -64,13 +64,21 @@ sha2 = "0.10"                # SHA-256 for Ed25519 simulation
 thiserror = "1.0"           # Error handling
 validator = "0.18"          # Input validation
 
+# Solana SDK temporarily disabled due to version conflicts
+# Will be implemented in separate microservice
+# solana-sdk = "1.18"
+# solana-client = "1.18"
+# solana-program = "1.18"
+# spl-token = "5.0"
+# spl-associated-token-account = "3.0"
+
         # Core blockchain libraries (DISABLED - implementing separate microservice)
         # SOLUTION: Create separate blockchain microservice to avoid dependency conflicts
         # This microservice will handle all Solana/Anchor operations and communicate
         # with main gateway via gRPC/WebSocket
         #
-        # solana-sdk = "1.18"         # Latest stable
-        # solana-client = "1.18"      # Match SDK version
+        # solana-sdk = "1.16"         # Compatible version
+        # solana-client = "1.16"      # Match SDK version
         # anchor-client = "0.29.0"    # Latest stable
         # anchor-lang = "0.29.0"      # Match client version
 web3 = "0.19"               # Ethereum RPC client

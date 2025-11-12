@@ -51,3 +51,12 @@ async function testBridgeSystem() {
 // Run test
 testBridgeSystem().catch(console.error);
 
+
+
+
+
+
+
+
+
+

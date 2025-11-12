@@ -15,10 +15,7 @@ export interface CollectibleConfig {
   points?: number;
 }
 
-export interface CollectibleCallbacks {
-  onTokenMint?: (position: [number, number], type: CollectibleType) => Promise<{ success: boolean; new_balance?: number; tx_signature?: string }>;
-  onShowRewardEffect?: (newBalance: number) => void;
-}
+// CollectibleCallbacks removed - now handled by CollectibleManager
 
 export class Collectible {
   private mesh: THREE.Mesh | null = null;
@@ -26,7 +23,6 @@ export class Collectible {
   private physicsManager: PhysicsManager;
 
   private config: Required<CollectibleConfig>;
-  private callbacks: CollectibleCallbacks;
   private isCollected = false;
   private collectionTime = 0;
 
@@ -36,8 +32,7 @@ export class Collectible {
 
   constructor(
     physicsManager: PhysicsManager,
-    config: CollectibleConfig = {},
-    callbacks: CollectibleCallbacks = {}
+    config: CollectibleConfig = {}
   ) {
     this.physicsManager = physicsManager;
 
@@ -47,8 +42,6 @@ export class Collectible {
       points: 10,
       ...config
     };
-
-    this.callbacks = callbacks;
 
     this.createMesh();
     console.log(`🔮 Collectible mesh created: ${this.mesh ? 'success' : 'failed'}`);
@@ -229,37 +222,16 @@ export class Collectible {
   /**
    * Mark collectible as collected and start collection animation
    */
-  public async collect(): Promise<void> {
-    if (this.isCollected) return;
+  public collect(): void {
+    console.log('🎨 Collectible.collect() called for type:', this.config.type);
+
+    if (this.isCollected) {
+      console.log('⚠️ Collectible already collected, skipping');
+      return;
+    }
 
     this.isCollected = true;
     this.collectionTime = Date.now();
-
-    try {
-      // Call token minting API if callback is provided
-      if (this.callbacks.onTokenMint) {
-        const position = this.getPosition();
-        const result = await this.callbacks.onTokenMint(
-          [Math.round(position.x), Math.round(position.z)],
-          this.config.type
-        );
-
-        if (result.success && result.new_balance !== undefined) {
-          // Show token reward effect
-          if (this.callbacks.onShowRewardEffect) {
-            this.callbacks.onShowRewardEffect(result.new_balance);
-          }
-
-          console.log(`🎯 Minted token! New balance: ${result.new_balance}, TX: ${result.tx_signature}`);
-        } else {
-          console.error('Failed to mint token:', result);
-          // Continue with visual collection only
-        }
-      }
-    } catch (error) {
-      console.error('Token minting error:', error);
-      // Continue with visual collection only
-    }
 
     // Start collection animation
     this.animateCollection();

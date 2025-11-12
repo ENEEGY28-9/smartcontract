@@ -1,0 +1,83 @@
+name: 'Deploy Solana Smart Contract'
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Setup Solana CLI
+      run: |
+        wget -qO- https://release.solana.com/v1.18.26/install | bash
+        echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+        export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+
+    - name: Setup Anchor
+      run: |
+        cargo install --git https://github.com/coral-xyz/anchor avm --locked
+        avm install latest
+        avm use latest
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Clean builds
+      run: anchor clean
+
+    - name: Build smart contract
+      run: anchor build
+
+    - name: Deploy to devnet
+      run: |
+        mkdir -p ~/.config/solana
+        echo "${{ secrets.SOLANA_PRIVATE_KEY }}" > ~/.config/solana/id.json
+        chmod 600 ~/.config/solana/id.json
+        solana config set --url devnet --keypair ~/.config/solana/id.json
+        solana airdrop 2 || true
+        solana balance
+        anchor deploy
+      env:
+        ANCHOR_PROVIDER_URL: https://api.devnet.solana.com
+        ANCHOR_WALLET: ~/.config/solana/id.json
+
+    - name: Extract Program ID
+      id: program-id
+      run: |
+        PROGRAM_ID=$(solana address -k target/deploy/game_token-keypair.json)
+        echo "program_id=$PROGRAM_ID" >> $GITHUB_OUTPUT
+        echo "Program ID: $PROGRAM_ID"
+
+    - name: Verify deployment
+      run: |
+        PROGRAM_ID="${{ steps.program-id.outputs.program_id }}"
+        echo "Verifying program: $PROGRAM_ID"
+        solana program show "$PROGRAM_ID"
+
+    - name: Generate report
+      run: |
+        PROGRAM_ID="${{ steps.program-id.outputs.program_id }}"
+        echo "## Deployment Report" > deployment_report.md
+        echo "- **Program ID**: \`$PROGRAM_ID\`" >> deployment_report.md
+        echo "- **Explorer**: https://explorer.solana.com/address/$PROGRAM_ID?cluster=devnet" >> deployment_report.md
+        echo "- **Time**: $(date)" >> deployment_report.md
+
+    - name: Upload report
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-report
+        path: deployment_report.md

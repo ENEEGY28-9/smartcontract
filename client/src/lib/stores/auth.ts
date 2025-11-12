@@ -36,8 +36,16 @@ if (typeof window !== 'undefined') {
       const tokens = JSON.parse(storedTokens) as AuthTokens;
       const user = JSON.parse(storedUser) as User;
 
+      // Check if tokens are old PocketBase tokens (contain collectionId)
+      if (tokens.access_token && tokens.access_token.includes('collectionId')) {
+        console.warn('⚠️ Detected old PocketBase tokens in localStorage, clearing...');
+        localStorage.removeItem('auth_tokens');
+        localStorage.removeItem('auth_user');
+        initialTokens = null;
+        initialUser = null;
+      }
       // Kiểm tra token có hết hạn không
-      if (tokens.expires_at > Date.now()) {
+      else if (tokens.expires_at > Date.now()) {
         initialTokens = tokens;
         initialUser = user;
       } else {
@@ -65,16 +73,15 @@ export const authActions = {
     authStore.update(state => ({ ...state, isLoading: true }));
 
     try {
-      const response = await fetch('http://localhost:8090/api/collections/users/records', {
+      const response = await fetch('/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          username,
           email,
-          password,
-          passwordConfirm: password,
-          name: username
+          password
         }),
       });
 
@@ -153,6 +160,17 @@ export const authActions = {
         isLoading: false,
       });
 
+      // Also authenticate with PocketBase to sync auth stores
+      try {
+        console.log('🔄 Syncing with PocketBase authentication after registration...');
+
+        // The gateway registration should have created the user, now authenticate with PocketBase
+        await pocketbaseService.authenticate(email, password);
+        console.log('✅ PocketBase authentication synced');
+      } catch (pbError) {
+        console.warn('⚠️ PocketBase authentication sync failed, continuing with gateway auth only:', pbError);
+      }
+
       return { success: true };
     } catch (error) {
       authStore.update(state => ({
@@ -167,13 +185,13 @@ export const authActions = {
     authStore.update(state => ({ ...state, isLoading: true }));
 
     try {
-      const response = await fetch('http://localhost:8090/api/collections/users/auth-with-password', {
+      const response = await fetch('/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          identity: email,
+          username: email,
           password
         }),
       });
@@ -252,6 +270,38 @@ export const authActions = {
         isAuthenticated: true,
         isLoading: false,
       });
+
+      // Also authenticate with PocketBase to sync auth stores
+      try {
+        console.log('🔄 Syncing with PocketBase authentication...');
+
+        // Try to authenticate with PocketBase directly
+        // If this fails, the user might not exist in PocketBase
+        try {
+          await pocketbaseService.authenticate(email, password);
+          console.log('✅ PocketBase authentication synced successfully');
+        } catch (authError) {
+          console.log('⚠️ PocketBase authentication failed, user might not exist in PocketBase:', authError.message);
+
+          // Try to register the user first, then authenticate
+          try {
+            console.log('🔄 Attempting to register user in PocketBase first...');
+            await pocketbaseService.registerDirect(email, password, {
+              name: email.split('@')[0], // Use email prefix as name
+            });
+            console.log('✅ User registered in PocketBase');
+
+            // Now try to authenticate again
+            await pocketbaseService.authenticate(email, password);
+            console.log('✅ PocketBase authentication synced after registration');
+          } catch (registerError) {
+            console.warn('⚠️ PocketBase registration also failed:', registerError.message);
+            console.warn('Continuing with gateway auth only - PocketBase features will not work');
+          }
+        }
+      } catch (pbError) {
+        console.warn('⚠️ PocketBase authentication sync failed completely:', pbError);
+      }
 
       return { success: true };
     } catch (error) {
@@ -429,74 +479,6 @@ if (typeof window !== 'undefined' && initialTokens) {
   }
 }
 
-// Sync authStore with PocketBase client state and listen for auth events (browser only)
-if (typeof window !== 'undefined') {
-  const syncFromPocketBase = () => {
-    try {
-      const pbState = pocketbaseService.refreshAuthState();
-
-      const isValid = pbState?.isValid ?? pocketbaseService.getInstance().authStore.isValid;
-      const model = pbState?.model ?? pocketbaseService.getInstance().authStore.model;
-      const token = pbState?.token ?? pocketbaseService.getInstance().authStore.token;
-
-      if (isValid && model) {
-        const tokens: AuthTokens = {
-          access_token: token || '',
-          refresh_token: '',
-          expires_in: 0,
-          expires_at: Date.now() + (60 * 60 * 1000), // best-effort expiry
-        };
-
-        const user: User = {
-          id: model.id,
-          email: model.email,
-          solanaWalletAddress: undefined,  // Initialize as undefined
-          tokenBalance: 0,                // Initialize as 0
-        };
-
-        // Persist to localStorage so existing initialization logic sees it
-        try {
-          localStorage.setItem('auth_tokens', JSON.stringify(tokens));
-          localStorage.setItem('auth_user', JSON.stringify(user));
-        } catch (e) {
-          console.warn('Failed to write auth to localStorage:', e);
-        }
-
-        authStore.set({
-          user,
-          tokens,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-      }
-    } catch (err) {
-      console.warn('Failed to sync authStore with PocketBase:', err);
-    }
-  };
-
-  // Initial sync on page load
-  syncFromPocketBase();
-
-  const handleAuthSuccess = () => {
-    syncFromPocketBase();
-  };
-
-  const handleAuthLogout = () => {
-    try {
-      localStorage.removeItem('auth_tokens');
-      localStorage.removeItem('auth_user');
-    } catch (e) {
-      console.warn('Failed to remove auth from localStorage:', e);
-    }
-
-    authStore.set({
-      user: null,
-      tokens: null,
-      isAuthenticated: false,
-      isLoading: false,
-    });
-  };
-
-  window.addEventListener('pocketbase-auth-success', handleAuthSuccess);
-  window.addEventListener('pocketbase-auth-logout', handleAuthLogout);
-}
+// Gateway authentication - no longer sync with PocketBase
+// The client now uses Gateway JWT tokens instead of PocketBase tokens
+console.log('🔐 Using Gateway authentication system (PocketBase sync disabled)');

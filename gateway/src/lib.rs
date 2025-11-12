@@ -11,6 +11,7 @@ mod error_handling;
 mod circuit_breaker;
 mod security;
 mod transport;
+// mod solana_client; // TODO: Enable when Solana dependencies are resolved
 
 // Integration testing module
 #[cfg(test)]
@@ -47,6 +48,7 @@ use std::time::Instant;
 use axum::{extract::{State, Path, Query, Extension}, http::{Method, StatusCode, HeaderMap}, middleware::Next, response::IntoResponse, routing::{get, post, put, delete}, Json, Router};
 use chrono::{DateTime, Utc};
 use hyper::{header::{AUTHORIZATION, HeaderValue}, server::conn::AddrIncoming};
+use bs58;
 use once_cell::sync::Lazy;
 use prometheus::{register_int_counter_vec, register_int_gauge, register_int_gauge_vec, register_histogram_vec, Encoder, IntCounterVec, IntGauge, IntGaugeVec, TextEncoder, HistogramVec};
 use tracing::{error, info, warn};
@@ -265,6 +267,7 @@ pub struct AppState {
     // REAL BLOCKCHAIN INTEGRATION VIA SEPARATE MICROSERVICE
     // Using gRPC client to communicate with blockchain-service
     pub blockchain_client: std::sync::Arc<blockchain_client::BlockchainClient>,
+    // pub solana_transfer_client: std::sync::Arc<solana_client::SolanaTransferClient>, // TODO: Enable when Solana dependencies are resolved
     // Services API client for persistence
     pub services_client: reqwest::Client,
     pub services_url: String,
@@ -1004,16 +1007,6 @@ fn extract_endpoint_from_request<B>(request: &axum::http::Request<B>) -> String 
 // CORS helper function đã được định nghĩa ở trên
 
 // Handle CORS preflight requests
-#[allow(dead_code)]
-async fn handle_cors_preflight() -> impl IntoResponse {
-    use axum::http::{HeaderMap, HeaderValue, StatusCode};
-    let mut headers = HeaderMap::new();
-    headers.insert("Access-Control-Allow-Origin", HeaderValue::from_static("*"));
-    headers.insert("Access-Control-Allow-Methods", HeaderValue::from_static("GET, POST, PUT, DELETE, OPTIONS"));
-    headers.insert("Access-Control-Allow-Headers", HeaderValue::from_static("Content-Type, Authorization, Accept"));
-    (StatusCode::OK, headers)
-}
-
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct GatewaySettings {
     pub bind_addr: SocketAddr,
@@ -1529,12 +1522,7 @@ pub async fn build_router(_worker_endpoint: String) -> Router {
     // Room Manager temporarily disabled due to compilation issues
     // let room_manager = ...;
 
-    // Configure CORS layer - allow all origins for development
-    let _cors_layer = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any)
-        .allow_headers(Any)
-        .allow_credentials(true);
+    // CORS will be handled manually in responses for now
 
     // Create worker client
     let worker_client = {
@@ -1597,11 +1585,27 @@ pub async fn build_router(_worker_endpoint: String) -> Router {
     //     )
     // );
 
+    // TODO: Initialize Solana transfer client when dependency conflicts are resolved
+    // fn init_solana_transfer_client() -> Option<std::sync::Arc<solana_client::SolanaTransferClient>> {
+    //     // Implementation will be added when Solana dependencies are compatible
+    // }
+
     // Initialize real blockchain client via gRPC
     let blockchain_client = std::sync::Arc::new(
         blockchain_client::BlockchainClient::new("http://localhost:50051").await
             .expect("Failed to connect to blockchain service")
     );
+
+    // TODO: Initialize Solana transfer client when dependency conflicts are resolved
+    // let solana_transfer_client = std::sync::Arc::new(
+    //     solana_client::SolanaTransferClient::new(
+    //         "https://api.devnet.solana.com",
+    //         "2ecFSNGSMokwyZKr1bDWHBjdNRcH2KERVtwX6MPTxpkN",
+    //         "Hejd3YzVqL3Avyu5hkohNMTBk2V6mN26asS9jbRceSfc",
+    //         &std::env::var("SOLANA_PRIVATE_KEY").unwrap_or_else(|_| "mock_private_key".to_string()),
+    //         9,
+    //     ).expect("Failed to initialize Solana transfer client")
+    // );
 
     // Initialize services client for persistence
     let services_client = reqwest::Client::new();
@@ -1624,6 +1628,8 @@ pub async fn build_router(_worker_endpoint: String) -> Router {
         game_metrics_manager,
         // Real blockchain integration via separate microservice
         blockchain_client,
+        // TODO: Enable when Solana dependencies are resolved
+        // solana_transfer_client,
         // Services API client for persistence
         services_client,
         services_url,
@@ -1720,9 +1726,14 @@ pub async fn build_router(_worker_endpoint: String) -> Router {
         .route("/api/token/earn-from-pool", post(earn_from_pool_handler_api))
         .route("/api/token/balance", get(balance_handler_api))
         .route("/api/token/history", get(history_handler_api))
+        .route("/api/token/pool-balance", get(pool_balance_handler_api))
+        .route("/api/test/pool-balance", get(test_pool_balance_handler))
         .route("/api/token/transfer", post(transfer_handler_api))
+        .route("/api/energies/claim-to-wallet", post(claim_energies_handler_api))
         .route("/api/wallet/create", post(create_wallet_handler_api))
         .route("/api/wallet/create-hd", post(create_hd_wallet_handler_api))
+        .route("/api/wallet/generate-solana", post(generate_solana_wallet_handler))
+        .route("/api/wallet/generate-solana", get(handle_cors_preflight))
         .route("/api/wallet/derive", post(derive_wallet_handler_api))
         .route("/api/wallet/recover", post(recover_wallet_handler_api));
         // TODO: [ENABLE WEBSOCKET INTEGRATION] - Uncomment when websocket_token module enabled
@@ -1935,7 +1946,7 @@ async fn auth_login(
 ) -> impl IntoResponse {
     let start_time = std::time::Instant::now();
 
-    let response = auth::login_handler(Json(login_req)).await;
+    let mut response = auth::login_handler(Json(login_req)).await;
 
     // Record metrics based on response status
     let status_code = response.status();
@@ -1957,7 +1968,14 @@ async fn auth_login(
         .with_label_values(&["/auth/login", "POST", &status_code.to_string()])
         .observe(start_time.elapsed().as_secs_f64());
 
-    response
+    // Add CORS headers to the response
+    let (mut parts, body) = response.into_parts();
+    parts.headers.insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+    parts.headers.insert("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS".parse().unwrap());
+    parts.headers.insert("Access-Control-Allow-Headers", "Content-Type, Authorization".parse().unwrap());
+    parts.headers.insert("Access-Control-Allow-Credentials", "true".parse().unwrap());
+
+    axum::response::Response::from_parts(parts, body)
 }
 
 async fn auth_refresh(
@@ -5609,6 +5627,88 @@ async fn history_handler_api(
     (StatusCode::OK, Json(history)).into_response()
 }
 
+async fn pool_balance_handler_api(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> impl IntoResponse {
+    HTTP_REQUESTS_TOTAL.with_label_values(&["/api/token/pool-balance"]).inc();
+
+    // Extract and validate JWT token
+    let token = match headers.get("authorization") {
+        Some(header_value) => {
+            let auth_str = header_value.to_str().unwrap_or("");
+            if auth_str.starts_with("Bearer ") {
+                Some(&auth_str[7..])
+            } else {
+                None
+            }
+        }
+        None => None,
+    };
+
+    let _claims = match token {
+        Some(token_str) => {
+            match state.auth_service.validate_token_with_db(token_str, &state.database_pool).await {
+                Ok(claims) => claims,
+                Err(_) => {
+                    return (StatusCode::UNAUTHORIZED, Json(serde_json::json!({
+                        "error": "Invalid token",
+                        "available_tokens": 0
+                    }))).into_response();
+                }
+            }
+        }
+        None => {
+            return (StatusCode::UNAUTHORIZED, Json(serde_json::json!({
+                "error": "Authorization required",
+                "available_tokens": 0
+            }))).into_response();
+        }
+    };
+
+    // Get pool balance from blockchain
+    match get_game_pool_balance(&state.blockchain_client).await {
+        Ok(available_tokens) => {
+            (StatusCode::OK, Json(serde_json::json!({
+                "available_tokens": available_tokens,
+                "pool_address": "5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc"
+            }))).into_response()
+        }
+        Err(e) => {
+            error!("Failed to get pool balance: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({
+                "error": "Failed to get pool balance",
+                "available_tokens": 0
+            }))).into_response()
+        }
+    }
+}
+
+/// TEST endpoint - Get pool balance without authentication (for testing purposes)
+async fn test_pool_balance_handler(
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    HTTP_REQUESTS_TOTAL.with_label_values(&["/api/test/pool-balance"]).inc();
+
+    // Get pool balance from blockchain (no auth required for testing)
+    match get_game_pool_balance(&state.blockchain_client).await {
+        Ok(available_tokens) => {
+            (StatusCode::OK, Json(serde_json::json!({
+                "available_tokens": available_tokens,
+                "pool_address": "5oU5mv3xjud2kgemjKwm5qK5Ar356rxboxbNmYXhuAJc",
+                "message": "Test endpoint - no authentication required"
+            }))).into_response()
+        }
+        Err(e) => {
+            error!("Failed to get pool balance: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({
+                "error": "Failed to get pool balance",
+                "available_tokens": 0
+            }))).into_response()
+        }
+    }
+}
+
 async fn transfer_handler_api(
     State(state): State<AppState>,
     headers: HeaderMap,
@@ -5660,6 +5760,63 @@ async fn transfer_handler_api(
 
     // Call actual handler
     transfer_handler(state, dummy_req, claims).await.into_response()
+}
+
+async fn claim_energies_handler_api(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    Json(request): Json<ClaimEnergiesRequest>,
+) -> impl IntoResponse {
+    HTTP_REQUESTS_TOTAL.with_label_values(&["/api/energies/claim-to-wallet"]).inc();
+
+    // Extract and validate JWT token
+    let token = match headers.get("authorization") {
+        Some(header_value) => {
+            let auth_str = header_value.to_str().unwrap_or("");
+            if auth_str.starts_with("Bearer ") {
+                Some(&auth_str[7..]) // Remove "Bearer " prefix
+            } else {
+                None
+            }
+        }
+        None => None,
+    };
+
+    let claims = match token {
+        Some(token_str) => {
+            match state.auth_service.validate_token_with_db(token_str, &state.database_pool).await {
+                Ok(claims) => claims,
+                Err(_) => {
+                    return (StatusCode::UNAUTHORIZED, Json(ClaimEnergiesResponse {
+                        success: false,
+                        tx_signature: None,
+                        claimed_amount: 0,
+                        remaining_energies: 0,
+                        error: Some("Invalid or expired token".to_string()),
+                    })).into_response();
+                }
+            }
+        }
+        None => {
+            return (StatusCode::UNAUTHORIZED, Json(ClaimEnergiesResponse {
+                success: false,
+                tx_signature: None,
+                claimed_amount: 0,
+                remaining_energies: 0,
+                error: Some("Authorization header required".to_string()),
+            })).into_response();
+        }
+    };
+
+    // Create a dummy request for the handler
+    let dummy_req = axum::http::Request::builder()
+        .method("POST")
+        .uri("/api/energies/claim-to-wallet")
+        .body(axum::body::Body::from(serde_json::to_vec(&request).unwrap_or_default()))
+        .unwrap();
+
+    // Call the actual handler
+    claim_energies_handler(state, dummy_req, claims).await.into_response()
 }
 
 // Token API Request/Response structs
@@ -5722,6 +5879,21 @@ pub struct TransferRequest {
 pub struct TransferResponse {
     pub success: bool,
     pub tx_signature: Option<String>,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+pub struct ClaimEnergiesRequest {
+    pub amount: u64,              // Số lượng energies muốn claim
+    pub user_wallet: String,      // Địa chỉ ví Solana của người dùng
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+pub struct ClaimEnergiesResponse {
+    pub success: bool,
+    pub tx_signature: Option<String>,
+    pub claimed_amount: u64,
+    pub remaining_energies: i64,
     pub error: Option<String>,
 }
 
@@ -6115,6 +6287,13 @@ async fn transfer_tokens_on_solana(
     client.transfer_tokens(from_wallet, to_wallet, amount).await
 }
 
+// GET GAME POOL BALANCE - tokens available for collection
+async fn get_game_pool_balance(
+    blockchain_client: &std::sync::Arc<blockchain_client::BlockchainClient>,
+) -> anyhow::Result<u64> {
+    blockchain_client.get_game_pool_balance().await
+}
+
 // TRANSFER FROM GAME POOL (LOGIC ĐÚNG - Player earn từ pool có sẵn)
 async fn transfer_from_game_pool(
     blockchain_client: &std::sync::Arc<blockchain_client::BlockchainClient>,
@@ -6310,6 +6489,134 @@ async fn earn_from_pool_handler(
                 new_balance: 0,
                 remaining_pool: 0,
                 error: Some("Failed to earn from pool".to_string()),
+            })).into_response()
+        }
+    }
+}
+
+async fn claim_energies_handler(
+    state: AppState,
+    req: axum::http::Request<axum::body::Body>,
+    claims: crate::auth::Claims,
+) -> impl IntoResponse {
+    HTTP_REQUESTS_TOTAL.with_label_values(&["/api/energies/claim-to-wallet"]).inc();
+
+    // Parse JSON body
+    let body_bytes = match hyper::body::to_bytes(req.into_body()).await {
+        Ok(bytes) => bytes,
+        Err(_) => {
+            return (StatusCode::BAD_REQUEST, Json(ClaimEnergiesResponse {
+                success: false,
+                tx_signature: None,
+                claimed_amount: 0,
+                remaining_energies: 0,
+                error: Some("Invalid request body".to_string()),
+            })).into_response();
+        }
+    };
+
+    let request: ClaimEnergiesRequest = match serde_json::from_slice(&body_bytes) {
+        Ok(req) => req,
+        Err(_) => {
+            return (StatusCode::BAD_REQUEST, Json(ClaimEnergiesResponse {
+                success: false,
+                tx_signature: None,
+                claimed_amount: 0,
+                remaining_energies: 0,
+                error: Some("Invalid JSON format".to_string()),
+            })).into_response();
+        }
+    };
+
+    // Validate amount (must be positive)
+    if request.amount == 0 {
+        return (StatusCode::BAD_REQUEST, Json(ClaimEnergiesResponse {
+            success: false,
+            tx_signature: None,
+            claimed_amount: 0,
+            remaining_energies: 0,
+            error: Some("Amount must be greater than 0".to_string()),
+        })).into_response();
+    }
+
+    // Check user's current energies balance in PocketBase
+    let current_energies = match get_user_energies(&state.database_pool, &claims.sub).await {
+        Some(energies) => energies,
+        None => 0
+    };
+
+    // Check if user has enough energies
+    if (current_energies as u64) < request.amount {
+        return (StatusCode::BAD_REQUEST, Json(ClaimEnergiesResponse {
+            success: false,
+            tx_signature: None,
+            claimed_amount: 0,
+            remaining_energies: current_energies,
+            error: Some(format!("Insufficient energies. You have {} but need {}", current_energies, request.amount)),
+        })).into_response();
+    }
+
+    // Validate user wallet address
+    if request.user_wallet.trim().is_empty() {
+        return (StatusCode::BAD_REQUEST, Json(ClaimEnergiesResponse {
+            success: false,
+            tx_signature: None,
+            claimed_amount: 0,
+            remaining_energies: current_energies,
+            error: Some("User wallet address is required".to_string()),
+        })).into_response();
+    }
+
+    // Validate wallet address format (basic Solana address validation)
+    if request.user_wallet.len() != 44 && request.user_wallet.len() != 43 {
+        return (StatusCode::BAD_REQUEST, Json(ClaimEnergiesResponse {
+            success: false,
+            tx_signature: None,
+            claimed_amount: 0,
+            remaining_energies: current_energies,
+            error: Some("Invalid Solana wallet address format".to_string()),
+        })).into_response();
+    }
+
+    // Perform the claim: Transfer token from game pool to user wallet
+    match claim_energies_to_wallet(&request.user_wallet, request.amount).await {
+        Ok(tx_signature) => {
+            // Subtract energies from PocketBase
+            if let Err(e) = subtract_user_energies(&state.database_pool, &claims.sub, request.amount as i64).await {
+                tracing::error!("Failed to subtract energies: {:?}", e);
+                return (StatusCode::INTERNAL_SERVER_ERROR, Json(ClaimEnergiesResponse {
+                    success: false,
+                    tx_signature: None,
+                    claimed_amount: 0,
+                    remaining_energies: current_energies,
+                    error: Some("Failed to update energies balance".to_string()),
+                })).into_response();
+            }
+
+            let remaining_energies = current_energies - request.amount as i64;
+
+            // Emit real-time update via WebSocket (if available)
+            if let Err(e) = emit_energies_update(&state.blockchain_client, &claims.sub, -(request.amount as i64)).await {
+                tracing::warn!("Failed to emit energies WebSocket update: {:?}", e);
+                // Don't fail the request for WebSocket issues
+            }
+
+            (StatusCode::OK, Json(ClaimEnergiesResponse {
+                success: true,
+                tx_signature: Some(tx_signature),
+                claimed_amount: request.amount,
+                remaining_energies,
+                error: None,
+            })).into_response()
+        }
+        Err(e) => {
+            tracing::error!("Failed to claim energies to wallet: {:?}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, Json(ClaimEnergiesResponse {
+                success: false,
+                tx_signature: None,
+                claimed_amount: 0,
+                remaining_energies: current_energies,
+                error: Some("Failed to claim energies to wallet".to_string()),
             })).into_response()
         }
     }
@@ -6740,4 +7047,201 @@ async fn mint_to_owner_wallet(
     // TODO: Implement mint to owner wallet - this needs blockchain service support
     // For now, return mock transaction
     Ok(format!("mock_owner_tx_{}", amount))
+}
+
+// ===== ENERGIES CLAIM HELPER FUNCTIONS =====
+
+// Get user energies from PocketBase
+async fn get_user_energies(database_pool: &DatabasePool, user_id: &str) -> Option<i64> {
+    // Use PocketBase service to get user energies
+    // For now, return mock data - implement with actual PocketBase query
+    tracing::info!("Getting energies for user: {}", user_id);
+
+    // TODO: Replace with actual PocketBase query
+    // This should query the energies collection for the user
+    Some(1000) // Mock: user has 1000 energies
+}
+
+// Subtract energies from user in PocketBase
+async fn subtract_user_energies(database_pool: &DatabasePool, user_id: &str, amount: i64) -> anyhow::Result<()> {
+    tracing::info!("Subtracting {} energies from user: {}", amount, user_id);
+
+    // TODO: Implement actual PocketBase update
+    // This should update the energies record for the user, subtracting the amount
+
+    // For now, just log the operation
+    if amount <= 0 {
+        return Err(anyhow::anyhow!("Amount must be positive"));
+    }
+
+    // Mock implementation - in real implementation, this would update PocketBase
+    tracing::info!("✅ Mock: Subtracted {} energies from user {}", amount, user_id);
+    Ok(())
+}
+
+// Claim energies to user wallet (enhanced mock with real validation)
+async fn claim_energies_to_wallet(
+    _user_wallet: &str,
+    amount: u64,
+) -> anyhow::Result<String> {
+    tracing::info!("🔄 Claiming {} energies to wallet: {}", amount, _user_wallet);
+
+    // Convert energies to SOL (1 E = 0.001 SOL = 1000000 lamports)
+    // This is a configurable conversion rate - can be adjusted based on game economics
+    let conversion_rate_lamports_per_energy: u64 = 1_000_000; // 0.001 SOL per energy
+    let sol_amount_lamports = amount * conversion_rate_lamports_per_energy;
+
+    tracing::info!("💱 Converting {} E to {} lamports ({} SOL)",
+        amount, sol_amount_lamports, sol_amount_lamports as f64 / 1_000_000_000.0);
+
+    // TODO: Implement real SOL transfer when Solana dependencies are resolved
+    // For now, simulate successful SOL transfer with enhanced mock
+    let mock_tx_signature = format!("sol_transfer_mock_tx_{}_{}_{}",
+        _user_wallet, amount, chrono::Utc::now().timestamp());
+
+    tracing::info!("🎭 MOCK SOL TRANSFER: Claimed {} E ({} SOL) to wallet {} - TX: {}",
+        amount, sol_amount_lamports as f64 / 1_000_000_000.0, _user_wallet, mock_tx_signature);
+    tracing::warn!("⚠️ SOL TRANSFER IS CURRENTLY MOCKED - Real SOL transfers will be implemented when dependency conflicts are resolved");
+
+    Ok(mock_tx_signature)
+}
+
+// Emit energies update via WebSocket
+async fn emit_energies_update(
+    blockchain_client: &Arc<blockchain_client::BlockchainClient>,
+    user_id: &str,
+    amount_change: i64,
+) -> anyhow::Result<()> {
+    tracing::info!("Emitting energies update for user: {} (change: {})", user_id, amount_change);
+
+    // TODO: Implement WebSocket notification for energies update
+    // This should notify connected clients about energies balance changes
+
+    // For now, just log the operation
+    tracing::info!("✅ Mock: Emitted energies update for user {}", user_id);
+    Ok(())
+}
+
+// ===== SOLANA WALLET GENERATION HANDLER =====
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+pub struct GenerateSolanaWalletRequest {}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+pub struct GenerateSolanaWalletResponse {
+    pub success: bool,
+    pub address: Option<String>,
+    pub private_key: Option<String>,
+    pub public_key: Option<String>,
+    pub error: Option<String>,
+}
+
+async fn generate_solana_wallet_handler(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> impl IntoResponse {
+    HTTP_REQUESTS_TOTAL.with_label_values(&["/api/wallet/generate-solana"]).inc();
+
+    // Extract and validate JWT token
+    let token = match headers.get("authorization") {
+        Some(header_value) => {
+            let auth_str = header_value.to_str().unwrap_or("");
+            if auth_str.starts_with("Bearer ") {
+                Some(&auth_str[7..]) // Remove "Bearer " prefix
+            } else {
+                None
+            }
+        }
+        None => None,
+    };
+
+    // Validate JWT token
+    let claims = match token {
+        Some(token_str) => {
+            match state.auth_service.validate_token_with_db(token_str, &state.database_pool).await {
+                Ok(claims) => claims,
+                Err(_) => {
+                    return (StatusCode::UNAUTHORIZED, Json(GenerateSolanaWalletResponse {
+                        success: false,
+                        address: None,
+                        private_key: None,
+                        public_key: None,
+                        error: Some("Invalid authentication token".to_string()),
+                    })).into_response();
+                }
+            }
+        }
+        None => {
+            return (StatusCode::UNAUTHORIZED, Json(GenerateSolanaWalletResponse {
+                success: false,
+                address: None,
+                private_key: None,
+                public_key: None,
+                error: Some("Authentication required".to_string()),
+            })).into_response();
+        }
+    };
+
+    // Generate real Solana wallet with Ed25519
+    match create_real_solana_wallet() {
+        Ok(solana_wallet) => {
+            tracing::info!("✅ Generated real Solana wallet for user: {}", claims.sub);
+
+            let mut response = (StatusCode::OK, Json(GenerateSolanaWalletResponse {
+                success: true,
+                address: Some(solana_wallet.public_key.clone()),
+                private_key: Some(solana_wallet.private_key_decrypted.unwrap_or_else(|| {
+                    // If decryption fails, return encrypted version (user can't use it but API works)
+                    tracing::warn!("Private key decryption failed for user: {}", claims.sub);
+                    "DECRYPTION_FAILED".to_string()
+                })),
+                public_key: Some(solana_wallet.public_key),
+                error: None,
+            })).into_response();
+
+            // Add CORS headers manually
+            let headers = response.headers_mut();
+            headers.insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+            headers.insert("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS".parse().unwrap());
+            headers.insert("Access-Control-Allow-Headers", "Content-Type, Authorization".parse().unwrap());
+            headers.insert("Access-Control-Allow-Credentials", "true".parse().unwrap());
+
+            response
+        }
+        Err(e) => {
+            tracing::error!("❌ Failed to generate Solana wallet for user {}: {:?}", claims.sub, e);
+            let mut response = (StatusCode::INTERNAL_SERVER_ERROR, Json(GenerateSolanaWalletResponse {
+                success: false,
+                address: None,
+                private_key: None,
+                public_key: None,
+                error: Some("Failed to generate Solana wallet".to_string()),
+            })).into_response();
+
+            // Add CORS headers manually
+            let headers = response.headers_mut();
+            headers.insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+            headers.insert("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS".parse().unwrap());
+            headers.insert("Access-Control-Allow-Headers", "Content-Type, Authorization".parse().unwrap());
+            headers.insert("Access-Control-Allow-Credentials", "true".parse().unwrap());
+
+            response
+        }
+    }
+}
+
+// ===== CORS PREFLIGHT HANDLER =====
+
+async fn handle_cors_preflight() -> impl IntoResponse {
+    let mut response = StatusCode::OK.into_response();
+
+    // Add CORS headers for preflight requests
+    let headers = response.headers_mut();
+    headers.insert("Access-Control-Allow-Origin", "*".parse().unwrap());
+    headers.insert("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS".parse().unwrap());
+    headers.insert("Access-Control-Allow-Headers", "Content-Type, Authorization".parse().unwrap());
+    headers.insert("Access-Control-Allow-Credentials", "true".parse().unwrap());
+    headers.insert("Access-Control-Max-Age", "86400".parse().unwrap()); // 24 hours
+
+    response
 }

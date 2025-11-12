@@ -125,3 +125,12 @@ export function getEstimatedBridgeTime(chainId: number): number {
   return timeMap[chainId] || 30; // Default 30 minutes
 }
 
+
+
+
+
+
+
+
+
+

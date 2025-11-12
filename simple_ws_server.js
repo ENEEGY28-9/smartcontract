@@ -72,3 +72,12 @@ setInterval(spawnTestParticles, 5000);
 
 console.log('🔄 Auto-particle spawning enabled (every 5 seconds)');
 
+
+
+
+
+
+
+
+
+

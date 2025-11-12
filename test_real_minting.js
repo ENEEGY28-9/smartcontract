@@ -104,3 +104,12 @@ async function testRealMinting() {
 // Run the test
 testRealMinting().catch(console.error);
 
+
+
+
+
+
+
+
+
+

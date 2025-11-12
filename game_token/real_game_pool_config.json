@@ -1,0 +1,10 @@
+{
+  "gamePoolAuthority": "AvBPEgY4PKkxgf4XHqvqqwgste6r3mSu57MB6gGujaGo",
+  "gamePoolATA": "5946Xj67hKc3nCyBjB3oEfxazKEqohPphLrtabXRkFEN",
+  "gameTokenMint": "ANzKnYDd7BpiPEykuHxrfAsiox19aWzLbZrmQbL8J8Qk",
+  "playerATA": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+  "initialBalance": 1000,
+  "currentBalance": 1000,
+  "setupTimestamp": "2025-11-10T08:18:53.709Z",
+  "note": "New game pool owned by regular account - can transfer tokens directly"
+}

@@ -70,3 +70,12 @@ Sau khi hoàn thành, game của bạn sẽ có:
 
 **Bắt đầu với Bước 1: Right-click run_as_admin.bat → Run as administrator**
 
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,7 @@
+{
+  "wallet": "A1Tk1KLSkH4dbeS1mKv9CrUKVRuErHGBg6oH9XUD2sLB",
+  "simulatedSOL": 2,
+  "note": "Simulated SOL for testing token transfer logic",
+  "created": "2025-11-10T01:14:38.577Z",
+  "reminder": "This is simulation only - use real faucet for production"
+}

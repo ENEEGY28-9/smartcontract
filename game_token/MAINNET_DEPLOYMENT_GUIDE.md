@@ -1,212 +1,285 @@
-# 🚀 Game Token Mainnet Deployment Guide
+# 🚀 MAINNET DEPLOYMENT GUIDE - FROM SOLANA PLAYGROUND
 
-## 📋 Current Status
+## 🎯 **CHUYỂN TỪ DEVNET (PLAYGROUND) SANG MAINNET PRODUCTION**
 
-### ✅ **Completed:**
-- Smart contract development (100%)
-- Devnet testing with 60 tokens minted successfully
-- JavaScript mainnet deployment script created
-- 80/20 distribution verified
-- Rate limiting tested
-
-### ❌ **Pending - Requires SOL Funding:**
-- Mainnet deployment
-- Real SOL minting tests
-- Production monitoring setup
+**Quan trọng:** Solana Playground chỉ phù hợp cho **development & testing**. Cho **production mainnet**, bạn cần **local development environment**.
 
 ---
 
-## 💰 **REQUIRED: Fund Wallet with SOL**
+## 📊 **SO SÁNH DEVNET vs MAINNET DEPLOYMENT**
 
-### **Current Balance:** `0 SOL` ❌
+| **Aspect** | **Solana Playground (Devnet)** | **Mainnet Production** |
+|---|---|---|
+| **Environment** | Browser-based, temporary | Local machine, persistent |
+| **Security** | Test keys, public | Production keys, secure |
+| **Cost** | Free | Transaction fees required |
+| **Persistence** | Session-based | Permanent blockchain |
+| **Testing** | Limited | Full integration tests |
+| **CI/CD** | Không có | Professional deployment |
 
-**Need at least 2-3 SOL for:**
-- Token mint creation (~0.002 SOL)
-- Associated token accounts (~0.002 SOL × 2)
-- 10 test minting transactions (~0.0005 SOL × 10)
-- Transaction fees and buffer
+---
 
-### **How to Get SOL:**
+## 🎯 **GIẢI PHÁP MAINNET PRODUCTION**
 
-#### **Option 1: From Centralized Exchange (Recommended)**
-```
-1. Go to Binance, Coinbase, or another CEX
-2. Buy SOL with USD/fiat
-3. Withdraw SOL to your wallet address:
-   📋 5yaTCNZ4H8zapcaBV4rRMvm4GrFJTseb273yPsnfVn5Y
-4. Minimum: 2 SOL
-```
-
-#### **Option 2: Bridge from Devnet (Not Recommended)**
-```
-❌ Devnet SOL has no real value
-❌ Cannot be converted to mainnet SOL
-❌ Use real money to buy SOL instead
+### **TÙY CHỌN 1: GITHUB CODESPACES (KHUYẾN NGHỊ)**
+```bash
+# 120 hours free/tháng cho personal accounts
+# Professional development environment
+# Git integration tự động
 ```
 
-#### **Option 3: Ask for Test SOL (Limited)**
+### **TÙY CHỌN 2: LOCAL LINUX ENVIRONMENT**
+```bash
+# Ubuntu 24.04 với GLIBC 2.39
+# Full control với development environment
+# Không giới hạn thời gian
 ```
-Some platforms offer small amounts of mainnet SOL for testing:
-- FTX (if available)
-- Some Solana ecosystem grants
-- Community faucets (rare)
+
+### **TÙY CHỌN 3: VPS LINUX (ĐÁNG TIN CẬY NHẤT)**
+```bash
+# DigitalOcean, AWS Lightsail
+# Production-ready environment
+# 24/7 availability
 ```
 
 ---
 
-## 🛠️ **Deployment Steps (After Funding)**
+## 📋 **WORKFLOW CHUYỂN TỪ DEVNET SANG MAINNET**
 
-### **Step 1: Verify SOL Balance**
+### **BƯỚC 1: EXPORT CODE TỪ PLAYGROUND**
+```javascript
+// Trong Solana Playground terminal
+cat src/lib.rs > game_token_mainnet.rs
+cat Anchor.toml > Anchor_mainnet.toml
+```
+
+### **BƯỚC 2: SETUP LOCAL ENVIRONMENT**
+```bash
+# Sử dụng GitHub Codespaces (recommended)
+1. Tạo GitHub repository
+2. Upload code từ Playground
+3. Mở Codespace
+4. Setup Solana CLI + Anchor
+```
+
+### **BƯỚC 3: CẤU HÌNH MAINNET**
+```toml
+# Anchor.toml - Mainnet config
+[toolchain]
+anchor_version = "0.30.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.mainnet-beta]
+game_token = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "mainnet-beta"
+wallet = "~/.config/solana/id.json"
+
+[workspace]
+members = ["programs/*"]
+```
+
+### **BƯỚC 4: SETUP PRODUCTION WALLET**
+```bash
+# Tạo production wallet (KHÔNG DÙNG TEST WALLET)
+solana-keygen new --outfile ~/.config/solana/mainnet-wallet.json
+
+# Fund wallet với SOL (cần ~2-3 SOL cho deployment)
+# Buy SOL từ exchange hoặc bridge từ devnet
+
+# Set wallet
+solana config set --keypair ~/.config/solana/mainnet-wallet.json
+```
+
+### **BƯỚC 5: BUILD & TEST TRÊN DEVNET**
+```bash
+# Test lại trên devnet trước khi deploy mainnet
+solana config set --url devnet
+anchor build
+anchor deploy --provider.cluster devnet
+anchor test
+```
+
+### **BƯỚC 6: DEPLOY MAINNET**
 ```bash
 # Switch to mainnet
-solana config set --url https://api.mainnet-beta.solana.com
+solana config set --url mainnet-beta
 
-# Check balance
+# Final build for mainnet
+anchor build
+
+# Deploy to mainnet (CẨN THẬN!)
+anchor deploy --provider.cluster mainnet-beta
+
+# Verify deployment
+solana program show [PROGRAM_ID]
+```
+
+---
+
+## 💰 **MAINNET DEPLOYMENT COSTS**
+
+### **Estimated Costs:**
+- **SOL Balance Required:** ~2-3 SOL
+  - Program deployment: ~1.4 SOL
+  - Rent exemption: ~0.5 SOL
+  - Transaction fees: ~0.1-0.2 SOL
+
+- **Ongoing Costs:**
+  - Program upgrades: ~0.014 SOL per upgrade
+  - Transaction fees: ~0.000005 SOL per signature
+
+### **Where to get SOL:**
+1. **Crypto Exchanges:** Binance, Coinbase, KuCoin
+2. **Bridge từ Devnet:** Không khuyến nghị cho production
+3. **DEX:** Raydium, Orca (swap từ other tokens)
+
+---
+
+## 🔒 **MAINNET SECURITY BEST PRACTICES**
+
+### **Wallet Security:**
+```bash
+# Sử dụng hardware wallet (Ledger/Trezor)
+# Không store private keys trong code
+# Use environment variables cho sensitive data
+```
+
+### **Program Security:**
+```bash
+# Audit code trước khi deploy
+# Test extensively trên devnet
+# Use multisig cho critical operations
+# Implement upgrade authority properly
+```
+
+### **Key Management:**
+```bash
+# Separate deployer và upgrade authority keys
+# Use different wallets cho different roles
+# Backup keys securely (encrypted)
+```
+
+---
+
+## 🚀 **PROFESSIONAL DEPLOYMENT WORKFLOW**
+
+### **Recommended Setup: GitHub Codespaces**
+```bash
+# 1. Create GitHub repo
+# 2. Push code from Playground
+# 3. Open Codespace
+# 4. Setup environment (auto via devcontainer)
+# 5. Deploy to mainnet
+# 6. Setup monitoring và alerts
+```
+
+### **DevContainer Configuration (.devcontainer/devcontainer.json)**
+```json
+{
+  "name": "Solana Development",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/rust:1": {},
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "postCreateCommand": "curl -sSfL https://release.anza.xyz/v1.18.26/install | sh && cargo install --git https://github.com/coral-xyz/anchor avm --locked --force && avm install latest && avm use latest",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anchor-labs.anchor-ide",
+        "rust-lang.rust-analyzer"
+      ]
+    }
+  }
+}
+```
+
+---
+
+## 📊 **MAINNET MONITORING & MAINTENANCE**
+
+### **Post-Deployment:**
+```bash
+# Monitor program health
+solana program show [PROGRAM_ID]
+
+# Check transaction logs
+solana logs [PROGRAM_ID]
+
+# Monitor SOL balance
 solana balance
-# Should show: X.XXXX SOL (minimum 2 SOL)
 ```
 
-### **Step 2: Run Mainnet Deployment**
+### **Upgrade Process:**
 ```bash
-cd game_token
-node mainnet_deployment.js
-```
+# Build new version
+anchor build
 
-**What the script will do:**
-```
-1. ✅ Create Game Token Mint on mainnet
-2. ✅ Create associated token accounts
-3. ✅ Test 5 particle eating simulations (10 tokens total)
-4. ✅ Verify 80/20 distribution
-5. ✅ Setup basic transaction monitoring
-6. ✅ Generate deployment report
-```
-
-### **Step 3: Verify Deployment Success**
-After running, you should see:
-```
-🎉 MAINNET DEPLOYMENT COMPLETED!
-=====================================
-Game Token Mint: [MINT_ADDRESS]
-Game Pool Account: [POOL_ADDRESS]
-Owner Account: [OWNER_ADDRESS]
-Total Tokens Minted: 10
-Network: Solana Mainnet ✅
-Real SOL Used: ✅
-80/20 Distribution: ✅
-Basic Monitoring: ✅
+# Upgrade program
+anchor upgrade target/deploy/game_token.so --program-id [PROGRAM_ID]
 ```
 
 ---
 
-## 📊 **Expected Results**
+## ⚠️ **MAINNET RISKS & MITIGATION**
 
-### **Token Distribution:**
-```
-Game Pool (80%): 5 tokens
-Owner Wallet (20%): 5 tokens
-Total Supply: 10 tokens
-Distribution: ✅ CORRECT
-```
+### **Common Risks:**
+- **Lost private keys** → Use multisig, backup properly
+- **Buggy code** → Audit thoroughly, extensive testing
+- **Insufficient funds** → Monitor SOL balance
+- **Network congestion** → Use appropriate priority fees
 
-### **Transaction Monitoring:**
-```
-✅ Recent transactions tracked
-✅ Block height confirmed
-✅ Network status verified
-✅ Basic monitoring active
-```
-
-### **Cost Breakdown:**
-```
-Token Mint Creation: ~0.002 SOL
-ATA Creation (2 accounts): ~0.004 SOL
-10 Mint Transactions: ~0.005 SOL
-Network Fees: ~0.001 SOL
-TOTAL: ~0.012 SOL
-```
-
----
-
-## 🔍 **Post-Deployment Verification**
-
-### **Check on Solana Explorer:**
-```
-1. Go to: https://solana.com/explorer
-2. Search for your Game Token Mint address
-3. Verify:
-   - ✅ Token created successfully
-   - ✅ Supply shows 10 tokens
-   - ✅ Transactions visible
-   - ✅ Associated accounts created
-```
-
-### **Check Token Balances:**
+### **Risk Mitigation:**
 ```bash
-# Use the addresses from deployment output
-spl-token balance [GAME_POOL_ADDRESS]
-spl-token balance [OWNER_ADDRESS]
-spl-token supply [MINT_ADDRESS]
+# Use timelock cho critical upgrades
+# Implement emergency pause functionality
+# Setup monitoring và alerting
+# Have recovery plans ready
 ```
 
 ---
 
-## 📈 **Next Steps After Deployment**
+## 🎯 **KẾT LUẬN: MAINNET STRATEGY**
 
-### **Immediate (This Week):**
-1. **Setup Production Monitoring**
-   - Transaction monitoring dashboard
-   - Balance tracking
-   - Error alerting
+### **PHASE 1: Development (Solana Playground)**
+- ✅ Rapid prototyping
+- ✅ Feature development
+- ✅ Initial testing
 
-2. **Game UI Integration**
-   - Connect game client to mainnet
-   - Implement particle eating UI
-   - Real-time balance updates
+### **PHASE 2: Pre-Production (GitHub Codespaces)**
+- ✅ Full testing suite
+- ✅ Integration testing
+- ✅ Performance testing
 
-3. **Bridge System**
-   - Setup Wormhole integration
-   - Enable token withdrawals
-   - Test cross-chain transfers
-
-### **Short-term (Next Month):**
-1. **Security Audit** (Critical for production)
-2. **Player Beta Testing**
-3. **Marketing & Community Building**
+### **PHASE 3: Production (VPS/Cloud)**
+- ✅ Secure deployment
+- ✅ Monitoring & maintenance
+- ✅ User support
 
 ---
 
-## ⚠️ **Important Notes**
+## 💡 **RECOMMENDATION**
 
-### **Risks:**
-- **Mainnet transactions are irreversible**
-- **SOL spent cannot be recovered**
-- **Test thoroughly before production use**
+**Start with GitHub Codespaces for mainnet deployment:**
 
-### **Backup Plan:**
-- **Keep deployment info safe** (`mainnet_deployment_info.json`)
-- **Test on devnet first** (already completed)
-- **Have emergency pause ready** (implemented in contract)
+```bash
+# 120 hours free/tháng
+# Professional environment
+# Git integration
+# Scalable cho team development
+```
 
-### **Support:**
-- **Solana Discord:** For network issues
-- **Documentation:** All steps documented
-- **Emergency:** Contract has pause functionality
+**Upgrade to VPS khi:**
+- Production traffic cao
+- Cần 24/7 monitoring
+- Team collaboration lớn
 
----
-
-## 🎯 **Ready to Deploy?**
-
-**Once you have funded your wallet with 2+ SOL:**
-
-1. ✅ Run: `node mainnet_deployment.js`
-2. ✅ Verify on Solana Explorer
-3. ✅ Check balances with spl-token commands
-4. ✅ Setup monitoring dashboard
-
-**Your Game Token System will be live on Solana Mainnet!** 🚀
-
----
-
-*Mainnet Deployment Guide - Generated: November 4, 2025*
-
+**Bạn muốn setup GitHub Codespaces cho mainnet deployment không?** 🤔

@@ -1,0 +1,152 @@
+{
+  "timestamp": "2025-11-10T07:00:00.000Z",
+  "report": "Mainnet Wallet Status Report",
+  "network": "Solana Mainnet (Live SOL)",
+  "status": "ANALYSIS_BASED_ON_DEVNET",
+
+  "mainnet_analysis": {
+    "connection_status": "FAILED",
+    "error_type": "RPC Connection Error",
+    "possible_causes": [
+      "Rate limiting on public RPC endpoints",
+      "Network connectivity issues",
+      "RPC endpoint overload",
+      "Firewall/antivirus blocking"
+    ],
+    "recommendations": [
+      "Use private RPC endpoint (Helius, QuickNode, etc.)",
+      "Try multiple RPC endpoints",
+      "Check network connectivity",
+      "Use VPN if needed"
+    ]
+  },
+
+  "wallet_addresses_for_mainnet": {
+    "main_deployment_wallet": {
+      "address": "4RMvAaGuBUeRSEYBRhkmBQnxUFtJa9PxWyR5YEVEfeeY",
+      "current_balance_devnet": "3.9548 SOL",
+      "mainnet_status": "UNKNOWN - Needs checking with private RPC",
+      "purpose": "Primary wallet for contract deployment and operations"
+    },
+    "game_pool_owner_wallet": {
+      "address": "A1Tk1KLSkH4dbeS1mKv9CrUKVRuErHGBg6oH9XUD2sLB",
+      "current_balance_devnet": "0.4944 SOL",
+      "mainnet_status": "UNKNOWN - Needs checking with private RPC",
+      "purpose": "Game pool ownership and revenue collection"
+    },
+    "devnet_wallet": {
+      "address": "4UkWvx2Y59XSuhaCfeYDS56RM1WcsSdgjJ7yzLEbMyNf",
+      "current_balance_devnet": "0.0000 SOL",
+      "mainnet_status": "UNKNOWN - Needs checking with private RPC",
+      "purpose": "Development and testing wallet"
+    },
+    "new_owner_wallet": {
+      "address": "5BzeVCppuFzyLs5aM1f3n8BatqoUCx9hg5N7288zRSCN",
+      "current_balance_devnet": "0.0000 SOL",
+      "mainnet_status": "UNKNOWN - Needs checking with private RPC",
+      "purpose": "Backup owner wallet for token distribution"
+    }
+  },
+
+  "token_accounts_mainnet": {
+    "game_token_mint": {
+      "address": "ANzKnYDd7BpiPEykuHxrfAsiox19aWzLbZrmQbL8J8Qk",
+      "status": "NEEDS_REDEPLOYMENT",
+      "note": "Devnet token mint - Mainnet needs new deployment"
+    },
+    "game_pools_token_account": {
+      "address": "HHHaKDSbruknbEFqwB3tfMQ5dAyatyavi15JHvFATssq",
+      "status": "NEEDS_RECREATION",
+      "note": "Devnet token account - Mainnet needs new accounts"
+    },
+    "owner_token_account": {
+      "address": "4K9tg8tAFMGYCZkSJA3UhC5hizFfkAceoMn6L6gfNiW9",
+      "status": "NEEDS_RECREATION",
+      "note": "Devnet token account - Mainnet needs new accounts"
+    }
+  },
+
+  "mainnet_deployment_requirements": {
+    "funding_needed": [
+      {
+        "wallet": "Main Deployment Wallet",
+        "minimum_sol": 5.0,
+        "purpose": "Contract deployment and initial operations"
+      },
+      {
+        "wallet": "Game Pool Owner Wallet",
+        "minimum_sol": 2.0,
+        "purpose": "Game operations and maintenance"
+      }
+    ],
+    "steps_required": [
+      "1. Fund main wallets with SOL on mainnet",
+      "2. Update RPC endpoints to mainnet in all scripts",
+      "3. Deploy smart contract to mainnet",
+      "4. Recreate PDAs and token accounts on mainnet",
+      "5. Test token distribution on mainnet",
+      "6. Verify production rate on mainnet"
+    ]
+  },
+
+  "comparison_devnet_vs_mainnet": {
+    "devnet_status": "✅ FULLY OPERATIONAL",
+    "mainnet_status": "⏳ READY FOR DEPLOYMENT",
+    "devnet_balance": {
+      "total_sol": "4.4492 SOL",
+      "total_tokens": "177.00 tokens",
+      "token_distribution": "81.4% / 18.6%"
+    },
+    "mainnet_balance": {
+      "total_sol": "UNKNOWN",
+      "total_tokens": "0 tokens",
+      "token_distribution": "N/A"
+    }
+  },
+
+  "next_actions": [
+    {
+      "action": "Fund main wallets with SOL on mainnet",
+      "priority": "HIGH",
+      "estimated_cost": "7+ SOL"
+    },
+    {
+      "action": "Set up private RPC endpoint for mainnet",
+      "priority": "HIGH",
+      "estimated_cost": "$50-200/month"
+    },
+    {
+      "action": "Deploy smart contract to mainnet",
+      "priority": "MEDIUM",
+      "prerequisites": ["Wallet funding", "Private RPC"]
+    },
+    {
+      "action": "Initialize mainnet PDAs and token accounts",
+      "priority": "MEDIUM",
+      "prerequisites": ["Contract deployment"]
+    },
+    {
+      "action": "Test full system on mainnet",
+      "priority": "LOW",
+      "prerequisites": ["PDA initialization"]
+    }
+  ],
+
+  "security_notes": {
+    "wallet_security": [
+      "Keep private keys secure and encrypted",
+      "Use hardware wallets for mainnet operations",
+      "Enable 2FA for all wallet access",
+      "Regular backup of wallet configurations"
+    ],
+    "mainnet_risks": [
+      "Higher transaction costs",
+      "Real financial value at stake",
+      "Slower transaction confirmation",
+      "Network congestion possible"
+    ]
+  }
+}
+
+
+

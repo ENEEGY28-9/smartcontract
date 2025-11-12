@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-11-11T08:29:14.443Z",
+  "transfer": {
+    "amount": 100,
+    "method": "Smart Contract Transfer (DistributeGameTokens)",
+    "from": "HHHaKDSbruknbEFqwB3tfMQ5dAyatyavi15JHvFATssq",
+    "to": "qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki",
+    "signature": "L3braFjqLFUXkExLrSkQJSi1ipetKCM7cjCddmerHv5W2hYy8dEgCgGmb6dCZbGvCFqHp8UWm9bVaMARNC4Yg79",
+    "successful": false
+  },
+  "balances": {
+    "before": {
+      "gamePool": 6599,
+      "player": 955
+    },
+    "after": {
+      "gamePool": 6599,
+      "player": 955
+    }
+  },
+  "explorerLinks": {
+    "transaction": "https://explorer.solana.com/tx/L3braFjqLFUXkExLrSkQJSi1ipetKCM7cjCddmerHv5W2hYy8dEgCgGmb6dCZbGvCFqHp8UWm9bVaMARNC4Yg79?cluster=devnet",
+    "gamePool": "https://explorer.solana.com/address/HHHaKDSbruknbEFqwB3tfMQ5dAyatyavi15JHvFATssq?cluster=devnet",
+    "playerATA": "https://explorer.solana.com/address/qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki?cluster=devnet",
+    "tokenMint": "https://explorer.solana.com/address/ANzKnYDd7BpiPEykuHxrfAsiox19aWzLbZrmQbL8J8Qk?cluster=devnet"
+  }
+}

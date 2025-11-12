@@ -386,3 +386,12 @@ node auto_mint_scheduler.js
 ```
 
 **🎯 Result: Production-ready system từ devnet, easy migrate to mainnet!** 🚀💎
+
+
+
+
+
+
+
+
+

@@ -212,3 +212,12 @@ async function deployUpdatedContract() {
 // Run deployment
 deployUpdatedContract().catch(console.error);
 
+
+
+
+
+
+
+
+
+

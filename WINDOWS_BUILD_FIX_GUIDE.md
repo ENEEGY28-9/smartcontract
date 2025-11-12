@@ -126,3 +126,12 @@ cd game_token/programs/game_token
 anchor build
 ```
 
+
+
+
+
+
+
+
+
+

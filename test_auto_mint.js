@@ -21,3 +21,12 @@ fetch('http://localhost:8090/api/admin/auto-mint', {
 })
 .catch(e => console.log('Error:', e));
 
+
+
+
+
+
+
+
+
+

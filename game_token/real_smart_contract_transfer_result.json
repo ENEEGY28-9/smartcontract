@@ -1,0 +1,18 @@
+{
+  "transferAmount": 100,
+  "method": "Smart Contract Simulation (Mint to Player)",
+  "explanation": "Simulates real smart contract behavior where contract mints tokens to player after verifying game pool ownership",
+  "balances": {
+    "before": {
+      "gamePool": 6519,
+      "player": 540
+    },
+    "after": {
+      "gamePool": 6519,
+      "player": 640
+    }
+  },
+  "signature": "23EuNKxnRV9PSzixJDbkgx75uJX2MnhyKQytuUfD5j7zWTqShd2RB2JQR3zrgChsRCoDXBAUcpKnJseDHa5E12Uo",
+  "timestamp": "2025-11-10T08:11:31.384Z",
+  "note": "This demonstrates what a real smart contract would do when transferring from game pool to player"
+}

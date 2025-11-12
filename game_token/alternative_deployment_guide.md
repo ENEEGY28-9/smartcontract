@@ -210,3 +210,12 @@ wsl --distribution Ubuntu --exec bash
 ```
 
 **Bạn muốn tôi hướng dẫn setup WSL deployment ngay không?** 🚀
+
+
+
+
+
+
+
+
+

@@ -96,3 +96,12 @@ async function testRealMinting() {
 
 testRealMinting();
 
+
+
+
+
+
+
+
+
+

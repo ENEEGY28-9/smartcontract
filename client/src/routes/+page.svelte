@@ -10,9 +10,13 @@
 
     // Import Login component only on client side
     let LoginComponent = null;
+    let TokenBalanceComponent = null;
     if (browser) {
         import('$lib/components/Login.svelte').then(module => {
             LoginComponent = module.default;
+        });
+        import('$lib/components/TokenBalance.svelte').then(module => {
+            TokenBalanceComponent = module.default;
         });
     }
 
@@ -72,13 +76,20 @@
 <div class="game-container" class:in-game={currentGameMode === 'infinite-runner'}>
     {#if currentGameMode === 'menu'}
         <div class="main-menu">
+            <!-- Token Balance Display -->
+            {#if TokenBalanceComponent}
+                <div class="token-balance-overlay">
+                    <svelte:component this={TokenBalanceComponent} />
+                </div>
+            {/if}
+
             <div class="menu-content">
                 <h1>RUN</h1>
                 <p class="subtitle">Advanced 3D endless runner with physics simulation</p>
 
                 <div class="game-modes">
                     <div class="mode-card featured">
-                        
+
                         <button class="play-btn featured-btn" on:click={startInfiniteRunner}>
                             Play Infinite Runner
                         </button>
@@ -112,6 +123,18 @@
         overflow: hidden;
         background: #000000;
         font-family: 'Poppins', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .token-balance-overlay {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 100;
+        pointer-events: none;
+    }
+
+    .token-balance-overlay * {
+        pointer-events: auto;
     }
 
     .main-menu {

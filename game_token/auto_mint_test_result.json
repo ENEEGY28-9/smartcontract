@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-11-10T08:54:21.384Z",
+  "initialBalances": {
+    "gamePool": 6519,
+    "owner": 1299,
+    "total": 7818
+  },
+  "minted": {
+    "gamePool": 80,
+    "owner": 20,
+    "total": 100
+  },
+  "finalBalances": {
+    "gamePool": 6599,
+    "owner": 1319,
+    "total": 7918
+  },
+  "distribution": {
+    "gamePoolPercentage": "80.0%",
+    "ownerPercentage": "20.0%",
+    "correct": true
+  }
+}

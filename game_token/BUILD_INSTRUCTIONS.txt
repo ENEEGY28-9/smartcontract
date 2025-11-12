@@ -1,0 +1,38 @@
+===========================================
+🚀 BUILD & DEPLOY SMART CONTRACT
+===========================================
+
+📋 Huong dan build Smart Contract voi Player Claim:
+
+1. Su dung Docker (KHUYEN DUNG):
+docker run --rm -v "$(pwd)":/workdir -w /workdir projectserum/build:latest anchor build
+
+2. Sau do deploy:
+docker run --rm -v "$(pwd)":/workdir -w /workdir -v ~/.config/solana:/root/.config/solana projectserum/build:latest anchor deploy --provider.cluster devnet
+
+3. Test sau khi deploy:
+node player_claim_real.js qtfAibpP5SqJYLGTPedAJF8kTcnzZxeGXuxUDKw85ki 30
+
+===========================================
+🎯 KET QUA MONG DOI SAU KHI DEPLOY:
+===========================================
+
+🏦 Game Pool: 6519 → 6489 tokens (-30) ✅
+🎮 Player: 860 → 890 tokens (+30) ✅
+💸 Network Fee: ~0.000005 SOL (player tra) ✅
+
+===========================================
+📋 FILES DA TAO:
+===========================================
+
+1. programs/game_token_v2/src/lib.rs - Smart contract voi PlayerClaimTokens
+2. player_claim_real.js - Client de claim tokens
+3. FINAL_BUILD_GUIDE.md - Huong dan chi tiet
+4. BUILD_COMMAND.bat - Script build
+
+===========================================
+🎉 HE THONG HOAN CHINH!
+===========================================
+
+
+
