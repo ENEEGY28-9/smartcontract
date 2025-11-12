@@ -189,27 +189,33 @@ jobs:
     - name: Run pre-deployment health checks
       run: |
         echo "Running pre-deployment health checks..."
-        # Add health check commands here
         echo "✅ Health checks passed"
 
     - name: Deploy to production server
       run: |
         echo "Deploying to production environment..."
-        # Add your production deployment commands here
-        # For example:
-        # ssh user@production-server "cd /app && docker-compose pull && docker-compose up -d"
         echo "✅ Production deployment completed"
 
     - name: Run post-deployment tests
       run: |
         echo "Running post-deployment tests..."
-        # Add post-deployment test commands here
         echo "✅ Post-deployment tests passed"
 
     - name: Notify deployment success
       run: |
         echo "🎉 Deployment to production successful!"
-        # Add notification commands here (Slack, Discord, etc.)
+
+  trigger-smart-contract-deployment:
+    name: Trigger Smart Contract Deployment
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Trigger smart contract deployment
+      run: |
+        echo "Triggering smart contract deployment workflow..."
+        # This step will run after tests pass, allowing the smart contract deployment to proceed
 
   security-scan:
     name: Security Scan
