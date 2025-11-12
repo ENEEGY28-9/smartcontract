@@ -13,6 +13,14 @@ on:
         options:
           - 'true'
           - 'false'
+      skip_deployment:
+        description: 'Skip deployment, only test build'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 env:
   CARGO_TERM_COLOR: always
@@ -72,6 +80,7 @@ jobs:
         anchor --version
 
     - name: 🔑 Setup Devnet Wallet
+      if: github.event.inputs.skip_deployment != 'true'
       run: |
         echo "Setting up devnet wallet..."
         mkdir -p ~/.config/solana
@@ -88,6 +97,7 @@ jobs:
         echo "WALLET_ADDRESS=$WALLET_ADDRESS" >> $GITHUB_ENV
 
     - name: 💰 Fund Wallet
+      if: github.event.inputs.skip_deployment != 'true'
       run: |
         echo "Requesting SOL airdrop..."
         WALLET_ADDRESS=$(solana address)
@@ -216,6 +226,7 @@ jobs:
         ls -la target/deploy/
 
     - name: 🚀 Deploy to Devnet
+      if: github.event.inputs.skip_deployment != 'true'
       run: |
         echo "Starting deployment to Solana Devnet..."
 
@@ -255,6 +266,7 @@ jobs:
         echo "PROGRAM_ID=$PROGRAM_ID" >> $GITHUB_ENV
 
     - name: ✅ Verify Deployment
+      if: github.event.inputs.skip_deployment != 'true'
       run: |
         echo "Verifying deployment..."
         PROGRAM_ID=${{ env.PROGRAM_ID }}
@@ -343,20 +355,31 @@ jobs:
           echo "No test files found - skipping automated tests"
         fi
 
-    - name: 🎉 Deployment Success Notification
+    - name: 🎉 Success Notification
       if: success()
       run: |
-        PROGRAM_ID=${{ env.PROGRAM_ID }}
-        echo "🎉 SMART CONTRACT DEPLOYMENT SUCCESSFUL! 🎉"
-        echo ""
-        echo "📊 Summary:"
-        echo "• Program ID: $PROGRAM_ID"
-        echo "• Network: Solana Devnet"
-        echo "• Status: ✅ Deployed & Verified"
-        echo ""
-        echo "🔗 Explorer: https://explorer.solana.com/address/$PROGRAM_ID?cluster=devnet"
-        echo ""
-        echo "🧪 Ready for testing player claims and token transfers!"
+        if [ "${{ github.event.inputs.skip_deployment }}" = "true" ]; then
+          echo "🎉 SMART CONTRACT BUILD SUCCESSFUL! 🎉"
+          echo ""
+          echo "📊 Summary:"
+          echo "• Status: ✅ Built Successfully"
+          echo "• Build artifacts: Available in target/deploy/"
+          echo "• Ready for deployment"
+          echo ""
+          echo "🧪 Build test completed - ready for full deployment!"
+        else
+          PROGRAM_ID=${{ env.PROGRAM_ID }}
+          echo "🎉 SMART CONTRACT DEPLOYMENT SUCCESSFUL! 🎉"
+          echo ""
+          echo "📊 Summary:"
+          echo "• Program ID: $PROGRAM_ID"
+          echo "• Network: Solana Devnet"
+          echo "• Status: ✅ Deployed & Verified"
+          echo ""
+          echo "🔗 Explorer: https://explorer.solana.com/address/$PROGRAM_ID?cluster=devnet"
+          echo ""
+          echo "🧪 Ready for testing player claims and token transfers!"
+        fi
 
     - name: ❌ Handle Deployment Failure
       if: failure()
