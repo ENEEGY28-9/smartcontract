@@ -66,17 +66,17 @@ jobs:
         echo "## 🚀 DEPLOYMENT SUCCESS" > deployment_report.md
         echo "" >> deployment_report.md
         echo "### Program Details" >> deployment_report.md
-        echo "- **Program ID**: \$PROGRAM_ID\ >> deployment_report.md
- echo "- **Network**: Solana Devnet" >> deployment_report.md
- echo "- **Explorer**: https://explorer.solana.com/address/$PROGRAM_ID?cluster=devnet" >> deployment_report.md
- echo "" >> deployment_report.md
- echo "### Deployment Time" >> deployment_report.md
- echo "- **Timestamp**: $(date)" >> deployment_report.md
- echo "" >> deployment_report.md
- echo "### Next Steps" >> deployment_report.md
- echo "1. Test the smart contract functions" >> deployment_report.md
- echo "2. Verify on Solana Explorer" >> deployment_report.md
- echo "3. Ready for mainnet deployment" >> deployment_report.md
+        echo "- **Program ID**: \`$PROGRAM_ID\`" >> deployment_report.md
+        echo "- **Network**: Solana Devnet" >> deployment_report.md
+        echo "- **Explorer**: https://explorer.solana.com/address/$PROGRAM_ID?cluster=devnet" >> deployment_report.md
+        echo "" >> deployment_report.md
+        echo "### Deployment Time" >> deployment_report.md
+        echo "- **Timestamp**: $(date)" >> deployment_report.md
+        echo "" >> deployment_report.md
+        echo "### Next Steps" >> deployment_report.md
+        echo "1. Test the smart contract functions" >> deployment_report.md
+        echo "2. Verify on Solana Explorer" >> deployment_report.md
+        echo "3. Ready for mainnet deployment" >> deployment_report.md
  
  - name: Upload Report
  uses: actions/upload-artifact@v4
