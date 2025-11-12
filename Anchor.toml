@@ -19,7 +19,11 @@ cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [workspace]
-members = ["programs/*"]
+members = [
+    "programs/game_token",
+    "programs/game_token_v2",
+    "programs/simple_transfer"
+]
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
