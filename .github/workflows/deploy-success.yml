@@ -19,17 +19,25 @@ jobs:
     - name: Setup Solana CLI
       run: |
         curl -sSfL https://release.solana.com/v1.18.4/install | sh
-        export PATH=C:\Users\Fit/.local/share/solana/install/active_release/bin:
+        export PATH=$HOME/.local/share/solana/install/active_release/bin:$PATH
 
     - name: Setup Anchor
       run: |
         cargo install --git https://github.com/coral-xyz/anchor --tag v0.29.0 anchor-cli --locked
 
+    - name: Force Anchor version
+      run: |
+        export PATH=$HOME/.cargo/bin:$PATH
+        anchor --version
+
     - name: Build smart contract
-      run: anchor build
+      run: |
+        export PATH=$HOME/.cargo/bin:$PATH
+        anchor build
 
     - name: Deploy to devnet
       run: |
+        export PATH=$HOME/.cargo/bin:$PATH
         mkdir -p ~/.config/solana
         echo ${{ secrets.SOLANA_PRIVATE_KEY }} > ~/.config/solana/id.json
         chmod 600 ~/.config/solana/id.json
@@ -39,6 +47,7 @@ jobs:
 
     - name: Extract Program ID
       run: |
+        export PATH=$HOME/.cargo/bin:$PATH
         PROGRAM_ID=$(solana address -k target/deploy/game_token-keypair.json)
         echo Program ID: $PROGRAM_ID
         echo ## Deployment Report > deployment_report.md
