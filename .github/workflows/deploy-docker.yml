@@ -1,0 +1,49 @@
+name: Deploy Solana Smart Contract - Docker Auto
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Build and Deploy with Docker
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/work -w /work \\
+          --env SOLANA_PRIVATE_KEY=${{ secrets.SOLANA_PRIVATE_KEY }} \\
+          eneergy/solana-anchor:latest \\
+          /bin/bash -c 
+ echo "${SOLANA_PRIVATE_KEY}" > ~/.config/solana/id.json && \\
+ chmod 600 ~/.config/solana/id.json && \\
+ solana config set --url devnet --keypair ~/.config/solana/id.json && \\
+ solana airdrop 2 || true && \\
+ anchor build && \\
+ anchor deploy
+ 
+    
+    - name: Extract Program ID
+      id: program-id
+      run: |
+        PROGRAM_ID=$(solana address -k target/deploy/game_token-keypair.json)
+        echo "program_id=$PROGRAM_ID" >> $GITHUB_OUTPUT
+        echo "Program ID: $PROGRAM_ID"
+    
+    - name: Generate report
+      run: |
+        PROGRAM_ID=${{ steps.program-id.outputs.program_id }}
+        echo "## Deployment Report" > deployment_report.md
+        echo "- **Program ID**: \$PROGRAM_ID\ >> deployment_report.md
+ echo "- **Explorer**: https://explorer.solana.com/address/$PROGRAM_ID?cluster=devnet" >> deployment_report.md
+ echo "- **Time**: $(date)" >> deployment_report.md
+ 
+ - name: Upload report
+ uses: actions/upload-artifact@v4
+ with:
+ name: deployment-report
+ path: deployment_report.md
