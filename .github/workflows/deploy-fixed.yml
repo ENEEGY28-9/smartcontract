@@ -158,17 +158,57 @@ jobs:
       run: |
         echo "Building smart contract..."
         pwd
+        ls -la
+
+        # Verify Anchor.toml exists
+        if [ ! -f "Anchor.toml" ]; then
+          echo "❌ Anchor.toml not found!"
+          exit 1
+        fi
+
+        echo "Found Anchor.toml:"
+        cat Anchor.toml
+
+        # Check if programs directory exists
+        if [ ! -d "programs" ]; then
+          echo "❌ programs directory not found!"
+          ls -la
+          exit 1
+        fi
+
+        echo "Programs directory contents:"
+        ls -la programs/
 
         # Clean previous builds
-        anchor clean || true
+        echo "Cleaning previous builds..."
+        anchor clean || echo "Clean failed, continuing..."
 
-        # Build with verbose output
-        anchor build
+        # Build with error handling
+        echo "Building smart contract..."
+        if ! anchor build; then
+          echo "❌ Anchor build failed, trying alternative approach..."
+          echo "Checking Rust version..."
+          rustc --version
+          cargo --version
+
+          echo "Checking Anchor version..."
+          anchor --version || echo "Anchor not found"
+
+          echo "Checking Solana version..."
+          solana --version || echo "Solana CLI not found"
+
+          echo "Build logs:"
+          ls -la target/ 2>/dev/null || echo "No target directory"
+
+          exit 1
+        fi
 
         # Verify build artifacts
         if [ ! -f "target/deploy/game_token.so" ]; then
-          echo "❌ Build failed - program binary not found"
-          ls -la target/deploy/ || true
+          echo "❌ Build completed but program binary not found"
+          echo "Checking target directory:"
+          ls -la target/ || true
+          ls -la target/deploy/ 2>/dev/null || echo "target/deploy does not exist"
           exit 1
         fi
 
