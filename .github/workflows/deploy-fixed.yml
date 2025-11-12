@@ -126,12 +126,33 @@ jobs:
           echo "Found smart contract in game_token directory"
           cd game_token
           echo "Changed to game_token directory"
+        elif [ -f "Anchor.toml" ]; then
+          echo "Already in smart contract directory"
         else
-          echo "Smart contract directory not found, checking current location..."
+          echo "Smart contract directory not found, checking all locations..."
+          find . -name "Anchor.toml" -type f 2>/dev/null || echo "No Anchor.toml found"
+          echo "Will try to proceed anyway..."
         fi
 
         echo "Final directory: $(pwd)"
         ls -la
+
+        # Ensure we're in a directory with Anchor.toml
+        if [ ! -f "Anchor.toml" ]; then
+          echo "❌ Anchor.toml not found in current directory"
+          echo "Checking if we can find and navigate to it..."
+          ANCHOR_FILE=$(find /home/runner/work/smartcontract/smartcontract -name "Anchor.toml" -type f | head -1)
+          if [ -n "$ANCHOR_FILE" ]; then
+            ANCHOR_DIR=$(dirname "$ANCHOR_FILE")
+            echo "Found Anchor.toml at: $ANCHOR_FILE"
+            echo "Navigating to: $ANCHOR_DIR"
+            cd "$ANCHOR_DIR"
+            echo "Now in: $(pwd)"
+          else
+            echo "❌ Cannot find Anchor.toml anywhere"
+            exit 1
+          fi
+        fi
 
     - name: 🏗️ Build Smart Contract
       run: |
